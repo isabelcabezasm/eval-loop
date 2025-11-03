@@ -12,17 +12,14 @@ async def test_concurrency_is_actually_limited():
     """Test that concurrency is actually limited to the semaphore value."""
     concurrent_calls = 0
     max_concurrent = 0
-    call_order = []
 
     @limit_concurrency
     async def monitored_func(task_id: int) -> int:
         nonlocal concurrent_calls, max_concurrent
         concurrent_calls += 1
         max_concurrent = max(max_concurrent, concurrent_calls)
-        call_order.append(f"start_{task_id}")
         # Simulate some work
         await asyncio.sleep(0.1)
-        call_order.append(f"end_{task_id}")
         concurrent_calls -= 1
         return task_id
 
