@@ -106,6 +106,23 @@ class QAEngine:
         self.agent = agent
         self.axiom_store = axiom_store
 
+    @staticmethod
+    def _is_complete_or_no_citation(buffer: str) -> bool:
+        """
+        Check if buffer can be safely yielded without splitting incomplete citations.
+
+        Returns True if:
+        - Buffer contains no opening bracket (no potential citation), OR
+        - Buffer contains a closing bracket (complete citation)
+
+        Args:
+            buffer: Text buffer to check
+
+        Returns:
+            True if buffer is safe to yield, False otherwise
+        """
+        return ("[" not in buffer) or ("]" in buffer)
+
     async def _process_chunk(
         self,
         chunks: AsyncIterator[str],
@@ -145,7 +162,7 @@ class QAEngine:
                 buffer = buffer[match.end() :]
 
             # Yield buffer if it doesn't contain an incomplete citation
-            if buffer and (("[" not in buffer) or ("]" in buffer)):
+            if buffer and self._is_complete_or_no_citation(buffer):
                 yield TextContent(content=buffer)
                 buffer = ""
 
