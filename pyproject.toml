@@ -53,13 +53,13 @@ packages = ["src/eval", "src/core"]
 [tool.pyright]
 pythonVersion = "3.10"
 typeCheckingMode = "basic"
-include = ["src"]
+include = ["src", "tests"]
 exclude = ["**/__pycache__", "**/node_modules"]
 reportMissingImports = true
 reportMissingTypeStubs = false
 
 [tool.ruff]
-src = ["src"]
+src = ["src", "tests"]
 line-length = 88
 target-version = "py310"
 show-fixes = true
