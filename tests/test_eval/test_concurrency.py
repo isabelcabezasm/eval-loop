@@ -23,7 +23,7 @@ async def test_concurrency_is_actually_limited():
         concurrent_calls -= 1
         return task_id
 
-    # Create 10 tasks (more than semaphore limit of 5)
+    # Create 10 tasks (more than concurrency limit of CONCURRENCY_LIMIT)
     tasks = [monitored_func(i) for i in range(10)]
     results = await asyncio.gather(*tasks)
     # Check results
