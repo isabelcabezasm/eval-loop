@@ -5,7 +5,6 @@ This module provides the QAEngine class that handles question-answering
 using Azure OpenAI with constitution-based prompting via the Microsoft Agent Framework.
 """
 
-import json
 import re
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
@@ -16,7 +15,7 @@ from pydantic import BaseModel, computed_field
 
 from core.axiom_store import Axiom, AxiomId, AxiomStore
 from core.prompt import build_user_prompt
-from core.reality import RealityStatement
+from core.reality import RealityId, RealityStatement
 
 
 class Message(BaseModel):
@@ -26,30 +25,76 @@ class Message(BaseModel):
     content: str
 
 
-class CitationContent(BaseModel):
-    """Response containing the axiom cited in streaming chunk."""
-
-    axiom: Axiom
-
-    @computed_field
-    @property
-    def content(self) -> str:
-        """Return formatted axiom ID."""
-        return f"[{self.axiom.id}]"
-
-
 class TextContent(BaseModel):
     """Response containing simple text content from a streaming chunk."""
 
     content: str
 
 
+class AxiomCitationContent(BaseModel):
+    """Response containing an axiom citation in streaming chunk."""
+
+    item: Axiom
+
+    @computed_field
+    @property
+    def content(self) -> str:
+        """Return formatted citation ID."""
+        return f"[{self.item.id}]"
+
+    @property
+    def axiom(self) -> Axiom:
+        """Return the axiom."""
+        return self.item
+
+    @property
+    def reality(self) -> None:
+        """Return None for reality (not applicable for axiom citations)."""
+        return None
+
+
+class RealityCitationContent(BaseModel):
+    """Response containing a reality citation in streaming chunk."""
+
+    item: RealityStatement
+
+    @computed_field
+    @property
+    def content(self) -> str:
+        """Return formatted citation ID."""
+        return f"[{self.item.id}]"
+
+    @property
+    def axiom(self) -> None:
+        """Return None for axiom (not applicable for reality citations)."""
+        return None
+
+    @property
+    def reality(self) -> RealityStatement:
+        """Return the reality statement."""
+        return self.item
+
+
+# Union type for citation content with discriminator
+CitationContent = AxiomCitationContent | RealityCitationContent
+
 @dataclass(frozen=True)
-class CitationCandidate:
-    """Candidate citation found in streaming text."""
+class AxiomCitationCandidate:
+    """Candidate axiom citation found in streaming text."""
 
     id: AxiomId
     text: str
+
+
+@dataclass(frozen=True)
+class RealityCitationCandidate:
+    """Candidate reality citation found in streaming text."""
+
+    id: RealityId
+    text: str
+
+
+CitationCandidate = AxiomCitationCandidate | RealityCitationCandidate
 
 
 class QAEngine:
@@ -63,6 +108,8 @@ class QAEngine:
     Attributes:
         agent (ChatAgent): The chat agent for model inference.
         axiom_store (AxiomStore): Storage for axioms/constitution data.
+        reality_store (dict[RealityId, RealityStatement]): Storage for reality
+            statements.
     """
 
     def __init__(
@@ -79,11 +126,12 @@ class QAEngine:
         """
         self.agent = agent
         self.axiom_store = axiom_store
+        self.reality_store: dict[RealityId, RealityStatement] = {}
 
     async def _process_chunk(
         self,
         chunks: AsyncIterator[str],
-    ) -> AsyncIterator[TextContent | CitationCandidate]:
+    ) -> AsyncIterator[TextContent | AxiomCitationCandidate | RealityCitationCandidate]:
         """
         Process a series of chunks and returns text or parsed references.
 
@@ -91,18 +139,30 @@ class QAEngine:
             chunks: Text chunk content to process
 
         Returns:
-            AsyncIterator of TextContent or CitationCandidate instances
+            AsyncIterator of TextContent or citation candidate instances
         """
         buffer = ""
 
         async for chunk in chunks:
             buffer += chunk
 
-            while match := re.search(r"\[(AXIOM-\d+)\]", buffer):
+            # Check for both AXIOM and REALITY citations
+            while match := re.search(r"\[(AXIOM-\d+|REALITY-\d+)\]", buffer):
                 # Yield text before the citation
                 yield TextContent(content=buffer[: match.start()])
-                # Yield the citation candidate
-                yield CitationCandidate(id=AxiomId(match.group(1)), text=match.group(0))
+
+                # Determine citation type and create appropriate ID
+                citation_id = match.group(1)
+                if citation_id.startswith("AXIOM-"):
+                    yield AxiomCitationCandidate(
+                        id=AxiomId(citation_id),
+                        text=match.group(0),
+                    )
+                else:  # REALITY-
+                    yield RealityCitationCandidate(
+                        id=RealityId(citation_id),
+                        text=match.group(0),
+                    )
 
                 buffer = buffer[match.end() :]
 
@@ -155,8 +215,8 @@ class QAEngine:
         3. Formats the user prompt with the question, constitution, and reality
         4. Creates a ChatAgent with system instructions
         5. Streams the response from Azure OpenAI via the Agent Framework
-        6. Parses citations in the format [AXIOM-XXX] and yields them as CitationContent
-        7. Yields regular text as TextContent
+        6. Parses citations in the format [AXIOM-XXX] and [REALITY-XXX]
+        7. Yields regular text as TextContent and citations as CitationContent
 
         Args:
             question: The user's question.
@@ -168,6 +228,12 @@ class QAEngine:
         Note:
             TODO: Add support for conversation history with Message list.
         """
+        # Store reality statements for citation validation
+        if reality:
+            self.reality_store = {statement.id: statement for statement in reality}
+        else:
+            self.reality_store = {}
+
         # Load and format user prompt with constitution, reality, and question
         user_prompt = build_user_prompt(self.axiom_store, question, reality)
 
@@ -182,15 +248,19 @@ class QAEngine:
             match chunk:
                 case TextContent():
                     yield chunk
-                case CitationCandidate() as candidate:
-                    # Validate citation against axiom store
-                    axiom_store = (
-                        self.axiom_store
-                        if isinstance(self.axiom_store, AxiomStore)
-                        else None
-                    )
-                    if axiom_store and (axiom := axiom_store.get(id=candidate.id)):
-                        yield CitationContent(axiom=axiom)
+                case AxiomCitationCandidate() as candidate:
+                    # Validate axiom citation against store
+                    axiom = self.axiom_store.get(id=candidate.id)
+                    if axiom:
+                        yield AxiomCitationContent(item=axiom)
                     else:
                         # If axiom not found, yield as plain text
+                        yield TextContent(content=candidate.text)
+                case RealityCitationCandidate() as candidate:
+                    # Validate reality citation against store
+                    reality_statement = self.reality_store.get(candidate.id)
+                    if reality_statement:
+                        yield RealityCitationContent(item=reality_statement)
+                    else:
+                        # If reality not found, yield as plain text
                         yield TextContent(content=candidate.text)

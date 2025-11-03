@@ -4,13 +4,17 @@ Example demonstrating streaming QA with reality statements.
 This example shows how to:
 1. Define reality statements for macro-economic context
 2. Use streaming API with reality statements
-3. Handle text and citation content in real-time
+3. Handle text, axiom citations, and reality citations in real-time
 """
 
 import asyncio
 
 from core.dependencies import qa_engine
-from core.qa_engine import CitationContent, TextContent
+from core.qa_engine import (
+    AxiomCitationContent,
+    RealityCitationContent,
+    TextContent,
+)
 from core.reality import RealityId, RealityStatement
 
 
@@ -52,25 +56,39 @@ async def main():
     print("-" * 80)
 
     # Collect citations
-    citations = []
+    axiom_citations = []
+    reality_citations = []
 
     # Stream the response
     async for chunk in engine.invoke_streaming(question, reality=reality):
         match chunk:
             case TextContent():
                 print(chunk.content, end="", flush=True)
-            case CitationContent():
-                print(f"[{chunk.axiom.id}]", end="", flush=True)
-                if chunk.axiom not in citations:
-                    citations.append(chunk.axiom)
+            case AxiomCitationContent():
+                # Print axiom citation ID
+                print(f"[{chunk.item.id}]", end="", flush=True)
+                if chunk.axiom not in axiom_citations:
+                    axiom_citations.append(chunk.axiom)
+            case RealityCitationContent():
+                # Print reality citation ID
+                print(f"[{chunk.item.id}]", end="", flush=True)
+                if chunk.reality not in reality_citations:
+                    reality_citations.append(chunk.reality)
 
     print("\n" + "-" * 80)
 
     # Display references
-    if citations:
-        print("\nReferences:")
-        for axiom in citations:
+    if axiom_citations:
+        print("\nAxiom References:")
+        for axiom in axiom_citations:
             print(f"  [{axiom.id}] {axiom.subject}")
+
+    if reality_citations:
+        print("\nReality References:")
+        for statement in reality_citations:
+            print(f"  [{statement.id}] {statement.attribute}: {statement.number}")
+
+    if axiom_citations or reality_citations:
         print("-" * 80)
 
 
