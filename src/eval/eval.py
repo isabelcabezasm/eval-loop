@@ -276,7 +276,7 @@ async def run_evaluation(
         _ = (output_path / f"results_{parsed_input.id}.md").write_text(llm_response)
         return await evaluate_answer(parsed_input, llm_response)
 
-    evaluation_results = await asyncio.gather(
+    evaluation_results = await asyncio.gather(  # pyright: ignore[reportCallIssue]
         *map(process_sample, json.loads(input_path.read_text()))
     )
     result = calculate_stats(evaluation_results)

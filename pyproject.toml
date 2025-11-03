@@ -48,7 +48,7 @@ build-backend = "hatchling.build"
 path = "src/eval/__init__.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/eval", "src/core"]
+packages = ["src/eval", "src/core", "tests"]
 
 [tool.pyright]
 pythonVersion = "3.10"
@@ -94,7 +94,7 @@ extend-exclude = '''
 profile = "black"
 multi_line_output = 3
 line_length = 88
-known_first_party = ["eval", "report_generation", "core"]
+known_first_party = ["eval", "report_generation", "core", "tests"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"

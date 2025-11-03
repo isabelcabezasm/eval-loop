@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, Mock, mock_open, patch
 
 import pytest
 from agent_framework import AgentRunResponse, ChatAgent
+from tests.eval.common import mock_chat_agent
 
 from eval.llm_evaluator.qa_eval_engine import QAEvalEngine
 from eval.metrics.extract_entities import get_entities
@@ -17,13 +18,6 @@ def mock_azure_chat_client():
     """Create a mock Azure OpenAI chat client."""
     mock_client = Mock(spec=ChatAgent)
     return mock_client
-
-
-@pytest.fixture
-def mock_chat_agent():
-    """Create a mock chat agent."""
-    mock_agent = AsyncMock(spec=ChatAgent)
-    return mock_agent
 
 
 @pytest.fixture
