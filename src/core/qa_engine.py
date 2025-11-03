@@ -8,10 +8,12 @@ using Azure OpenAI with constitution-based prompting via the Microsoft Agent Fra
 import json
 import re
 from collections.abc import AsyncIterator
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
+from functools import cache
 from typing import Literal
 
 from agent_framework import ChatAgent
+from jinja2 import Environment, FileSystemLoader, Template
 from pydantic import BaseModel, computed_field
 
 from core.axiom_store import Axiom, AxiomId, AxiomStore
@@ -86,6 +88,14 @@ async def process_chunk(
         yield TextContent(content=buffer)
 
 
+@cache
+def load_template(file: str) -> Template:
+    """Load a Jinja2 template from the prompts directory."""
+    return Environment(
+        loader=FileSystemLoader(root() / "src/core/prompts")
+    ).get_template(file)
+
+
 class QAEngine:
     """
     Question-Answering engine for constitutional queries.
@@ -102,7 +112,7 @@ class QAEngine:
     def __init__(
         self,
         agent: ChatAgent,
-        axiom_store: AxiomStore | None = None,
+        axiom_store: AxiomStore,
     ):
         """
         Initialize the QA Engine.
@@ -132,33 +142,9 @@ class QAEngine:
         Returns:
             Formatted constitution text with axioms.
         """
-        # Load constitution template
-        constitution_template_file = root() / "src/core/prompts/constitution.md"
-        with open(constitution_template_file, encoding="utf-8") as f:
-            template_content = f.read()
-
-        # Load axiom data
-        axioms = self.axiom_store or self._load_constitution_data()
-        axiom_list = axioms.list() if isinstance(axioms, AxiomStore) else axioms
-
-        # Format constitution by replacing template variables for each axiom
-        formatted_constitution = ""
-        for axiom in axiom_list:
-            # Escape curly braces in all axiom fields to prevent format errors
-            safe_fields = {
-                "id": str(axiom.id).replace("{", "{{").replace("}", "}}"),
-                "subject": str(axiom.subject).replace("{", "{{").replace("}", "}}"),
-                "object": str(axiom.entity).replace("{", "{{").replace("}", "}}"),  # Map entity to object
-                "link": str(axiom.trigger).replace("{", "{{").replace("}", "}}"),  # Map trigger to link
-                "conditions": str(axiom.conditions).replace("{", "{{").replace("}", "}}"),
-                "description": str(axiom.description).replace("{", "{{").replace("}", "}}"),
-                "amendments": f"Category: {str(axiom.category).replace('{', '{{').replace('}', '}}')}",  # Map category to amendments
-            }
-            axiom_section = template_content.format(**safe_fields)
-
-            formatted_constitution += axiom_section + "\n"
-
-        return formatted_constitution
+        template = load_template("constitution.j2")
+        axioms = self.axiom_store.list()
+        return template.render(axioms=[asdict(axiom) for axiom in axioms])
 
     def _load_and_format_user_prompt(self, question: str) -> str:
         """
@@ -170,22 +156,13 @@ class QAEngine:
         Returns:
             Formatted user prompt with constitution and question.
         """
-        # Load user prompt template
-        user_prompt_file = root() / "src/core/prompts/user_prompt.md"
-        with open(user_prompt_file, encoding="utf-8") as f:
-            user_prompt_template = f.read()
+        template = load_template("user_prompt.j2")
 
         # Get formatted constitution
         constitution = self._load_and_format_constitution()
 
-        # Escape curly braces in the question to prevent .format() errors
-        safe_question = question.replace("{", "{{").replace("}", "}}")
-        # Format user prompt with constitution and question using .format()
-        formatted_prompt = user_prompt_template.format(
-            constitution=constitution, question=safe_question
-        )
-
-        return formatted_prompt
+        # Render template with constitution and question
+        return template.render(constitution=constitution, question=question)
 
     async def invoke(self, question: str) -> str:
         """
