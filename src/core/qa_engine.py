@@ -119,6 +119,10 @@ class QAEngine:
         Returns:
             AsyncIterator of TextContent or citation candidate instances
         """
+
+        def _is_complete_or_no_citation(buffer: str) -> bool:
+            return ("[" not in buffer) or ("]" in buffer)
+
         buffer = ""
 
         async for chunk in chunks:
@@ -145,7 +149,7 @@ class QAEngine:
                 buffer = buffer[match.end() :]
 
             # Yield buffer if it doesn't contain an incomplete citation
-            if buffer and (("[" not in buffer) or ("]" in buffer)):
+            if buffer and _is_complete_or_no_citation(buffer):
                 yield TextContent(content=buffer)
                 buffer = ""
 
