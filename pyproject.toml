@@ -48,7 +48,7 @@ build-backend = "hatchling.build"
 path = "src/eval/__init__.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/eval", "src/core", "tests"]
+packages = ["src/eval", "src/core"]
 
 [tool.pyright]
 pythonVersion = "3.10"
