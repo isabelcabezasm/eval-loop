@@ -1,6 +1,7 @@
 """Tests for concurrency limiting functionality in eval module."""
 
 import asyncio
+from functools import wraps
 
 import pytest
 
