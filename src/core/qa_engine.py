@@ -89,8 +89,6 @@ class QAEngine:
     Attributes:
         agent (ChatAgent): The chat agent for model inference.
         axiom_store (AxiomStore): Storage for axioms/constitution data.
-        reality_store (dict[RealityId, RealityStatement]): Storage for reality
-            statements.
     """
 
     def __init__(
@@ -107,7 +105,6 @@ class QAEngine:
         """
         self.agent = agent
         self.axiom_store = axiom_store
-        self.reality_store: dict[RealityId, RealityStatement] = {}
 
     async def _process_chunk(
         self,
@@ -160,17 +157,14 @@ class QAEngine:
         self, question: str, reality: list[RealityStatement] | None = None
     ) -> str:
         """
-        Process a user question and generate a response using Azure OpenAI.
-
-        This method collects all chunks from the streaming response and returns
-        the complete response as a single string.
+        Generate AI response by collecting all streaming chunks into a single string.
 
         Args:
             question: The user's question.
-            reality: Optional list of reality statements to include in the prompt.
+            reality: Optional reality statements for additional context.
 
         Returns:
-            The complete AI-generated response based on the constitution and prompts.
+            Complete AI response with citations formatted as text.
 
         Note:
             TODO: Add support for conversation history with Message list.
@@ -188,32 +182,24 @@ class QAEngine:
         reality: list[RealityStatement] | None = None,
     ) -> AsyncIterator[TextContent | CitationContent]:
         """
-        Process a user question and stream the response with citation detection.
+        Stream AI response with real-time citation detection and validation.
 
-        This method:
-        1. Loads and formats the constitution with axiom data
-        2. Prepares the system prompt (used as agent instructions)
-        3. Formats the user prompt with the question, constitution, and reality
-        4. Creates a ChatAgent with system instructions
-        5. Streams the response from Azure OpenAI via the Agent Framework
-        6. Parses citations in the format [AXIOM-XXX] and [REALITY-XXX]
-        7. Yields regular text as TextContent and citations as CitationContent
+        Parses [AXIOM-XXX] and [REALITY-XXX] citations from the streamed response,
+        validates them, and yields either TextContent or CitationContent chunks.
+        Thread-safe for concurrent requests with different reality statements.
 
         Args:
             question: The user's question.
-            reality: Optional list of reality statements to include in the prompt.
+            reality: Optional reality statements for additional context.
 
         Yields:
-            TextContent or CitationContent chunks as they are streamed and parsed.
+            TextContent, AxiomCitationContent, or RealityCitationContent chunks.
 
         Note:
             TODO: Add support for conversation history with Message list.
         """
-        # Store reality statements for citation validation
-        if reality:
-            self.reality_store = {statement.id: statement for statement in reality}
-        else:
-            self.reality_store = {}
+        # Create local reality store for this request
+        reality_store = {s.id: s for s in reality} if reality else {}
 
         # Load and format user prompt with constitution, reality, and question
         user_prompt = build_user_prompt(self.axiom_store, question, reality)
@@ -238,8 +224,8 @@ class QAEngine:
                         # If axiom not found, yield as plain text
                         yield TextContent(content=candidate.text)
                 case RealityCitationCandidate() as candidate:
-                    # Validate reality citation against store
-                    reality_statement = self.reality_store.get(candidate.id)
+                    # Validate reality citation against local store
+                    reality_statement = reality_store.get(candidate.id)
                     if reality_statement:
                         yield RealityCitationContent(item=reality_statement)
                     else:
