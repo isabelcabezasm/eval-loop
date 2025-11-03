@@ -8,16 +8,15 @@ using Azure OpenAI with constitution-based prompting via the Microsoft Agent Fra
 import json
 import re
 from collections.abc import AsyncIterator
-from dataclasses import asdict, dataclass
-from functools import cache
+from dataclasses import dataclass
 from typing import Literal
 
 from agent_framework import ChatAgent
-from jinja2 import Environment, FileSystemLoader, Template
 from pydantic import BaseModel, computed_field
 
 from core.axiom_store import Axiom, AxiomId, AxiomStore
-from core.paths import root
+from core.prompt import build_user_prompt
+from core.reality import RealityStatement
 
 
 class Message(BaseModel):
@@ -53,49 +52,6 @@ class CitationCandidate:
     text: str
 
 
-async def process_chunk(
-    chunks: AsyncIterator[str],
-) -> AsyncIterator[TextContent | CitationCandidate]:
-    """
-    Process a series of chunks and returns text or parsed references.
-
-    Args:
-        chunks: Text chunk content to process
-
-    Returns:
-        AsyncIterator of TextContent or CitationCandidate instances
-    """
-    buffer = ""
-
-    async for chunk in chunks:
-        buffer += chunk
-
-        while match := re.search(r"\[(AXIOM-\d+)\]", buffer):
-            # Yield text before the citation
-            yield TextContent(content=buffer[: match.start()])
-            # Yield the citation candidate
-            yield CitationCandidate(id=AxiomId(match.group(1)), text=match.group(0))
-
-            buffer = buffer[match.end() :]
-
-        # Yield buffer if it doesn't contain an incomplete citation
-        if buffer and (("[" not in buffer) or ("]" in buffer)):
-            yield TextContent(content=buffer)
-            buffer = ""
-
-    # Yield remaining buffer
-    if buffer:
-        yield TextContent(content=buffer)
-
-
-@cache
-def load_template(file: str) -> Template:
-    """Load a Jinja2 template from the prompts directory."""
-    return Environment(
-        loader=FileSystemLoader(root() / "src/core/prompts")
-    ).get_template(file)
-
-
 class QAEngine:
     """
     Question-Answering engine for constitutional queries.
@@ -106,7 +62,7 @@ class QAEngine:
 
     Attributes:
         agent (ChatAgent): The chat agent for model inference.
-        axiom_store (AxiomStore | None): Storage for axioms/constitution data.
+        axiom_store (AxiomStore): Storage for axioms/constitution data.
     """
 
     def __init__(
@@ -119,52 +75,49 @@ class QAEngine:
 
         Args:
             agent: ChatAgent instance for model inference.
-            axiom_store: Optional storage for axioms (defaults to loading from file).
+            axiom_store: Storage for axioms/constitution data.
         """
         self.agent = agent
         self.axiom_store = axiom_store
 
-    def _load_constitution_data(self) -> list[Axiom]:
+    async def _process_chunk(
+        self,
+        chunks: AsyncIterator[str],
+    ) -> AsyncIterator[TextContent | CitationCandidate]:
         """
-        Load constitution data from JSON file.
-
-        Returns:
-            List of axioms from the constitution JSON file.
-        """
-        constitution_file = root() / "data/constitution.json"
-        with open(constitution_file, encoding="utf-8") as f:
-            return [Axiom(**item) for item in json.load(f)]
-
-    def _load_and_format_constitution(self) -> str:
-        """
-        Load the constitution template and format it with axiom data.
-
-        Returns:
-            Formatted constitution text with axioms.
-        """
-        template = load_template("constitution.j2")
-        axioms = self.axiom_store.list()
-        return template.render(axioms=[asdict(axiom) for axiom in axioms])
-
-    def _load_and_format_user_prompt(self, question: str) -> str:
-        """
-        Load and format the user prompt with constitution and question.
+        Process a series of chunks and returns text or parsed references.
 
         Args:
-            question: The user's question to be answered.
+            chunks: Text chunk content to process
 
         Returns:
-            Formatted user prompt with constitution and question.
+            AsyncIterator of TextContent or CitationCandidate instances
         """
-        template = load_template("user_prompt.j2")
+        buffer = ""
 
-        # Get formatted constitution
-        constitution = self._load_and_format_constitution()
+        async for chunk in chunks:
+            buffer += chunk
 
-        # Render template with constitution and question
-        return template.render(constitution=constitution, question=question)
+            while match := re.search(r"\[(AXIOM-\d+)\]", buffer):
+                # Yield text before the citation
+                yield TextContent(content=buffer[: match.start()])
+                # Yield the citation candidate
+                yield CitationCandidate(id=AxiomId(match.group(1)), text=match.group(0))
 
-    async def invoke(self, question: str) -> str:
+                buffer = buffer[match.end() :]
+
+            # Yield buffer if it doesn't contain an incomplete citation
+            if buffer and (("[" not in buffer) or ("]" in buffer)):
+                yield TextContent(content=buffer)
+                buffer = ""
+
+        # Yield remaining buffer
+        if buffer:
+            yield TextContent(content=buffer)
+
+    async def invoke(
+        self, question: str, reality: list[RealityStatement] | None = None
+    ) -> str:
         """
         Process a user question and generate a response using Azure OpenAI.
 
@@ -173,17 +126,17 @@ class QAEngine:
 
         Args:
             question: The user's question.
+            reality: Optional list of reality statements to include in the prompt.
 
         Returns:
             The complete AI-generated response based on the constitution and prompts.
 
         Note:
             TODO: Add support for conversation history with Message list.
-            TODO: Add support for reality
         """
         # Collect all chunks from the streaming response
         result = ""
-        async for chunk in self.invoke_streaming(question):
+        async for chunk in self.invoke_streaming(question, reality):
             result += chunk.content
 
         return result
@@ -191,6 +144,7 @@ class QAEngine:
     async def invoke_streaming(
         self,
         question: str,
+        reality: list[RealityStatement] | None = None,
     ) -> AsyncIterator[TextContent | CitationContent]:
         """
         Process a user question and stream the response with citation detection.
@@ -198,7 +152,7 @@ class QAEngine:
         This method:
         1. Loads and formats the constitution with axiom data
         2. Prepares the system prompt (used as agent instructions)
-        3. Formats the user prompt with the question and constitution
+        3. Formats the user prompt with the question, constitution, and reality
         4. Creates a ChatAgent with system instructions
         5. Streams the response from Azure OpenAI via the Agent Framework
         6. Parses citations in the format [AXIOM-XXX] and yields them as CitationContent
@@ -206,16 +160,16 @@ class QAEngine:
 
         Args:
             question: The user's question.
+            reality: Optional list of reality statements to include in the prompt.
 
         Yields:
             TextContent or CitationContent chunks as they are streamed and parsed.
 
         Note:
             TODO: Add support for conversation history with Message list.
-            TODO: Add support for reality
         """
-        # Load and format user prompt with constitution and question
-        user_prompt = self._load_and_format_user_prompt(question)
+        # Load and format user prompt with constitution, reality, and question
+        user_prompt = build_user_prompt(self.axiom_store, question, reality)
 
         # Create async generator for streaming chunks
         async def stream() -> AsyncIterator[str]:
@@ -224,7 +178,7 @@ class QAEngine:
                     yield chunk.text
 
         # Process chunks for citations
-        async for chunk in process_chunk(stream()):
+        async for chunk in self._process_chunk(stream()):
             match chunk:
                 case TextContent():
                     yield chunk
