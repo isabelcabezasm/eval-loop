@@ -1,8 +1,10 @@
 import asyncio
 import json
+from collections.abc import Awaitable, Callable
 from datetime import datetime
+from functools import wraps
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Final, Protocol, TypeVar
 
 from pydantic import BaseModel
 
@@ -171,6 +173,22 @@ class EvaluationResult(BaseModel):
     topic_coverage: CoverageMetric
 
 
+CONCURRENCY_SEMAPHORE: Final = asyncio.Semaphore(2)
+
+T = TypeVar("T")
+
+
+def limit_concurrency(
+    func: Callable[..., Awaitable[T]],
+) -> Callable[..., Awaitable[T]]:
+    @wraps(func)
+    async def wrapper(*args: Any, **kwargs: Any) -> T:
+        async with CONCURRENCY_SEMAPHORE:
+            return await func(*args, **kwargs)
+
+    return wrapper
+
+
 async def evaluate_answer(
     sample_input: EvaluationSampleInput, llm_answer: str
 ) -> EvaluationSampleOutput:
@@ -207,10 +225,10 @@ async def evaluate_answer(
 def calculate_stats(evaluation_results) -> EvaluationResult:
     """
     Calculate statistical metrics from evaluation results.
-    
+
     Args:
         evaluation_results: Collection of evaluation outputs to analyze
-        
+
     Returns:
         EvaluationResult: Object containing the evaluation outputs and computed
         statistical metrics including accuracy and topic coverage.
@@ -225,22 +243,20 @@ def calculate_stats(evaluation_results) -> EvaluationResult:
     # Calculate accuracy statistics
     accuracy_scores = [result.accuracy.accuracy_mean for result in evaluation_results]
     accuracy_mean = sum(accuracy_scores) / len(accuracy_scores)
-    accuracy_variance = (
-        sum((score - accuracy_mean) ** 2 for score in accuracy_scores) 
-        / len(accuracy_scores)
-    )
-    accuracy_std = accuracy_variance ** 0.5 if len(accuracy_scores) > 1 else 0.0
+    accuracy_variance = sum(
+        (score - accuracy_mean) ** 2 for score in accuracy_scores
+    ) / len(accuracy_scores)
+    accuracy_std = accuracy_variance**0.5 if len(accuracy_scores) > 1 else 0.0
 
     # Calculate topic coverage statistics
     coverage_scores = [
         result.topic_coverage.coverage_score for result in evaluation_results
     ]
     coverage_mean = sum(coverage_scores) / len(coverage_scores)
-    coverage_variance = (
-        sum((score - coverage_mean) ** 2 for score in coverage_scores) 
-        / len(coverage_scores)
-    )
-    coverage_std = coverage_variance ** 0.5 if len(coverage_scores) > 1 else 0.0
+    coverage_variance = sum(
+        (score - coverage_mean) ** 2 for score in coverage_scores
+    ) / len(coverage_scores)
+    coverage_std = coverage_variance**0.5 if len(coverage_scores) > 1 else 0.0
 
     return EvaluationResult(
         evaluation_outputs=evaluation_results,
@@ -270,6 +286,7 @@ async def run_evaluation(
     print(f"Running evaluation with data path: {input_path}")
     print(f"Running evaluation with output data path: {output_path}")
 
+    @limit_concurrency
     async def process_sample(sample_data: str) -> EvaluationSampleOutput:
         parsed_input = EvaluationSampleInput.model_validate(sample_data)
 
