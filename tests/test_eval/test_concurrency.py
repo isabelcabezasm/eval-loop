@@ -60,7 +60,6 @@ async def test_mixed_success_and_failure_scenarios():
     """Test successes and failures with concurrency limiting."""
     # Create a fresh semaphore for this test
     test_semaphore = asyncio.Semaphore(5)
-    results = []
 
     async def mixed_func(task_id: int) -> int:
         async with test_semaphore:

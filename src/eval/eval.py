@@ -19,7 +19,6 @@ from eval.metrics.models import (
 from eval.metrics.topic_coverage import get_topic_coverage
 
 CONCURRENCY_LIMIT: Final = 5
-CONCURRENCY_SEMAPHORE: Final = asyncio.Semaphore(CONCURRENCY_LIMIT)
 
 
 class EvaluationSampleInput(BaseModel):
@@ -182,6 +181,8 @@ T = TypeVar("T")
 def limit_concurrency(
     func: Callable[..., Awaitable[T]],
 ) -> Callable[..., Awaitable[T]]:
+    CONCURRENCY_SEMAPHORE: Final = asyncio.Semaphore(CONCURRENCY_LIMIT)
+
     @wraps(func)
     async def wrapper(*args: Any, **kwargs: Any) -> T:
         async with CONCURRENCY_SEMAPHORE:
