@@ -1,9 +1,6 @@
 """Tests for concurrency limiting functionality in eval module."""
 
 import asyncio
-import time
-from collections.abc import Awaitable, Callable
-from typing import Any
 
 import pytest
 
