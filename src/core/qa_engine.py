@@ -144,25 +144,17 @@ class QAEngine:
         # Format constitution by replacing template variables for each axiom
         formatted_constitution = ""
         for axiom in axiom_list:
-            # Create a copy of the template for each axiom
-            axiom_section = template_content
-
-            # Replace template variables with axiom data
-            # Map axiom fields to template variables
-            replacements = {
-                "{{ id }}": axiom.id,
-                "{{ subject }}": axiom.subject,
-                "{{ object }}": axiom.entity,  # Map entity to object
-                "{{ link }}": axiom.trigger,  # Map trigger to link
-                "{{ conditions }}": axiom.conditions,
-                "{{ description }}": axiom.description,
-                # Map category to amendments
-                "{{ amendments }}": f"Category: {axiom.category}",
+            # Escape curly braces in all axiom fields to prevent format errors
+            safe_fields = {
+                "id": str(axiom.id).replace("{", "{{").replace("}", "}}"),
+                "subject": str(axiom.subject).replace("{", "{{").replace("}", "}}"),
+                "object": str(axiom.entity).replace("{", "{{").replace("}", "}}"),  # Map entity to object
+                "link": str(axiom.trigger).replace("{", "{{").replace("}", "}}"),  # Map trigger to link
+                "conditions": str(axiom.conditions).replace("{", "{{").replace("}", "}}"),
+                "description": str(axiom.description).replace("{", "{{").replace("}", "}}"),
+                "amendments": f"Category: {str(axiom.category).replace('{', '{{').replace('}', '}}')}",  # Map category to amendments
             }
-
-            # Apply all replacements
-            for placeholder, value in replacements.items():
-                axiom_section = axiom_section.replace(placeholder, value)
+            axiom_section = template_content.format(**safe_fields)
 
             formatted_constitution += axiom_section + "\n"
 
@@ -186,11 +178,12 @@ class QAEngine:
         # Get formatted constitution
         constitution = self._load_and_format_constitution()
 
-        # Format user prompt with constitution and question using string replacement
-        formatted_prompt = user_prompt_template.replace(
-            "{{ constitution }}", constitution
+        # Escape curly braces in the question to prevent .format() errors
+        safe_question = question.replace("{", "{{").replace("}", "}}")
+        # Format user prompt with constitution and question using .format()
+        formatted_prompt = user_prompt_template.format(
+            constitution=constitution, question=safe_question
         )
-        formatted_prompt = formatted_prompt.replace("{{ question }}", question)
 
         return formatted_prompt
 

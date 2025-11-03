@@ -1,25 +1,25 @@
-## {{ id }}
+## {id}
 
 ### Subject
 
-{{ subject }}
+{subject}
 
 ### Object
 
-{{ object }}
+{object}
 
 ### Link
 
-{{ link }}
+{link}
 
 ### Conditions
 
-{{ conditions }}
+{conditions}
 
 ### Description
 
-{{ description }}
+{description}
 
 ### Amendments
 
-{{ amendments }}
+{amendments}
