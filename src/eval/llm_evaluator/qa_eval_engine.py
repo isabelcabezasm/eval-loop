@@ -17,7 +17,7 @@ class QAEvalEngine:
     """
     Question-Answering engine for evaluation of health insurance queries.
 
-    This class provides specialized evaluation capabilities for accuracy 
+    This class provides specialized evaluation capabilities for accuracy
     assessment and entity extraction using structured outputs.
 
     Attributes:
