@@ -18,7 +18,8 @@ from eval.metrics.models import (
 )
 from eval.metrics.topic_coverage import get_topic_coverage
 
-CONCURRENCY_SEMAPHORE: Final = asyncio.Semaphore(5)
+CONCURRENCY_LIMIT: Final = 5
+CONCURRENCY_SEMAPHORE: Final = asyncio.Semaphore(CONCURRENCY_LIMIT)
 
 
 class EvaluationSampleInput(BaseModel):

@@ -4,7 +4,7 @@ import asyncio
 
 import pytest
 
-from eval.eval import CONCURRENCY_SEMAPHORE, limit_concurrency
+from eval.eval import CONCURRENCY_LIMIT, limit_concurrency
 
 
 @pytest.mark.asyncio
@@ -31,9 +31,7 @@ async def test_concurrency_is_actually_limited():
     results = await asyncio.gather(*tasks)
     # Check results
     assert results == list(range(10))
-    assert (
-        max_concurrent == CONCURRENCY_SEMAPHORE._value
-    )  # Should not exceed semaphore limit
+    assert max_concurrent == CONCURRENCY_LIMIT  # Should not exceed semaphore limit
     assert concurrent_calls == 0  # All tasks should be completed
 
 
