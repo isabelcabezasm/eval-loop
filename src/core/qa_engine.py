@@ -42,16 +42,6 @@ class AxiomCitationContent(BaseModel):
         """Return formatted citation ID."""
         return f"[{self.item.id}]"
 
-    @property
-    def axiom(self) -> Axiom:
-        """Return the axiom."""
-        return self.item
-
-    @property
-    def reality(self) -> None:
-        """Return None for reality (not applicable for axiom citations)."""
-        return None
-
 
 class RealityCitationContent(BaseModel):
     """Response containing a reality citation in streaming chunk."""
@@ -64,19 +54,10 @@ class RealityCitationContent(BaseModel):
         """Return formatted citation ID."""
         return f"[{self.item.id}]"
 
-    @property
-    def axiom(self) -> None:
-        """Return None for axiom (not applicable for reality citations)."""
-        return None
-
-    @property
-    def reality(self) -> RealityStatement:
-        """Return the reality statement."""
-        return self.item
-
 
 # Union type for citation content with discriminator
 CitationContent = AxiomCitationContent | RealityCitationContent
+
 
 @dataclass(frozen=True)
 class AxiomCitationCandidate:

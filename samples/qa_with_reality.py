@@ -67,13 +67,13 @@ async def main():
             case AxiomCitationContent():
                 # Print axiom citation ID
                 print(f"[{chunk.item.id}]", end="", flush=True)
-                if chunk.axiom not in axiom_citations:
-                    axiom_citations.append(chunk.axiom)
+                if chunk.item not in axiom_citations:
+                    axiom_citations.append(chunk.item)
             case RealityCitationContent():
                 # Print reality citation ID
                 print(f"[{chunk.item.id}]", end="", flush=True)
-                if chunk.reality not in reality_citations:
-                    reality_citations.append(chunk.reality)
+                if chunk.item not in reality_citations:
+                    reality_citations.append(chunk.item)
 
     print("\n" + "-" * 80)
 

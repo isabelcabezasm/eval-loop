@@ -42,8 +42,8 @@ async def main():
             case AxiomCitationContent():
                 # Print axiom citation with cyan color
                 print(f"\033[1;36m[{chunk.item.id}]\033[0m", end="", flush=True)
-                if chunk.axiom not in axiom_citations:
-                    axiom_citations.append(chunk.axiom)
+                if chunk.item not in axiom_citations:
+                    axiom_citations.append(chunk.item)
 
     print("\n" + "-" * 80)
 
