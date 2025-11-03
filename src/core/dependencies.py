@@ -37,7 +37,7 @@ def axiom_store():
 
 @cache
 def qa_engine() -> QAEngine:
-    """Create the QA Engine."""
+    """Create the QA Engine with Agent Framework client."""
     return QAEngine(
         agent=chat_agent(),
         axiom_store=axiom_store(),
