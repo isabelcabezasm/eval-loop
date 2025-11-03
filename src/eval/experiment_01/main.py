@@ -1,7 +1,7 @@
 from eval.main import run_evaluation_with_qa_function
 
 
-def generate_answer(*, query: str) -> str:
+async def generate_answer(*, query: str) -> str:
     print(f"Generating answer for query: {query}")
     return f"Generated answer for: {query}"
 
