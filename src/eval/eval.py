@@ -207,10 +207,10 @@ async def evaluate_answer(
 def calculate_stats(evaluation_results) -> EvaluationResult:
     """
     Calculate statistical metrics from evaluation results.
-
+    
     Args:
         evaluation_results: Collection of evaluation outputs to analyze
-
+        
     Returns:
         EvaluationResult: Object containing the evaluation outputs and computed
         statistical metrics including accuracy and topic coverage.
@@ -225,20 +225,22 @@ def calculate_stats(evaluation_results) -> EvaluationResult:
     # Calculate accuracy statistics
     accuracy_scores = [result.accuracy.accuracy_mean for result in evaluation_results]
     accuracy_mean = sum(accuracy_scores) / len(accuracy_scores)
-    accuracy_variance = sum(
-        (score - accuracy_mean) ** 2 for score in accuracy_scores
-    ) / len(accuracy_scores)
-    accuracy_std = accuracy_variance**0.5 if len(accuracy_scores) > 1 else 0.0
+    accuracy_variance = (
+        sum((score - accuracy_mean) ** 2 for score in accuracy_scores) 
+        / len(accuracy_scores)
+    )
+    accuracy_std = accuracy_variance ** 0.5 if len(accuracy_scores) > 1 else 0.0
 
     # Calculate topic coverage statistics
     coverage_scores = [
         result.topic_coverage.coverage_score for result in evaluation_results
     ]
     coverage_mean = sum(coverage_scores) / len(coverage_scores)
-    coverage_variance = sum(
-        (score - coverage_mean) ** 2 for score in coverage_scores
-    ) / len(coverage_scores)
-    coverage_std = coverage_variance**0.5 if len(coverage_scores) > 1 else 0.0
+    coverage_variance = (
+        sum((score - coverage_mean) ** 2 for score in coverage_scores) 
+        / len(coverage_scores)
+    )
+    coverage_std = coverage_variance ** 0.5 if len(coverage_scores) > 1 else 0.0
 
     return EvaluationResult(
         evaluation_outputs=evaluation_results,
@@ -276,7 +278,7 @@ async def run_evaluation(
         _ = (output_path / f"results_{parsed_input.id}.md").write_text(llm_response)
         return await evaluate_answer(parsed_input, llm_response)
 
-    evaluation_results = await asyncio.gather(  # pyright: ignore[reportCallIssue]
+    evaluation_results = await asyncio.gather(
         *map(process_sample, json.loads(input_path.read_text()))
     )
     result = calculate_stats(evaluation_results)
