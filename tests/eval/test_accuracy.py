@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, Mock, mock_open, patch
 
 import pytest
 from agent_framework import AgentRunResponse, ChatAgent
-from tests.eval.common import mock_chat_agent
+from tests.eval.common import mock_chat_agent, sample_entity_extraction
 
 from eval.llm_evaluator.qa_eval_engine import QAEvalEngine
 from eval.metrics.accuracy import get_accuracy
@@ -16,27 +16,6 @@ from eval.metrics.models import (
     EntityAccuracy,
     EntityExtraction,
 )
-
-
-@pytest.fixture
-def sample_entity_extraction():
-    """Create a sample EntityExtraction object for testing."""
-    return EntityExtraction(
-        user_query_entities=[
-            Entity(trigger_variable="exercise", consequence_variable="health"),
-            Entity(trigger_variable="age", consequence_variable="mortality"),
-        ],
-        llm_answer_entities=[
-            Entity(
-                trigger_variable="physical_activity", consequence_variable="wellness"
-            ),
-            Entity(trigger_variable="smoking", consequence_variable="lung_disease"),
-        ],
-        expected_answer_entities=[
-            Entity(trigger_variable="exercise", consequence_variable="health"),
-            Entity(trigger_variable="smoking", consequence_variable="mortality"),
-        ],
-    )
 
 
 @pytest.fixture
