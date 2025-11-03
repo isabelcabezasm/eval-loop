@@ -5,7 +5,7 @@ from functools import wraps
 
 import pytest
 
-from eval.eval import CONCURRENCY_LIMIT, limit_concurrency
+from eval.eval import limit_concurrency
 
 
 @pytest.mark.asyncio
@@ -14,7 +14,7 @@ async def test_concurrency_is_actually_limited():
     concurrent_calls = 0
     max_concurrent = 0
 
-    @limit_concurrency
+    @limit_concurrency(5)
     async def monitored_func(task_id: int) -> int:
         nonlocal concurrent_calls, max_concurrent
         concurrent_calls += 1
@@ -29,7 +29,7 @@ async def test_concurrency_is_actually_limited():
     results = await asyncio.gather(*tasks)
     # Check results
     assert results == list(range(10))
-    assert max_concurrent == CONCURRENCY_LIMIT  # Should not exceed semaphore limit
+    assert max_concurrent == 5  # Should not exceed semaphore limit
     assert concurrent_calls == 0  # All tasks should be completed
 
 
@@ -37,7 +37,7 @@ async def test_concurrency_is_actually_limited():
 async def test_semaphore_releases_on_exception():
     """Test that semaphore is released when function raises exception."""
 
-    @limit_concurrency
+    @limit_concurrency(3)
     async def failing_func() -> None:
         await asyncio.sleep(0.01)
         raise ValueError("Test exception")
@@ -47,7 +47,7 @@ async def test_semaphore_releases_on_exception():
         await failing_func()
 
     # Test that semaphore is still usable after exception
-    @limit_concurrency
+    @limit_concurrency(3)
     async def working_func() -> str:
         await asyncio.sleep(0.01)
         return "success"
@@ -60,7 +60,7 @@ async def test_semaphore_releases_on_exception():
 async def test_mixed_success_and_failure_scenarios():
     """Test successes and failures with concurrency limiting using limit_concurrency."""
 
-    @limit_concurrency
+    @limit_concurrency(5)
     async def mixed_func(task_id: int) -> int:
         await asyncio.sleep(0.01)
         if task_id % 3 == 0:

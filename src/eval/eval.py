@@ -18,8 +18,6 @@ from eval.metrics.models import (
 )
 from eval.metrics.topic_coverage import get_topic_coverage
 
-CONCURRENCY_LIMIT: Final = 5
-
 
 class EvaluationSampleInput(BaseModel):
     """
@@ -179,29 +177,43 @@ T = TypeVar("T")
 
 
 def limit_concurrency(
-    func: Callable[..., Awaitable[T]],
-) -> Callable[..., Awaitable[T]]:
-    # Use a dictionary to store semaphores per event loop
-    semaphores: dict[Any, asyncio.Semaphore] = {}
+    limit: int = 5,
+) -> Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]:
+    """
+    Decorator to limit the concurrency of async functions.
 
-    @wraps(func)
-    async def wrapper(*args: Any, **kwargs: Any) -> T:
-        # Get current event loop as key
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            # No running loop, this shouldn't happen in async context
-            # but create a semaphore anyway
-            loop = None
+    Args:
+        limit: Maximum number of concurrent executions allowed
+               (default: 5)
 
-        # Get or create semaphore for this event loop
-        if loop not in semaphores:
-            semaphores[loop] = asyncio.Semaphore(CONCURRENCY_LIMIT)
+    Returns:
+        Decorated function with concurrency limiting
+    """
 
-        async with semaphores[loop]:
-            return await func(*args, **kwargs)
+    def decorator(func: Callable[..., Awaitable[T]]) -> Callable[..., Awaitable[T]]:
+        # Use a dictionary to store semaphores per event loop
+        semaphores: dict[Any, asyncio.Semaphore] = {}
 
-    return wrapper
+        @wraps(func)
+        async def wrapper(*args: Any, **kwargs: Any) -> T:
+            # Get current event loop as key
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                # No running loop, this shouldn't happen in async context
+                # but create a semaphore anyway
+                loop = None
+
+            # Get or create semaphore for this event loop
+            if loop not in semaphores:
+                semaphores[loop] = asyncio.Semaphore(limit)
+
+            async with semaphores[loop]:
+                return await func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 async def evaluate_answer(
@@ -301,7 +313,7 @@ async def run_evaluation(
     print(f"Running evaluation with data path: {input_path}")
     print(f"Running evaluation with output data path: {output_path}")
 
-    @limit_concurrency
+    @limit_concurrency()
     async def process_sample(sample_data: str) -> EvaluationSampleOutput:
         parsed_input = EvaluationSampleInput.model_validate(sample_data)
 
