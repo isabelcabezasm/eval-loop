@@ -18,6 +18,8 @@ from eval.metrics.models import (
 )
 from eval.metrics.topic_coverage import get_topic_coverage
 
+CONCURRENCY_SEMAPHORE: Final = asyncio.Semaphore(5)
+
 
 class EvaluationSampleInput(BaseModel):
     """
@@ -172,8 +174,6 @@ class EvaluationResult(BaseModel):
     accuracy: AccuracyMetric
     topic_coverage: CoverageMetric
 
-
-CONCURRENCY_SEMAPHORE: Final = asyncio.Semaphore(2)
 
 T = TypeVar("T")
 
