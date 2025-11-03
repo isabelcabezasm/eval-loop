@@ -106,10 +106,6 @@ class QAEngine:
         self.agent = agent
         self.axiom_store = axiom_store
 
-    @staticmethod
-    def _is_complete_or_no_citation(buffer: str) -> bool:
-        return ("[" not in buffer) or ("]" in buffer)
-
     async def _process_chunk(
         self,
         chunks: AsyncIterator[str],
@@ -123,6 +119,10 @@ class QAEngine:
         Returns:
             AsyncIterator of TextContent or citation candidate instances
         """
+
+        def _is_complete_or_no_citation(buffer: str) -> bool:
+            return ("[" not in buffer) or ("]" in buffer)
+
         buffer = ""
 
         async for chunk in chunks:
@@ -149,7 +149,7 @@ class QAEngine:
                 buffer = buffer[match.end() :]
 
             # Yield buffer if it doesn't contain an incomplete citation
-            if buffer and self._is_complete_or_no_citation(buffer):
+            if buffer and _is_complete_or_no_citation(buffer):
                 yield TextContent(content=buffer)
                 buffer = ""
 
