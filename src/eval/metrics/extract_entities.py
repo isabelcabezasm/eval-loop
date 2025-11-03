@@ -1,5 +1,4 @@
-from core.dependencies import azure_chat_openai
-from eval.llm_evaluator.qa_eval_engine import QAEvalEngine
+from eval.metrics.dependencies import qa_eval_engine
 from eval.metrics.models import EntityExtraction
 
 
@@ -21,7 +20,7 @@ async def get_entities(
     Returns:
         EntityExtraction: The extracted entities from the LLM answer.
     """
-    qa_eval_engine = QAEvalEngine(chat=azure_chat_openai())
-    return await qa_eval_engine.entity_extraction(
+
+    return await qa_eval_engine().entity_extraction(
         user_prompt, llm_answer, expected_answer
     )

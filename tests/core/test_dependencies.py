@@ -165,5 +165,3 @@ def test_qa_engine_caches_result(mock_load_from_json: Mock):
     # assert
     mock_load_from_json.assert_called_once()
     assert result1 is result2
-
-

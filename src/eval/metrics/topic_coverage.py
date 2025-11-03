@@ -1,5 +1,4 @@
-from core.dependencies import azure_chat_openai
-from eval.llm_evaluator.qa_eval_engine import QAEvalEngine
+from eval.metrics.dependencies import qa_eval_engine
 from eval.metrics.models import EntityExtraction, TopicCoverageEvaluationResults
 
 
@@ -22,5 +21,4 @@ async def get_topic_coverage(
     Returns:
         TopicCoverageEvaluationResults: The topic coverage evaluation results.
     """
-    qa_eval_engine = QAEvalEngine(chat=azure_chat_openai())
-    return await qa_eval_engine.topic_coverage_evaluation(entity_list)
+    return await qa_eval_engine().topic_coverage_evaluation(entity_list)

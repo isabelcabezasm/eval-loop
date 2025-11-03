@@ -1,6 +1,6 @@
 from typing import Literal, TypeVar
 
-from agent_framework.azure import AzureOpenAIChatClient
+from agent_framework import ChatAgent
 from anyio import Path
 from pydantic import BaseModel
 
@@ -40,7 +40,7 @@ class QAEvalEngine(QAEngine):
 
     def __init__(
         self,
-        chat: AzureOpenAIChatClient,
+        agent: ChatAgent,
     ):
         """
         Initialize the QA Evaluation Engine.
@@ -50,7 +50,7 @@ class QAEvalEngine(QAEngine):
         """
         # Initialize parent class without axiom_store since it's not needed
         # for evaluation
-        super().__init__(chat, axiom_store=None)
+        super().__init__(agent, axiom_store=None)
 
     def _get_prompt(self, promptType: PromptTypes) -> str:
         """Load prompts."""
@@ -61,14 +61,6 @@ class QAEvalEngine(QAEngine):
 
     async def _perform_model_invocation(self, prompt: str, output_type: type[T]) -> T:
         """Invoke the model and parse the output into the specified Pydantic model."""
-
-        # Load system prompt
-        system_prompt = self._get_prompt("system")
-
-        # Create agent with system instructions if not already created
-        # or if we need to update instructions (reuse parent's pattern)
-        if self.agent is None:
-            self.agent = self.chat.create_agent(instructions=system_prompt)
 
         # Use asyncio to run the async agent with structured output
         response = await self.agent.run(prompt, response_format=output_type)
