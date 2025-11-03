@@ -57,16 +57,14 @@ async def test_semaphore_releases_on_exception():
 
 @pytest.mark.asyncio
 async def test_mixed_success_and_failure_scenarios():
-    """Test successes and failures with concurrency limiting."""
-    # Create a fresh semaphore for this test
-    test_semaphore = asyncio.Semaphore(5)
+    """Test successes and failures with concurrency limiting using limit_concurrency."""
 
+    @limit_concurrency
     async def mixed_func(task_id: int) -> int:
-        async with test_semaphore:
-            await asyncio.sleep(0.01)
-            if task_id % 3 == 0:
-                raise ValueError(f"Task {task_id} failed")
-            return task_id * 2  # Create tasks that will have mixed results
+        await asyncio.sleep(0.01)
+        if task_id % 3 == 0:
+            raise ValueError(f"Task {task_id} failed")
+        return task_id * 2
 
     tasks = [mixed_func(i) for i in range(6)]
     # Use gather with return_exceptions=True to capture both results and exceptions
