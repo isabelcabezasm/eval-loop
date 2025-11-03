@@ -18,13 +18,13 @@ This project supports **VS Code Dev Containers** for a consistent development en
 1. Open the project in VS Code
 2. Reopen in Container when prompted
 3. Edit `.env` with your Azure OpenAI credentials
-4. Run a sample query: `uv run python src/core/main.py`
+4. Run a sample query: `uv run python samples/basic_qa.py`
 
 **Manual Setup**:
 1. Copy environment template: `cp .env.template .env`
 2. Edit `.env` with your Azure OpenAI credentials
 3. Install dependencies: `uv sync`
-4. Run a sample query: `uv run python src/core/main.py`
+4. Run a sample query: `uv run python samples/basic_qa.py`
 
 ## Project Structure
 
