@@ -19,7 +19,6 @@ from eval.metrics.models import (
 from eval.metrics.topic_coverage import get_topic_coverage
 
 CONCURRENCY_LIMIT: Final = 5
-CONCURRENCY_SEMAPHORE: Final = asyncio.Semaphore(CONCURRENCY_LIMIT)
 
 
 class EvaluationSampleInput(BaseModel):
@@ -182,9 +181,24 @@ T = TypeVar("T")
 def limit_concurrency(
     func: Callable[..., Awaitable[T]],
 ) -> Callable[..., Awaitable[T]]:
+    # Use a dictionary to store semaphores per event loop
+    semaphores: dict[Any, asyncio.Semaphore] = {}
+
     @wraps(func)
     async def wrapper(*args: Any, **kwargs: Any) -> T:
-        async with CONCURRENCY_SEMAPHORE:
+        # Get current event loop as key
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            # No running loop, this shouldn't happen in async context
+            # but create a semaphore anyway
+            loop = None
+
+        # Get or create semaphore for this event loop
+        if loop not in semaphores:
+            semaphores[loop] = asyncio.Semaphore(CONCURRENCY_LIMIT)
+
+        async with semaphores[loop]:
             return await func(*args, **kwargs)
 
     return wrapper
