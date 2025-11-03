@@ -4,7 +4,6 @@ from agent_framework import ChatAgent
 from anyio import Path
 from pydantic import BaseModel
 
-from core.qa_engine import QAEngine
 from eval.metrics.models import (
     AccuracyEvaluationResults,
     EntityExtraction,
@@ -14,17 +13,15 @@ from eval.metrics.models import (
 T = TypeVar("T", bound=BaseModel)
 
 
-class QAEvalEngine(QAEngine):
+class QAEvalEngine:
     """
     Question-Answering engine for evaluation of health insurance queries.
 
-    This class extends QAEngine to provide specialized evaluation capabilities
-    for accuracy assessment and entity extraction using structured outputs.
+    This class provides specialized evaluation capabilities for accuracy 
+    assessment and entity extraction using structured outputs.
 
     Attributes:
-        agent (ChatAgent): The chat agent for model inference (inherited).
-        axiom_store (AxiomStore | None): Storage for axioms/constitution data
-            (inherited).
+        agent (ChatAgent): The chat agent for model inference.
     """
 
     _INPUT_VARIABLES = [
@@ -46,11 +43,9 @@ class QAEvalEngine(QAEngine):
         Initialize the QA Evaluation Engine.
 
         Args:
-            chat: Azure OpenAI chat client instance for model inference.
+            agent: ChatAgent instance for model inference.
         """
-        # Initialize parent class without axiom_store since it's not needed
-        # for evaluation
-        super().__init__(agent, axiom_store=None)
+        self.agent = agent
 
     def _get_prompt(self, promptType: PromptTypes) -> str:
         """Load prompts."""
