@@ -485,6 +485,8 @@ def test_axiom_store_integration():
         "expected_text",
         "num_axiom_citations",
         "num_reality_citations",
+        "expected_axiom_ids",
+        "expected_reality_ids",
     ),
     [
         pytest.param(
@@ -492,6 +494,8 @@ def test_axiom_store_integration():
             "foo",
             0,
             0,
+            [],
+            [],
             id="default text case",
         ),
         pytest.param(
@@ -499,6 +503,8 @@ def test_axiom_store_integration():
             "foo]",
             0,
             0,
+            [],
+            [],
             id="closing bracket only with text",
         ),
         pytest.param(
@@ -506,6 +512,8 @@ def test_axiom_store_integration():
             "[foo]",
             0,
             0,
+            [],
+            [],
             id="generic message in square brackets",
         ),
         pytest.param(
@@ -513,6 +521,8 @@ def test_axiom_store_integration():
             "[foo]",
             0,
             0,
+            [],
+            [],
             id="buffers unclosed open brackets",
         ),
         pytest.param(
@@ -520,6 +530,8 @@ def test_axiom_store_integration():
             "[]",
             0,
             0,
+            [],
+            [],
             id="empty brackets",
         ),
         pytest.param(
@@ -527,6 +539,8 @@ def test_axiom_store_integration():
             "foo [AXIOM-001]",
             1,
             0,
+            ["AXIOM-001"],
+            [],
             id="parsed citation split across chunks",
         ),
         pytest.param(
@@ -534,6 +548,8 @@ def test_axiom_store_integration():
             "foo [AXIOM-12]",
             1,
             0,
+            ["AXIOM-12"],
+            [],
             id="parsed citation with two digits (single chunk)",
         ),
         pytest.param(
@@ -541,6 +557,8 @@ def test_axiom_store_integration():
             "foo[AX",
             0,
             0,
+            [],
+            [],
             id="unfinished axiom reference",
         ),
         pytest.param(
@@ -548,6 +566,8 @@ def test_axiom_store_integration():
             "\n",
             0,
             0,
+            [],
+            [],
             id="omit empty chunks",
         ),
         pytest.param(
@@ -555,6 +575,8 @@ def test_axiom_store_integration():
             "Text before [AXIOM-001] text after",
             1,
             0,
+            ["AXIOM-001"],
+            [],
             id="citation split across 3 chunks with surrounding text",
         ),
         pytest.param(
@@ -562,6 +584,8 @@ def test_axiom_store_integration():
             "Text with [random brackets] and [AXIOM-001].",
             1,
             0,
+            ["AXIOM-001"],
+            [],
             id="valid citation mixed with non-citation brackets",
         ),
         pytest.param(
@@ -569,6 +593,8 @@ def test_axiom_store_integration():
             "Valid [AXIOM-001] and incomplete [AX",
             1,
             0,
+            ["AXIOM-001"],
+            [],
             id="valid citation with incomplete citation at end",
         ),
         pytest.param(
@@ -576,6 +602,8 @@ def test_axiom_store_integration():
             "Text [AXIOM-001]",
             1,
             0,
+            ["AXIOM-001"],
+            [],
             id="empty chunks interspersed with content and citations",
         ),
         pytest.param(
@@ -583,6 +611,8 @@ def test_axiom_store_integration():
             "Based on [REALITY-001].",
             0,
             1,
+            [],
+            ["REALITY-001"],
             id="single reality citation",
         ),
         pytest.param(
@@ -590,6 +620,8 @@ def test_axiom_store_integration():
             "Check [REALITY-001] for details",
             0,
             1,
+            [],
+            ["REALITY-001"],
             id="reality citation split across chunks",
         ),
         pytest.param(
@@ -597,6 +629,8 @@ def test_axiom_store_integration():
             "Mix [AXIOM-001] and [REALITY-001]",
             1,
             1,
+            ["AXIOM-001"],
+            ["REALITY-001"],
             id="mixed axiom and reality citations",
         ),
         pytest.param(
@@ -604,6 +638,8 @@ def test_axiom_store_integration():
             "Considering [REALITY-001] and [REALITY-002].",
             0,
             2,
+            [],
+            ["REALITY-001", "REALITY-002"],
             id="multiple reality citations in sequence",
         ),
     ],
@@ -613,6 +649,8 @@ async def test_invoke_streaming_handles_chunk_scenarios(
     expected_text: str,
     num_axiom_citations: int,
     num_reality_citations: int,
+    expected_axiom_ids: list[str],
+    expected_reality_ids: list[str],
 ):
     """Test that streaming correctly handles various chunking scenarios."""
     # Arrange
@@ -685,3 +723,10 @@ async def test_invoke_streaming_handles_chunk_scenarios(
 
     assert len(axiom_citations) == num_axiom_citations
     assert len(reality_citations) == num_reality_citations
+
+    # Verify specific citation IDs
+    actual_axiom_ids = [str(c.item.id) for c in axiom_citations]
+    actual_reality_ids = [str(c.item.id) for c in reality_citations]
+
+    assert actual_axiom_ids == expected_axiom_ids
+    assert actual_reality_ids == expected_reality_ids
