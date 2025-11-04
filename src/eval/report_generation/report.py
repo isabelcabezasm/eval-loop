@@ -23,9 +23,15 @@ class Report:
         self.evaluation_data: dict[str, Any] = {}
 
     def load_json_data(self) -> dict[str, Any]:
-        """Load evaluation data from JSON file."""
+        """Load evaluation data from JSON file.
+
+        Raises:
+            ValueError: If the JSON file is empty or contains no data.
+        """
         with open(self.data_path, encoding="utf-8") as file:
             self.evaluation_data = json.load(file)
+            if not self.evaluation_data:
+                raise ValueError("Evaluation data cannot be empty")
             return self.evaluation_data
 
     def generate_report(self):
