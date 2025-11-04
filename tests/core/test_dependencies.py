@@ -18,6 +18,14 @@ from core.dependencies import (
 )
 
 
+@pytest.fixture
+def mock_load_from_json():
+    """Mock load_from_json to avoid reading actual files."""
+    with patch("core.dependencies.load_from_json") as mock:
+        mock.return_value = Mock()
+        yield mock
+
+
 @pytest.fixture(autouse=True)
 def clear_dependency_caches():
     """Clear all dependency caches before and after each test to prevent
@@ -34,33 +42,6 @@ def clear_dependency_caches():
     chat_agent.cache_clear()
     axiom_store.cache_clear()
     qa_engine.cache_clear()
-
-
-@pytest.fixture(autouse=True)
-def patch_azure_cli_credential():
-    """Mock AzureCliCredential to avoid actual authentication."""
-    with patch("core.dependencies.AzureCliCredential") as mock:
-        mock.return_value = Mock()
-        yield mock
-
-
-@pytest.fixture(autouse=True)
-def patch_azure_chat_openai_client():
-    """Mock azure_chat_openai_client to avoid actual Azure OpenAI calls."""
-    with patch("core.dependencies.azure_chat_openai_client") as mock:
-        mock_client = Mock()
-        mock_agent = Mock()
-        mock_client.create_agent.return_value = mock_agent
-        mock.return_value = mock_client
-        yield mock
-
-
-@pytest.fixture
-def mock_load_from_json():
-    """Mock load_from_json to avoid reading actual files."""
-    with patch("core.dependencies.load_from_json") as mock:
-        mock.return_value = Mock()
-        yield mock
 
 
 def test_credential_returns_azure_cli_credential():
@@ -137,6 +118,7 @@ def test_axiom_store_loads_from_json(mock_load_from_json: Mock):
 
 def test_axiom_store_caches_result(mock_load_from_json: Mock):
     """Test that axiom_store() caches its result."""
+
     # act
     result1 = axiom_store()
     result2 = axiom_store()
@@ -148,6 +130,7 @@ def test_axiom_store_caches_result(mock_load_from_json: Mock):
 
 def test_qa_engine_creates_engine_with_dependencies(mock_load_from_json: Mock):
     """Test that qa_engine() creates a QAEngine with agent and axiom_store."""
+
     # act
     result = qa_engine()
 
@@ -161,7 +144,6 @@ def test_qa_engine_caches_result(mock_load_from_json: Mock):
     # act
     result1 = qa_engine()
     result2 = qa_engine()
-
     # assert
     mock_load_from_json.assert_called_once()
     assert result1 is result2
