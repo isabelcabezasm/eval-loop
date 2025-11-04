@@ -6,7 +6,7 @@ Microsoft Agent Framework, including message streaming, citation handling,
 and prompt formatting.
 """
 
-from collections.abc import AsyncIterator, Awaitable, Callable, Iterable
+from collections.abc import AsyncIterator, Awaitable, Callable
 from typing import TypeVar
 from unittest.mock import MagicMock
 
@@ -27,7 +27,7 @@ from core.reality import RealityId, RealityStatement
 T = TypeVar("T")
 
 
-async def async_iter(iterable) -> AsyncIterator[T]:
+async def async_iter(iterable: list[T]) -> AsyncIterator[T]:
     """Convert an iterable to an async iterator for testing."""
     for element in iterable:
         yield element
@@ -314,7 +314,7 @@ async def test_invoke_streaming_empty_response():
     async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
         # Return an empty async iterator
         return
-        yield  # noqa: unreachable - needed for type checker
+        yield  # unreachable - needed for type checker
 
     mock_agent.run_stream = mock_run_stream
 
