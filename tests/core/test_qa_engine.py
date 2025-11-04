@@ -479,19 +479,87 @@ def test_axiom_store_integration():
 
 
 @pytest.mark.asyncio
-async def test_invoke_streaming_handles_split_citations():
-    """Test that streaming handles citations split across multiple chunks."""
+@pytest.mark.parametrize(
+    ("agent_chunks", "expected_text", "has_citations"),
+    [
+        pytest.param(
+            ["foo"],
+            "foo",
+            False,
+            id="default text case",
+        ),
+        pytest.param(
+            ["foo]"],
+            "foo]",
+            False,
+            id="closing bracket only with text",
+        ),
+        pytest.param(
+            ["[foo]"],
+            "[foo]",
+            False,
+            id="generic message in square brackets",
+        ),
+        pytest.param(
+            ["[f", "oo]"],
+            "[foo]",
+            False,
+            id="buffers unclosed open brackets",
+        ),
+        pytest.param(
+            ["[", "]"],
+            "[]",
+            False,
+            id="empty brackets",
+        ),
+        pytest.param(
+            ["foo [AXIOM", "-001]"],
+            "foo [AXIOM-001]",
+            True,
+            id="parsed citation split across chunks",
+        ),
+        pytest.param(
+            ["foo [AXIOM-12]", ""],
+            "foo [AXIOM-12]",
+            True,
+            id="parsed citation with two digits (single chunk)",
+        ),
+        pytest.param(
+            ["foo", "[AX"],
+            "foo[AX",
+            False,
+            id="unfinished axiom reference",
+        ),
+        pytest.param(
+            ["", "\n", ""],
+            "\n",
+            False,
+            id="omit empty chunks",
+        ),
+        pytest.param(
+            ["Text before [AX", "IOM-", "001] text after"],
+            "Text before [AXIOM-001] text after",
+            True,
+            id="citation split across 3 chunks with surrounding text",
+        ),
+    ],
+)
+async def test_invoke_streaming_handles_chunk_scenarios(
+    agent_chunks: list[str],
+    expected_text: str,
+    has_citations: bool,
+):
+    """Test that streaming correctly handles various chunking scenarios."""
     # Arrange
     mock_agent = MagicMock(spec=ChatAgent)
 
-    # Simulate citation being split across chunks
     async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
-        yield MockStreamChunk("Text before [AX")
-        yield MockStreamChunk("IOM-")
-        yield MockStreamChunk("001] text after")
+        for chunk in agent_chunks:
+            yield MockStreamChunk(chunk)
 
     mock_agent.run_stream = mock_run_stream
 
+    # Create axiom store with test axioms for citation tests
     axiom_store = AxiomStore(
         [
             Axiom(
@@ -502,7 +570,16 @@ async def test_invoke_streaming_handles_split_citations():
                 conditions="conditions",
                 description="description",
                 category="category",
-            )
+            ),
+            Axiom(
+                id=AxiomId("AXIOM-12"),
+                subject="subject",
+                entity="entity",
+                trigger="trigger",
+                conditions="conditions",
+                description="description",
+                category="category",
+            ),
         ]
     )
 
@@ -510,19 +587,23 @@ async def test_invoke_streaming_handles_split_citations():
 
     # Act
     result = []
-    async for chunk in qa_engine.invoke_streaming(question="Test question"):
+    async for chunk in qa_engine.invoke_streaming(question="Test"):
         result.append(chunk)
 
-    # Assert - verify the citation was properly assembled
-    citation_chunks = [c for c in result if isinstance(c, AxiomCitationContent)]
-    assert len(citation_chunks) == 1
-    assert citation_chunks[0].item.id == AxiomId("AXIOM-001")
-
-    # Verify full text can be reconstructed
+    # Assert
     full_text = "".join(chunk.content for chunk in result)
-    assert "Text before" in full_text
-    assert "[AXIOM-001]" in full_text
-    assert "text after" in full_text
+    assert full_text == expected_text
+
+    # Verify citation detection matches expectation
+    citations = [
+        c
+        for c in result
+        if isinstance(c, (AxiomCitationContent, RealityCitationContent))
+    ]
+    if has_citations:
+        assert len(citations) > 0
+    else:
+        assert len(citations) == 0
 
 
 @pytest.mark.asyncio
