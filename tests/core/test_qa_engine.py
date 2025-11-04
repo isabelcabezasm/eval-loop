@@ -542,6 +542,18 @@ def test_axiom_store_integration():
             True,
             id="citation split across 3 chunks with surrounding text",
         ),
+        pytest.param(
+            ["Text with [random brackets] and [AXIOM-001]."],
+            "Text with [random brackets] and [AXIOM-001].",
+            True,
+            id="valid citation mixed with non-citation brackets",
+        ),
+        pytest.param(
+            ["Valid [AXIOM-001] and incomplete [AX"],
+            "Valid [AXIOM-001] and incomplete [AX",
+            True,
+            id="valid citation with incomplete citation at end",
+        ),
     ],
 )
 async def test_invoke_streaming_handles_chunk_scenarios(
@@ -703,90 +715,6 @@ async def test_invoke_streaming_handles_mixed_citations():
     assert len(reality_citations) == 1
     assert axiom_citations[0].item.id == AxiomId("AXIOM-001")
     assert reality_citations[0].item.id == RealityId("REALITY-001")
-
-
-@pytest.mark.asyncio
-async def test_invoke_streaming_handles_non_citation_brackets():
-    """Test that streaming doesn't falsely detect citations in other bracket text."""
-    # Arrange
-    mock_agent = MagicMock(spec=ChatAgent)
-
-    async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
-        yield MockStreamChunk("Text with [random brackets] and [AXIOM-001].")
-
-    mock_agent.run_stream = mock_run_stream
-
-    axiom_store = AxiomStore(
-        [
-            Axiom(
-                id=AxiomId("AXIOM-001"),
-                subject="subject",
-                entity="entity",
-                trigger="trigger",
-                conditions="conditions",
-                description="description",
-                category="category",
-            )
-        ]
-    )
-
-    qa_engine = QAEngine(mock_agent, axiom_store)
-
-    # Act
-    result = []
-    async for chunk in qa_engine.invoke_streaming(question="Test question"):
-        result.append(chunk)
-
-    # Assert - only one real citation should be detected
-    citations = [c for c in result if isinstance(c, AxiomCitationContent)]
-    assert len(citations) == 1
-    assert citations[0].item.id == AxiomId("AXIOM-001")
-
-    # The non-citation brackets should remain as text
-    full_text = "".join(chunk.content for chunk in result)
-    assert "[random brackets]" in full_text
-
-
-@pytest.mark.asyncio
-async def test_invoke_streaming_handles_incomplete_citation_at_end():
-    """Test that streaming handles incomplete citation markers at the end."""
-    # Arrange
-    mock_agent = MagicMock(spec=ChatAgent)
-
-    async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
-        yield MockStreamChunk("Valid [AXIOM-001] and incomplete [AX")
-
-    mock_agent.run_stream = mock_run_stream
-
-    axiom_store = AxiomStore(
-        [
-            Axiom(
-                id=AxiomId("AXIOM-001"),
-                subject="subject",
-                entity="entity",
-                trigger="trigger",
-                conditions="conditions",
-                description="description",
-                category="category",
-            )
-        ]
-    )
-
-    qa_engine = QAEngine(mock_agent, axiom_store)
-
-    # Act
-    result = []
-    async for chunk in qa_engine.invoke_streaming(question="Test question"):
-        result.append(chunk)
-
-    # Assert
-    citations = [c for c in result if isinstance(c, AxiomCitationContent)]
-    assert len(citations) == 1
-    assert citations[0].item.id == AxiomId("AXIOM-001")
-
-    # The incomplete citation should remain as text
-    full_text = "".join(chunk.content for chunk in result)
-    assert "[AX" in full_text
 
 
 @pytest.mark.asyncio
