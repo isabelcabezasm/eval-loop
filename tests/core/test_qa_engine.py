@@ -15,13 +15,14 @@ from agent_framework import ChatAgent
 
 from core.axiom_store import Axiom, AxiomId, AxiomStore
 from core.qa_engine import (
-    CitationCandidate,
+    AxiomCitationContent,
     CitationContent,
     Message,
     QAEngine,
+    RealityCitationContent,
     TextContent,
-    process_chunk,
 )
+from core.reality import RealityId, RealityStatement
 
 T = TypeVar("T")
 
@@ -41,7 +42,8 @@ class MockStreamChunk:
 
 @pytest.mark.asyncio
 async def test_invoke_stream_calls_agent_correctly():
-    """Test that invoke_streaming correctly calls the agent's run_stream method."""
+    """Test that invoke_streaming correctly
+    calls the agent's run_stream method."""
     # Arrange
     mock_agent = MagicMock(spec=ChatAgent)
 
@@ -180,87 +182,14 @@ async def test_formatted_prompt_includes_constitution():
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    ("test_input", "expected"),
-    [
-        pytest.param(
-            ["foo"],
-            [TextContent(content="foo")],
-            id="default text case",
-        ),
-        pytest.param(
-            ["foo]"],
-            [TextContent(content="foo]")],
-            id="closing bracket only with text",
-        ),
-        pytest.param(
-            ["[foo]"],
-            [TextContent(content="[foo]")],
-            id="generic message in square brackets",
-        ),
-        pytest.param(
-            ["[f", "oo]"],
-            [TextContent(content="[foo]")],
-            id="buffers unclosed open brackets",
-        ),
-        pytest.param(
-            ["[", "]"],
-            [TextContent(content="[]")],
-            id="empty brackets",
-        ),
-        pytest.param(
-            ["foo [AXIOM", "-001]"],
-            [
-                TextContent(content="foo "),
-                CitationCandidate(id=AxiomId("AXIOM-001"), text="[AXIOM-001]"),
-            ],
-            id="parsed citation",
-        ),
-        pytest.param(
-            ["foo [AXIOM-12]", ""],
-            [
-                TextContent(content="foo "),
-                CitationCandidate(id=AxiomId("AXIOM-12"), text="[AXIOM-12]"),
-            ],
-            id="parsed citation with two digits (single chunk)",
-        ),
-        pytest.param(
-            ["foo", "[AX"],
-            [
-                TextContent(content="foo"),
-                TextContent(content="[AX"),
-            ],
-            id="unfinished axiom reference",
-        ),
-        pytest.param(
-            ["", "\n", ""],
-            [
-                TextContent(content="\n"),
-            ],
-            id="omit empty chunks",
-        ),
-    ],
-)
-async def test_process_chunk(
-    test_input: Iterable[str],
-    expected: Iterable[TextContent | CitationCandidate],
-):
-    """Test that process_chunk correctly parses text and citations."""
-    result = [chunk async for chunk in process_chunk(async_iter(test_input))]
-    expected_list = list(expected)
-
-    assert result == expected_list
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
     "chunks_from_agent, expected_output",
     [
         pytest.param(
             ["Hello [AXIOM-001] world"],
             [
                 TextContent(content="Hello "),
-                CitationContent(
-                    axiom=Axiom(
+                AxiomCitationContent(
+                    item=Axiom(
                         id=AxiomId("AXIOM-001"),
                         subject="subject",
                         entity="entity",
@@ -294,8 +223,8 @@ async def test_process_chunk(
             ["Multiple [AXIOM-001] citations [AXIOM-002] here"],
             [
                 TextContent(content="Multiple "),
-                CitationContent(
-                    axiom=Axiom(
+                AxiomCitationContent(
+                    item=Axiom(
                         id=AxiomId("AXIOM-001"),
                         subject="subject",
                         entity="entity",
@@ -355,7 +284,7 @@ async def test_invoke_streaming_citation_handling(
 
 
 def test_citation_content_property():
-    """Test that CitationContent.content property returns formatted axiom ID."""
+    """Test that AxiomCitationContent.content property returns formatted axiom ID."""
     # Arrange
     axiom = Axiom(
         id=AxiomId("AXIOM-001"),
@@ -368,7 +297,7 @@ def test_citation_content_property():
     )
 
     # Act
-    citation = CitationContent(axiom=axiom)
+    citation = AxiomCitationContent(item=axiom)
 
     # Assert
     assert citation.content == "[AXIOM-001]"
@@ -446,10 +375,10 @@ async def test_invoke_streaming_multiple_citations_in_sequence():
     # Should have: empty text, citation 1, empty text, citation 2
     # (Empty texts result from the regex processing)
     assert len(result) == 4
-    citation_chunks = [c for c in result if isinstance(c, CitationContent)]
+    citation_chunks = [c for c in result if isinstance(c, AxiomCitationContent)]
     assert len(citation_chunks) == 2
-    assert citation_chunks[0].axiom.id == AxiomId("AXIOM-001")
-    assert citation_chunks[1].axiom.id == AxiomId("AXIOM-002")
+    assert citation_chunks[0].item.id == AxiomId("AXIOM-001")
+    assert citation_chunks[1].item.id == AxiomId("AXIOM-002")
 
 
 @pytest.mark.asyncio
@@ -551,28 +480,254 @@ def test_axiom_store_integration():
 
 
 @pytest.mark.asyncio
-async def test_process_chunk_with_split_citation():
-    """Test that process_chunk correctly handles citations split across chunks."""
+@pytest.mark.parametrize(
+    (
+        "agent_chunks",
+        "expected_text",
+        "num_axiom_citations",
+        "num_reality_citations",
+        "expected_axiom_ids",
+        "expected_reality_ids",
+    ),
+    [
+        pytest.param(
+            ["foo"],
+            "foo",
+            0,
+            0,
+            [],
+            [],
+            id="default text case",
+        ),
+        pytest.param(
+            ["foo]"],
+            "foo]",
+            0,
+            0,
+            [],
+            [],
+            id="closing bracket only with text",
+        ),
+        pytest.param(
+            ["[foo]"],
+            "[foo]",
+            0,
+            0,
+            [],
+            [],
+            id="generic message in square brackets",
+        ),
+        pytest.param(
+            ["[f", "oo]"],
+            "[foo]",
+            0,
+            0,
+            [],
+            [],
+            id="buffers unclosed open brackets",
+        ),
+        pytest.param(
+            ["[", "]"],
+            "[]",
+            0,
+            0,
+            [],
+            [],
+            id="empty brackets",
+        ),
+        pytest.param(
+            ["foo [AXIOM", "-001]"],
+            "foo [AXIOM-001]",
+            1,
+            0,
+            ["AXIOM-001"],
+            [],
+            id="parsed citation split across chunks",
+        ),
+        pytest.param(
+            ["foo [AXIOM-12]", ""],
+            "foo [AXIOM-12]",
+            1,
+            0,
+            ["AXIOM-12"],
+            [],
+            id="parsed citation with two digits (single chunk)",
+        ),
+        pytest.param(
+            ["foo", "[AX"],
+            "foo[AX",
+            0,
+            0,
+            [],
+            [],
+            id="unfinished axiom reference",
+        ),
+        pytest.param(
+            ["", "\n", ""],
+            "\n",
+            0,
+            0,
+            [],
+            [],
+            id="omit empty chunks",
+        ),
+        pytest.param(
+            ["Text before [AX", "IOM-", "001] text after"],
+            "Text before [AXIOM-001] text after",
+            1,
+            0,
+            ["AXIOM-001"],
+            [],
+            id="citation split across 3 chunks with surrounding text",
+        ),
+        pytest.param(
+            ["Text with [random brackets] and [AXIOM-001]."],
+            "Text with [random brackets] and [AXIOM-001].",
+            1,
+            0,
+            ["AXIOM-001"],
+            [],
+            id="valid citation mixed with non-citation brackets",
+        ),
+        pytest.param(
+            ["Valid [AXIOM-001] and incomplete [AX"],
+            "Valid [AXIOM-001] and incomplete [AX",
+            1,
+            0,
+            ["AXIOM-001"],
+            [],
+            id="valid citation with incomplete citation at end",
+        ),
+        pytest.param(
+            ["", "Text ", "", "[AXIOM-001]", ""],
+            "Text [AXIOM-001]",
+            1,
+            0,
+            ["AXIOM-001"],
+            [],
+            id="empty chunks interspersed with content and citations",
+        ),
+        pytest.param(
+            ["Based on [REALITY-001]."],
+            "Based on [REALITY-001].",
+            0,
+            1,
+            [],
+            ["REALITY-001"],
+            id="single reality citation",
+        ),
+        pytest.param(
+            ["Check [REALITY-", "001] for details"],
+            "Check [REALITY-001] for details",
+            0,
+            1,
+            [],
+            ["REALITY-001"],
+            id="reality citation split across chunks",
+        ),
+        pytest.param(
+            ["Mix [AXIOM-001] and [REALITY-001]"],
+            "Mix [AXIOM-001] and [REALITY-001]",
+            1,
+            1,
+            ["AXIOM-001"],
+            ["REALITY-001"],
+            id="mixed axiom and reality citations",
+        ),
+        pytest.param(
+            ["Considering [REALITY-001] and [REALITY-002]."],
+            "Considering [REALITY-001] and [REALITY-002].",
+            0,
+            2,
+            [],
+            ["REALITY-001", "REALITY-002"],
+            id="multiple reality citations in sequence",
+        ),
+    ],
+)
+async def test_invoke_streaming_handles_chunk_scenarios(
+    agent_chunks: list[str],
+    expected_text: str,
+    num_axiom_citations: int,
+    num_reality_citations: int,
+    expected_axiom_ids: list[str],
+    expected_reality_ids: list[str],
+):
+    """Test that streaming correctly handles various chunking scenarios."""
     # Arrange
-    chunks = ["Text before ", "[AX", "IOM-", "001", "] text after"]
+    mock_agent = MagicMock(spec=ChatAgent)
+
+    async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
+        for chunk in agent_chunks:
+            yield MockStreamChunk(chunk)
+
+    mock_agent.run_stream = mock_run_stream
+
+    # Create axiom store with test axioms for citation tests
+    axiom_store = AxiomStore(
+        [
+            Axiom(
+                id=AxiomId("AXIOM-001"),
+                subject="subject",
+                entity="entity",
+                trigger="trigger",
+                conditions="conditions",
+                description="description",
+                category="category",
+            ),
+            Axiom(
+                id=AxiomId("AXIOM-12"),
+                subject="subject",
+                entity="entity",
+                trigger="trigger",
+                conditions="conditions",
+                description="description",
+                category="category",
+            ),
+        ]
+    )
+
+    qa_engine = QAEngine(mock_agent, axiom_store)
+
+    # Create reality statements for reality citation tests
+    reality = [
+        RealityStatement(
+            id=RealityId("REALITY-001"),
+            entity="Test",
+            attribute="Test Attr",
+            value="Test Value",
+            number="100",
+            description="Test description",
+        ),
+        RealityStatement(
+            id=RealityId("REALITY-002"),
+            entity="Healthcare",
+            attribute="Medical Costs",
+            value="Rising",
+            number="12%",
+            description="Medical costs are rising.",
+        ),
+    ]
 
     # Act
-    result = [chunk async for chunk in process_chunk(async_iter(chunks))]
+    result = []
+    async for chunk in qa_engine.invoke_streaming(question="Test", reality=reality):
+        result.append(chunk)
 
     # Assert
-    # Should have: text before, empty text, citation candidate, text after
-    # (The empty text results from regex processing)
-    assert len(result) >= 3
-    # Filter out empty text chunks for easier assertion
-    non_empty_result = [
-        chunk
-        for chunk in result
-        if not (isinstance(chunk, TextContent) and chunk.content == "")
-    ]
-    assert len(non_empty_result) == 3
-    assert isinstance(non_empty_result[0], TextContent)
-    assert non_empty_result[0].content == "Text before "
-    assert isinstance(non_empty_result[1], CitationCandidate)
-    assert non_empty_result[1].id == AxiomId("AXIOM-001")
-    assert isinstance(non_empty_result[2], TextContent)
-    assert non_empty_result[2].content == " text after"
+    full_text = "".join(chunk.content for chunk in result)
+    assert full_text == expected_text
+
+    # Verify citation counts
+    axiom_citations = [c for c in result if isinstance(c, AxiomCitationContent)]
+    reality_citations = [c for c in result if isinstance(c, RealityCitationContent)]
+
+    assert len(axiom_citations) == num_axiom_citations
+    assert len(reality_citations) == num_reality_citations
+
+    # Verify specific citation IDs
+    actual_axiom_ids = [str(c.item.id) for c in axiom_citations]
+    actual_reality_ids = [str(c.item.id) for c in reality_citations]
+
+    assert actual_axiom_ids == expected_axiom_ids
+    assert actual_reality_ids == expected_reality_ids
