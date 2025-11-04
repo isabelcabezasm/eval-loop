@@ -204,7 +204,9 @@ async def evaluate_answer(
     )
 
 
-def calculate_stats(evaluation_results) -> EvaluationResult:
+def calculate_stats(
+    evaluation_results: list[EvaluationSampleOutput],
+) -> EvaluationResult:
     """
     Calculate statistical metrics from evaluation results.
 
