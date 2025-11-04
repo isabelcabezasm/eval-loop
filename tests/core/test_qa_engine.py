@@ -27,7 +27,7 @@ from core.reality import RealityId, RealityStatement
 T = TypeVar("T")
 
 
-async def async_iter(iterable: Iterable[T]) -> AsyncIterator[T]:
+async def async_iter(iterable) -> AsyncIterator[T]:
     """Convert an iterable to an async iterator for testing."""
     for element in iterable:
         yield element
