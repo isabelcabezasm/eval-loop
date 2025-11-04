@@ -64,7 +64,6 @@ src = ["src", "tests"]
 line-length = 88
 target-version = "py310"
 show-fixes = true
-exclude = ["**/report.py"]
 lint.select = [
   "B0",     # bugbear
   "E",      # pycodestyle
