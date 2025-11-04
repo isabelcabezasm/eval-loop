@@ -36,33 +36,6 @@ def clear_dependency_caches():
     qa_engine.cache_clear()
 
 
-@pytest.fixture(autouse=True)
-def patch_azure_cli_credential():
-    """Mock AzureCliCredential to avoid actual authentication."""
-    with patch("core.dependencies.AzureCliCredential") as mock:
-        mock.return_value = Mock()
-        yield mock
-
-
-@pytest.fixture(autouse=True)
-def patch_azure_openai_chat_client():
-    """Mock AzureOpenAIChatClient to avoid actual Azure OpenAI calls."""
-    with patch("core.dependencies.AzureOpenAIChatClient") as mock:
-        mock_client = Mock()
-        mock_agent = Mock()
-        mock_client.create_agent.return_value = mock_agent
-        mock.return_value = mock_client
-        yield mock
-
-
-@pytest.fixture
-def mock_load_from_json():
-    """Mock load_from_json to avoid reading actual files."""
-    with patch("core.dependencies.load_from_json") as mock:
-        mock.return_value = Mock()
-        yield mock
-
-
 def test_credential_returns_azure_cli_credential():
     """Test that credential() returns an AzureCliCredential instance."""
     # act
@@ -122,46 +95,58 @@ def test_chat_agent_caches_result():
     assert result1 is result2
 
 
-def test_axiom_store_loads_from_json(mock_load_from_json: Mock):
+def test_axiom_store_loads_from_json():
     """Test that axiom_store() loads data from JSON file."""
-    # act
-    result = axiom_store()
+    with patch("core.dependencies.load_from_json") as mock_load:
+        mock_load.return_value = Mock()
 
-    # assert
-    mock_load_from_json.assert_called_once()
-    call_args = mock_load_from_json.call_args[0]
-    assert len(call_args) > 0
-    assert isinstance(call_args[0], str)
-    assert result is not None
+        # act
+        result = axiom_store()
+
+        # assert
+        mock_load.assert_called_once()
+        call_args = mock_load.call_args[0]
+        assert len(call_args) > 0
+        assert isinstance(call_args[0], str)
+        assert result is not None
 
 
-def test_axiom_store_caches_result(mock_load_from_json: Mock):
+def test_axiom_store_caches_result():
     """Test that axiom_store() caches its result."""
-    # act
-    result1 = axiom_store()
-    result2 = axiom_store()
+    with patch("core.dependencies.load_from_json") as mock_load:
+        mock_load.return_value = Mock()
 
-    # assert
-    mock_load_from_json.assert_called_once()
-    assert result1 is result2
+        # act
+        result1 = axiom_store()
+        result2 = axiom_store()
+
+        # assert
+        mock_load.assert_called_once()
+        assert result1 is result2
 
 
-def test_qa_engine_creates_engine_with_dependencies(mock_load_from_json: Mock):
+def test_qa_engine_creates_engine_with_dependencies():
     """Test that qa_engine() creates a QAEngine with agent and axiom_store."""
-    # act
-    result = qa_engine()
+    with patch("core.dependencies.load_from_json") as mock_load:
+        mock_load.return_value = Mock()
 
-    # assert
-    assert result is not None
-    mock_load_from_json.assert_called_once()
+        # act
+        result = qa_engine()
+
+        # assert
+        assert result is not None
+        mock_load.assert_called_once()
 
 
-def test_qa_engine_caches_result(mock_load_from_json: Mock):
+def test_qa_engine_caches_result():
     """Test that qa_engine() caches its result."""
-    # act
-    result1 = qa_engine()
-    result2 = qa_engine()
+    with patch("core.dependencies.load_from_json") as mock_load:
+        mock_load.return_value = Mock()
 
-    # assert
-    mock_load_from_json.assert_called_once()
-    assert result1 is result2
+        # act
+        result1 = qa_engine()
+        result2 = qa_engine()
+
+        # assert
+        mock_load.assert_called_once()
+        assert result1 is result2
