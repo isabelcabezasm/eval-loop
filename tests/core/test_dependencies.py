@@ -5,7 +5,7 @@ This module tests the dependency injection functions and caching behavior
 for the QA Engine components.
 """
 
-from unittest.mock import Mock, patch
+from unittest.mock import Mock,patch
 
 import pytest
 
@@ -54,19 +54,17 @@ def clear_dependency_caches():
 def test_credential_returns_azure_cli_credential():
     """Test that credential() returns an AzureCliCredential instance."""
     # act
-    result = credential()
+    result=credential()
 
     # assert
     assert result is not None
 
 
 def test_credential_caches_result():
-    """Test that credential() caches its result and doesn't create multiple
-    instances.
-    """
+    """Test that credential() caches its result and doesn't create multiple instances for performance and consistency reasons."""
     # act
-    result1 = credential()
-    result2 = credential()
+    result1=credential()
+    result2=credential()
 
     # assert
     assert result1 is result2
