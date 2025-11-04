@@ -45,9 +45,9 @@ def patch_azure_cli_credential():
 
 
 @pytest.fixture(autouse=True)
-def patch_azure_chat_openai_client():
-    """Mock azure_chat_openai_client to avoid actual Azure OpenAI calls."""
-    with patch("core.dependencies.azure_chat_openai_client") as mock:
+def patch_azure_openai_chat_client():
+    """Mock AzureOpenAIChatClient to avoid actual Azure OpenAI calls."""
+    with patch("core.dependencies.AzureOpenAIChatClient") as mock:
         mock_client = Mock()
         mock_agent = Mock()
         mock_client.create_agent.return_value = mock_agent
