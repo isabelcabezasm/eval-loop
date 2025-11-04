@@ -1,10 +1,10 @@
 import asyncio
 import json
-from collections.abc import Awaitable, Callable
+from asyncio import Semaphore
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
-from typing import Any, Final, Protocol, TypeVar
+from typing import Protocol
 
 from pydantic import BaseModel
 
@@ -173,42 +173,21 @@ class EvaluationResult(BaseModel):
     topic_coverage: CoverageMetric
 
 
-T = TypeVar("T")
-
-
-def limit_concurrency(
-    limit: int = 5,
-) -> Callable[[Callable[..., Awaitable[T]]], Callable[..., Awaitable[T]]]:
+def limit_concurrency(limit: int = 5):
     """
     Decorator to limit the concurrency of async functions.
-
     Args:
         limit: Maximum number of concurrent executions allowed
                (default: 5)
-
     Returns:
         Decorated function with concurrency limiting
     """
+    semaphore = Semaphore(limit)
 
-    def decorator(func: Callable[..., Awaitable[T]]) -> Callable[..., Awaitable[T]]:
-        # Use a dictionary to store semaphores per event loop
-        semaphores: dict[Any, asyncio.Semaphore] = {}
-
+    def decorator(func):
         @wraps(func)
-        async def wrapper(*args: Any, **kwargs: Any) -> T:
-            # Get current event loop as key
-            try:
-                loop = asyncio.get_running_loop()
-            except RuntimeError:
-                # No running loop, this shouldn't happen in async context
-                # but create a semaphore anyway
-                loop = None
-
-            # Get or create semaphore for this event loop
-            if loop not in semaphores:
-                semaphores[loop] = asyncio.Semaphore(limit)
-
-            async with semaphores[loop]:
+        async def wrapper(*args, **kwargs):
+            async with semaphore:
                 return await func(*args, **kwargs)
 
         return wrapper
@@ -296,7 +275,7 @@ async def run_evaluation(
     *,
     question_answer_fn: QuestionAnswerFunction,
     input_data_path: Path | None = None,
-    ouptput_data_path: Path | None = None,
+    output_data_path: Path | None = None,
 ) -> None:
     """
     Run the evaluation process with the given data path.
@@ -307,7 +286,7 @@ async def run_evaluation(
 
     input_path = input_data_path or root() / "data/eval_dataset.json"
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_path = ouptput_data_path or root() / f"runs/{timestamp}"
+    output_path = output_data_path or root() / f"runs/{timestamp}"
     output_path.mkdir(parents=True, exist_ok=True)
 
     print(f"Running evaluation with data path: {input_path}")
