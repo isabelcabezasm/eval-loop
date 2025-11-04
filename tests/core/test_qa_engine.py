@@ -42,7 +42,8 @@ class MockStreamChunk:
 
 @pytest.mark.asyncio
 async def test_invoke_stream_calls_agent_correctly():
-    """Test that invoke_streaming correctly calls the agent's run_stream method."""
+    """Test that invoke_streaming correctly
+    calls the agent's run_stream method."""
     # Arrange
     mock_agent = MagicMock(spec=ChatAgent)
 
