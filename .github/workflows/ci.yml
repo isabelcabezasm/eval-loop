@@ -20,9 +20,6 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7.1.2
-        with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
 
       - name: Run tests
         run: uv run pytest -v --tb=short
@@ -50,9 +47,6 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7.1.2
-        with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
 
       - name: Run ruff check
         run: uv run ruff check
@@ -73,9 +67,6 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7.1.2
-        with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
 
       - name: Run type checking
         run: uv run pyright
