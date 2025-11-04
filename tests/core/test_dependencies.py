@@ -22,7 +22,6 @@ from core.dependencies import (
 def patch_azure_cli_credential():
     """Mock AzureCliCredential to avoid actual authentication."""
     with patch("core.dependencies.AzureCliCredential") as mock:
-        mock.return_value = Mock()
         yield mock
 
 
