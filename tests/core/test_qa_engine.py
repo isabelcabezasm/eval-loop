@@ -22,6 +22,7 @@ from core.qa_engine import (
     RealityCitationContent,
     TextContent,
 )
+from core.reality import RealityId, RealityStatement
 
 T = TypeVar("T")
 
@@ -475,3 +476,308 @@ def test_axiom_store_integration():
     assert retrieved_axiom is not None
     assert retrieved_axiom.id == AxiomId("AXIOM-001")
     assert retrieved_axiom.subject == "subject1"
+
+
+@pytest.mark.asyncio
+async def test_invoke_streaming_handles_split_citations():
+    """Test that streaming handles citations split across multiple chunks."""
+    # Arrange
+    mock_agent = MagicMock(spec=ChatAgent)
+
+    # Simulate citation being split across chunks
+    async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
+        yield MockStreamChunk("Text before [AX")
+        yield MockStreamChunk("IOM-")
+        yield MockStreamChunk("001] text after")
+
+    mock_agent.run_stream = mock_run_stream
+
+    axiom_store = AxiomStore(
+        [
+            Axiom(
+                id=AxiomId("AXIOM-001"),
+                subject="subject",
+                entity="entity",
+                trigger="trigger",
+                conditions="conditions",
+                description="description",
+                category="category",
+            )
+        ]
+    )
+
+    qa_engine = QAEngine(mock_agent, axiom_store)
+
+    # Act
+    result = []
+    async for chunk in qa_engine.invoke_streaming(question="Test question"):
+        result.append(chunk)
+
+    # Assert - verify the citation was properly assembled
+    citation_chunks = [c for c in result if isinstance(c, AxiomCitationContent)]
+    assert len(citation_chunks) == 1
+    assert citation_chunks[0].item.id == AxiomId("AXIOM-001")
+
+    # Verify full text can be reconstructed
+    full_text = "".join(chunk.content for chunk in result)
+    assert "Text before" in full_text
+    assert "[AXIOM-001]" in full_text
+    assert "text after" in full_text
+
+
+@pytest.mark.asyncio
+async def test_invoke_streaming_handles_reality_citations():
+    """Test that streaming correctly handles REALITY citations."""
+    # Arrange
+    mock_agent = MagicMock(spec=ChatAgent)
+
+    async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
+        yield MockStreamChunk("Considering [REALITY-001] and [REALITY-002].")
+
+    mock_agent.run_stream = mock_run_stream
+
+    axiom_store = AxiomStore([])
+
+    reality = [
+        RealityStatement(
+            id=RealityId("REALITY-001"),
+            entity="Economy",
+            attribute="Inflation Rate",
+            value="High",
+            number="7.5%",
+            description="Current inflation is elevated.",
+        ),
+        RealityStatement(
+            id=RealityId("REALITY-002"),
+            entity="Healthcare",
+            attribute="Medical Costs",
+            value="Rising",
+            number="12%",
+            description="Medical costs are rising.",
+        ),
+    ]
+
+    qa_engine = QAEngine(mock_agent, axiom_store)
+
+    # Act
+    result = []
+    async for chunk in qa_engine.invoke_streaming(question="Test", reality=reality):
+        result.append(chunk)
+
+    # Assert
+    reality_citations = [c for c in result if isinstance(c, RealityCitationContent)]
+    assert len(reality_citations) == 2
+    assert reality_citations[0].item.id == RealityId("REALITY-001")
+    assert reality_citations[1].item.id == RealityId("REALITY-002")
+
+
+@pytest.mark.asyncio
+async def test_invoke_streaming_handles_mixed_citations():
+    """Test that streaming handles both AXIOM and REALITY citations together."""
+    # Arrange
+    mock_agent = MagicMock(spec=ChatAgent)
+
+    async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
+        yield MockStreamChunk("Based on [AXIOM-001] and [REALITY-001].")
+
+    mock_agent.run_stream = mock_run_stream
+
+    axiom_store = AxiomStore(
+        [
+            Axiom(
+                id=AxiomId("AXIOM-001"),
+                subject="subject",
+                entity="entity",
+                trigger="trigger",
+                conditions="conditions",
+                description="description",
+                category="category",
+            )
+        ]
+    )
+
+    reality = [
+        RealityStatement(
+            id=RealityId("REALITY-001"),
+            entity="Test",
+            attribute="Test Attr",
+            value="Test Value",
+            number="100",
+            description="Test description",
+        )
+    ]
+
+    qa_engine = QAEngine(mock_agent, axiom_store)
+
+    # Act
+    result = []
+    async for chunk in qa_engine.invoke_streaming(question="Test", reality=reality):
+        result.append(chunk)
+
+    # Assert
+    axiom_citations = [c for c in result if isinstance(c, AxiomCitationContent)]
+    reality_citations = [c for c in result if isinstance(c, RealityCitationContent)]
+
+    assert len(axiom_citations) == 1
+    assert len(reality_citations) == 1
+    assert axiom_citations[0].item.id == AxiomId("AXIOM-001")
+    assert reality_citations[0].item.id == RealityId("REALITY-001")
+
+
+@pytest.mark.asyncio
+async def test_invoke_streaming_handles_non_citation_brackets():
+    """Test that streaming doesn't falsely detect citations in other bracket text."""
+    # Arrange
+    mock_agent = MagicMock(spec=ChatAgent)
+
+    async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
+        yield MockStreamChunk("Text with [random brackets] and [AXIOM-001].")
+
+    mock_agent.run_stream = mock_run_stream
+
+    axiom_store = AxiomStore(
+        [
+            Axiom(
+                id=AxiomId("AXIOM-001"),
+                subject="subject",
+                entity="entity",
+                trigger="trigger",
+                conditions="conditions",
+                description="description",
+                category="category",
+            )
+        ]
+    )
+
+    qa_engine = QAEngine(mock_agent, axiom_store)
+
+    # Act
+    result = []
+    async for chunk in qa_engine.invoke_streaming(question="Test question"):
+        result.append(chunk)
+
+    # Assert - only one real citation should be detected
+    citations = [c for c in result if isinstance(c, AxiomCitationContent)]
+    assert len(citations) == 1
+    assert citations[0].item.id == AxiomId("AXIOM-001")
+
+    # The non-citation brackets should remain as text
+    full_text = "".join(chunk.content for chunk in result)
+    assert "[random brackets]" in full_text
+
+
+@pytest.mark.asyncio
+async def test_invoke_streaming_handles_incomplete_citation_at_end():
+    """Test that streaming handles incomplete citation markers at the end."""
+    # Arrange
+    mock_agent = MagicMock(spec=ChatAgent)
+
+    async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
+        yield MockStreamChunk("Valid [AXIOM-001] and incomplete [AX")
+
+    mock_agent.run_stream = mock_run_stream
+
+    axiom_store = AxiomStore(
+        [
+            Axiom(
+                id=AxiomId("AXIOM-001"),
+                subject="subject",
+                entity="entity",
+                trigger="trigger",
+                conditions="conditions",
+                description="description",
+                category="category",
+            )
+        ]
+    )
+
+    qa_engine = QAEngine(mock_agent, axiom_store)
+
+    # Act
+    result = []
+    async for chunk in qa_engine.invoke_streaming(question="Test question"):
+        result.append(chunk)
+
+    # Assert
+    citations = [c for c in result if isinstance(c, AxiomCitationContent)]
+    assert len(citations) == 1
+    assert citations[0].item.id == AxiomId("AXIOM-001")
+
+    # The incomplete citation should remain as text
+    full_text = "".join(chunk.content for chunk in result)
+    assert "[AX" in full_text
+
+
+@pytest.mark.asyncio
+async def test_invoke_streaming_handles_empty_chunks():
+    """Test that streaming handles empty chunks gracefully."""
+    # Arrange
+    mock_agent = MagicMock(spec=ChatAgent)
+
+    async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
+        yield MockStreamChunk("")
+        yield MockStreamChunk("Text ")
+        yield MockStreamChunk("")
+        yield MockStreamChunk("[AXIOM-001]")
+        yield MockStreamChunk("")
+
+    mock_agent.run_stream = mock_run_stream
+
+    axiom_store = AxiomStore(
+        [
+            Axiom(
+                id=AxiomId("AXIOM-001"),
+                subject="subject",
+                entity="entity",
+                trigger="trigger",
+                conditions="conditions",
+                description="description",
+                category="category",
+            )
+        ]
+    )
+
+    qa_engine = QAEngine(mock_agent, axiom_store)
+
+    # Act
+    result = []
+    async for chunk in qa_engine.invoke_streaming(question="Test question"):
+        result.append(chunk)
+
+    # Assert
+    full_text = "".join(chunk.content for chunk in result)
+    assert "Text " in full_text
+    assert "[AXIOM-001]" in full_text
+
+
+@pytest.mark.asyncio
+async def test_invoke_with_reality_statements():
+    """Test non-streaming invoke with reality statements."""
+    # Arrange
+    mock_agent = MagicMock(spec=ChatAgent)
+
+    async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
+        yield MockStreamChunk("Response with [REALITY-001].")
+
+    mock_agent.run_stream = mock_run_stream
+
+    axiom_store = AxiomStore([])
+
+    reality = [
+        RealityStatement(
+            id=RealityId("REALITY-001"),
+            entity="Test",
+            attribute="Test Attr",
+            value="Test Value",
+            number="100",
+            description="Test description",
+        )
+    ]
+
+    qa_engine = QAEngine(mock_agent, axiom_store)
+
+    # Act
+    result = await qa_engine.invoke(question="Test question", reality=reality)
+
+    # Assert
+    assert "Response with [REALITY-001]." == result
