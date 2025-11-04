@@ -32,6 +32,9 @@ jobs:
 
       - name: Run tests
         run: uv run pytest tests/ -v --tb=short
+        env:
+          AZURE_OPENAI_ENDPOINT: "https://test-openai.openai.azure.com/"
+          AZURE_OPENAI_CHAT_DEPLOYMENT_NAME: "test-deployment"
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
