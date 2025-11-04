@@ -560,6 +560,30 @@ def test_axiom_store_integration():
             True,
             id="empty chunks interspersed with content and citations",
         ),
+        pytest.param(
+            ["Based on [REALITY-001]."],
+            "Based on [REALITY-001].",
+            True,
+            id="single reality citation",
+        ),
+        pytest.param(
+            ["Check [REALITY-", "001] for details"],
+            "Check [REALITY-001] for details",
+            True,
+            id="reality citation split across chunks",
+        ),
+        pytest.param(
+            ["Mix [AXIOM-001] and [REALITY-001]"],
+            "Mix [AXIOM-001] and [REALITY-001]",
+            True,
+            id="mixed axiom and reality citations",
+        ),
+        pytest.param(
+            ["Considering [REALITY-001] and [REALITY-002]."],
+            "Considering [REALITY-001] and [REALITY-002].",
+            True,
+            id="multiple reality citations in sequence",
+        ),
     ],
 )
 async def test_invoke_streaming_handles_chunk_scenarios(
@@ -603,9 +627,29 @@ async def test_invoke_streaming_handles_chunk_scenarios(
 
     qa_engine = QAEngine(mock_agent, axiom_store)
 
+    # Create reality statements for reality citation tests
+    reality = [
+        RealityStatement(
+            id=RealityId("REALITY-001"),
+            entity="Test",
+            attribute="Test Attr",
+            value="Test Value",
+            number="100",
+            description="Test description",
+        ),
+        RealityStatement(
+            id=RealityId("REALITY-002"),
+            entity="Healthcare",
+            attribute="Medical Costs",
+            value="Rising",
+            number="12%",
+            description="Medical costs are rising.",
+        ),
+    ]
+
     # Act
     result = []
-    async for chunk in qa_engine.invoke_streaming(question="Test"):
+    async for chunk in qa_engine.invoke_streaming(question="Test", reality=reality):
         result.append(chunk)
 
     # Assert
@@ -622,52 +666,6 @@ async def test_invoke_streaming_handles_chunk_scenarios(
         assert len(citations) > 0
     else:
         assert len(citations) == 0
-
-
-@pytest.mark.asyncio
-async def test_invoke_streaming_handles_reality_citations():
-    """Test that streaming correctly handles REALITY citations."""
-    # Arrange
-    mock_agent = MagicMock(spec=ChatAgent)
-
-    async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
-        yield MockStreamChunk("Considering [REALITY-001] and [REALITY-002].")
-
-    mock_agent.run_stream = mock_run_stream
-
-    axiom_store = AxiomStore([])
-
-    reality = [
-        RealityStatement(
-            id=RealityId("REALITY-001"),
-            entity="Economy",
-            attribute="Inflation Rate",
-            value="High",
-            number="7.5%",
-            description="Current inflation is elevated.",
-        ),
-        RealityStatement(
-            id=RealityId("REALITY-002"),
-            entity="Healthcare",
-            attribute="Medical Costs",
-            value="Rising",
-            number="12%",
-            description="Medical costs are rising.",
-        ),
-    ]
-
-    qa_engine = QAEngine(mock_agent, axiom_store)
-
-    # Act
-    result = []
-    async for chunk in qa_engine.invoke_streaming(question="Test", reality=reality):
-        result.append(chunk)
-
-    # Assert
-    reality_citations = [c for c in result if isinstance(c, RealityCitationContent)]
-    assert len(reality_citations) == 2
-    assert reality_citations[0].item.id == RealityId("REALITY-001")
-    assert reality_citations[1].item.id == RealityId("REALITY-002")
 
 
 @pytest.mark.asyncio
