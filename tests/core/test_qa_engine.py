@@ -15,12 +15,12 @@ from agent_framework import ChatAgent
 
 from core.axiom_store import Axiom, AxiomId, AxiomStore
 from core.qa_engine import (
-    CitationCandidate,
+    AxiomCitationContent,
     CitationContent,
     Message,
     QAEngine,
+    RealityCitationContent,
     TextContent,
-    process_chunk,
 )
 
 T = TypeVar("T")
@@ -180,87 +180,14 @@ async def test_formatted_prompt_includes_constitution():
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    ("test_input", "expected"),
-    [
-        pytest.param(
-            ["foo"],
-            [TextContent(content="foo")],
-            id="default text case",
-        ),
-        pytest.param(
-            ["foo]"],
-            [TextContent(content="foo]")],
-            id="closing bracket only with text",
-        ),
-        pytest.param(
-            ["[foo]"],
-            [TextContent(content="[foo]")],
-            id="generic message in square brackets",
-        ),
-        pytest.param(
-            ["[f", "oo]"],
-            [TextContent(content="[foo]")],
-            id="buffers unclosed open brackets",
-        ),
-        pytest.param(
-            ["[", "]"],
-            [TextContent(content="[]")],
-            id="empty brackets",
-        ),
-        pytest.param(
-            ["foo [AXIOM", "-001]"],
-            [
-                TextContent(content="foo "),
-                CitationCandidate(id=AxiomId("AXIOM-001"), text="[AXIOM-001]"),
-            ],
-            id="parsed citation",
-        ),
-        pytest.param(
-            ["foo [AXIOM-12]", ""],
-            [
-                TextContent(content="foo "),
-                CitationCandidate(id=AxiomId("AXIOM-12"), text="[AXIOM-12]"),
-            ],
-            id="parsed citation with two digits (single chunk)",
-        ),
-        pytest.param(
-            ["foo", "[AX"],
-            [
-                TextContent(content="foo"),
-                TextContent(content="[AX"),
-            ],
-            id="unfinished axiom reference",
-        ),
-        pytest.param(
-            ["", "\n", ""],
-            [
-                TextContent(content="\n"),
-            ],
-            id="omit empty chunks",
-        ),
-    ],
-)
-async def test_process_chunk(
-    test_input: Iterable[str],
-    expected: Iterable[TextContent | CitationCandidate],
-):
-    """Test that process_chunk correctly parses text and citations."""
-    result = [chunk async for chunk in process_chunk(async_iter(test_input))]
-    expected_list = list(expected)
-
-    assert result == expected_list
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
     "chunks_from_agent, expected_output",
     [
         pytest.param(
             ["Hello [AXIOM-001] world"],
             [
                 TextContent(content="Hello "),
-                CitationContent(
-                    axiom=Axiom(
+                AxiomCitationContent(
+                    item=Axiom(
                         id=AxiomId("AXIOM-001"),
                         subject="subject",
                         entity="entity",
@@ -294,8 +221,8 @@ async def test_process_chunk(
             ["Multiple [AXIOM-001] citations [AXIOM-002] here"],
             [
                 TextContent(content="Multiple "),
-                CitationContent(
-                    axiom=Axiom(
+                AxiomCitationContent(
+                    item=Axiom(
                         id=AxiomId("AXIOM-001"),
                         subject="subject",
                         entity="entity",
@@ -355,7 +282,7 @@ async def test_invoke_streaming_citation_handling(
 
 
 def test_citation_content_property():
-    """Test that CitationContent.content property returns formatted axiom ID."""
+    """Test that AxiomCitationContent.content property returns formatted axiom ID."""
     # Arrange
     axiom = Axiom(
         id=AxiomId("AXIOM-001"),
@@ -368,7 +295,7 @@ def test_citation_content_property():
     )
 
     # Act
-    citation = CitationContent(axiom=axiom)
+    citation = AxiomCitationContent(item=axiom)
 
     # Assert
     assert citation.content == "[AXIOM-001]"
@@ -446,10 +373,10 @@ async def test_invoke_streaming_multiple_citations_in_sequence():
     # Should have: empty text, citation 1, empty text, citation 2
     # (Empty texts result from the regex processing)
     assert len(result) == 4
-    citation_chunks = [c for c in result if isinstance(c, CitationContent)]
+    citation_chunks = [c for c in result if isinstance(c, AxiomCitationContent)]
     assert len(citation_chunks) == 2
-    assert citation_chunks[0].axiom.id == AxiomId("AXIOM-001")
-    assert citation_chunks[1].axiom.id == AxiomId("AXIOM-002")
+    assert citation_chunks[0].item.id == AxiomId("AXIOM-001")
+    assert citation_chunks[1].item.id == AxiomId("AXIOM-002")
 
 
 @pytest.mark.asyncio
@@ -548,31 +475,3 @@ def test_axiom_store_integration():
     assert retrieved_axiom is not None
     assert retrieved_axiom.id == AxiomId("AXIOM-001")
     assert retrieved_axiom.subject == "subject1"
-
-
-@pytest.mark.asyncio
-async def test_process_chunk_with_split_citation():
-    """Test that process_chunk correctly handles citations split across chunks."""
-    # Arrange
-    chunks = ["Text before ", "[AX", "IOM-", "001", "] text after"]
-
-    # Act
-    result = [chunk async for chunk in process_chunk(async_iter(chunks))]
-
-    # Assert
-    # Should have: text before, empty text, citation candidate, text after
-    # (The empty text results from regex processing)
-    assert len(result) >= 3
-    # Filter out empty text chunks for easier assertion
-    non_empty_result = [
-        chunk
-        for chunk in result
-        if not (isinstance(chunk, TextContent) and chunk.content == "")
-    ]
-    assert len(non_empty_result) == 3
-    assert isinstance(non_empty_result[0], TextContent)
-    assert non_empty_result[0].content == "Text before "
-    assert isinstance(non_empty_result[1], CitationCandidate)
-    assert non_empty_result[1].id == AxiomId("AXIOM-001")
-    assert isinstance(non_empty_result[2], TextContent)
-    assert non_empty_result[2].content == " text after"
