@@ -60,6 +60,20 @@ class Report:
 
             return self.evaluation_data
 
+    def _copy_template_file(
+        self, template_dir: Path, filename: str, output_path: Path
+    ) -> None:
+        """Copy a template file to the output directory.
+
+        Args:
+            template_dir: Directory containing template files
+            filename: Name of the file to copy
+            output_path: Destination directory
+        """
+        source = template_dir / filename
+        destination = output_path / filename
+        shutil.copy2(source, destination)
+
     def generate_report(self):
         """Generate evaluation report from data.
 
@@ -87,27 +101,18 @@ class Report:
                 f"Cannot create output directory {output_path}: {e}"
             ) from e
 
-        # Copy CSS file (no template rendering needed)
+        # Copy template files
         template_dir = Path(__file__).parent / "templates"
-        css_source = template_dir / "styles.css"
-        css_file_path = output_path / "styles.css"
-        shutil.copy2(css_source, css_file_path)
-
-        # Copy JavaScript file (no template rendering needed)
-        js_source = template_dir / "script.js"
-        js_file_path = output_path / "script.js"
-        shutil.copy2(js_source, js_file_path)
+        self._copy_template_file(template_dir, "styles.css", output_path)
+        self._copy_template_file(template_dir, "script.js", output_path)
+        self._copy_template_file(template_dir, "index.html", output_path)
 
         # Generate evaluation data JSON file
         data_file_path = output_path / "evaluation_data.json"
         with open(data_file_path, "w", encoding="utf-8") as data_file:
             json.dump(self.evaluation_data, data_file, indent=2)
 
-        # Copy HTML file (no template rendering needed)
-        html_source = template_dir / "index.html"
         html_file_path = output_path / "index.html"
-        shutil.copy2(html_source, html_file_path)
-
         logger.info("Report generation complete!")
         logger.info("Open %s in your web browser to view the report.", html_file_path)
 
