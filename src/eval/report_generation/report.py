@@ -2,7 +2,6 @@
 
 import argparse
 import json
-import os
 import shutil
 from pathlib import Path
 from typing import Any
@@ -40,16 +39,15 @@ class Report:
         Raises:
             FileNotFoundError: If the input JSON file doesn't exist.
             ValueError: If the evaluation data is invalid or empty.
-            OSError: If there are issues creating the output directory or copying files.
         """
         # Load evaluation data
         self.load_json_data()
 
         # Determine output directory
+        data_path = Path(self.data_path)
         if self.output_dir is None:
             # Use the same directory as the input file
-            input_path = Path(self.data_path)
-            output_path = input_path.parent / "report"
+            output_path = data_path.parent / "report"
         else:
             output_path = Path(self.output_dir)
 
