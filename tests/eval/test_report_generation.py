@@ -157,6 +157,17 @@ def test_generate_report_creates_output_directory_if_not_exists(
     assert output_dir.is_dir()
 
 
+def test_generate_report_permission_error_on_directory_creation(temp_json_file):
+    """Test that generate_report raises PermissionError with clear message."""
+    report = Report(data_path=str(temp_json_file), output_dir="/root/no_access")
+
+    with patch("eval.report_generation.report.Path.mkdir") as mock_mkdir:
+        mock_mkdir.side_effect = PermissionError("Permission denied")
+
+        with pytest.raises(PermissionError, match="Cannot create output directory"):
+            report.generate_report()
+
+
 @patch("eval.report_generation.report.shutil.copy2")
 def test_generate_report_copies_template_files(
     mock_copy, temp_json_file, sample_evaluation_data
@@ -201,23 +212,15 @@ def test_generate_report_handles_existing_output_directory(
 
 def test_create_and_generate_with_output_dir(temp_json_file, temp_output_dir):
     """Test create_and_generate with custom output directory."""
-    result = Report.create_and_generate(
+    Report.create_and_generate(
         data_path=str(temp_json_file), output_dir=str(temp_output_dir)
     )
-
-    assert isinstance(result, Report)
-    assert result.data_path == str(temp_json_file)
-    assert result.output_dir == str(temp_output_dir)
     assert (temp_output_dir / "evaluation_data.json").exists()
 
 
 def test_create_and_generate_loads_data(temp_json_file, sample_evaluation_data):
     """Test that create_and_generate loads the evaluation data."""
-    result = Report.create_and_generate(data_path=str(temp_json_file))
-
-    assert isinstance(result, Report)
-    assert result.data_path == str(temp_json_file)
-    assert result.evaluation_data == sample_evaluation_data
+    Report.create_and_generate(data_path=str(temp_json_file))
 
     output_path = temp_json_file.parent / "report"
     assert (output_path / "styles.css").exists()

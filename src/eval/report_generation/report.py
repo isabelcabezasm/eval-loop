@@ -39,6 +39,7 @@ class Report:
         Raises:
             FileNotFoundError: If the input JSON file doesn't exist.
             ValueError: If the evaluation data is invalid or empty.
+            PermissionError: If unable to create output directory due to permissions.
         """
         # Load evaluation data
         self.load_json_data()
@@ -52,7 +53,12 @@ class Report:
             output_path = Path(self.output_dir)
 
         # Create output directory
-        output_path.mkdir(exist_ok=True)
+        try:
+            output_path.mkdir(exist_ok=True)
+        except PermissionError as e:
+            raise PermissionError(
+                f"Cannot create output directory {output_path}: {e}"
+            ) from e
 
         # Copy CSS file (no template rendering needed)
         template_dir = Path(__file__).parent / "templates"
@@ -87,7 +93,6 @@ class Report:
         """
         report = cls(data_path, output_dir)
         report.generate_report()
-        return report
 
 
 def main():
