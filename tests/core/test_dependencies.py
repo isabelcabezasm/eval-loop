@@ -29,10 +29,6 @@ def patch_azure_cli_credential():
 def patch_azure_chat_openai_client():
     """Mock AzureOpenAIChatClient to avoid actual Azure OpenAI calls."""
     with patch("core.dependencies.AzureOpenAIChatClient") as mock:
-        mock_client = Mock()
-        mock_agent = Mock()
-        mock_client.create_agent.return_value = mock_agent
-        mock.return_value = mock_client
         yield mock
 
 
