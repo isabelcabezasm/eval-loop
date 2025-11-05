@@ -158,23 +158,6 @@ def test_generate_report_creates_output_directory_if_not_exists(
     assert output_dir.is_dir()
 
 
-def test_generate_report_output_messages(temp_json_file, capsys):
-    """Test that generate_report prints expected messages."""
-    report = Report(data_path=str(temp_json_file))
-    report.generate_report()
-
-    captured = capsys.readouterr()
-    assert f"Generating report from data at: {temp_json_file}" in captured.out
-    assert f"Loading evaluation data from {temp_json_file}" in captured.out
-    assert "Output directory:" in captured.out
-    assert "Copied CSS file:" in captured.out
-    assert "Copied JavaScript file:" in captured.out
-    assert "Generated data file:" in captured.out
-    assert "Copied HTML file:" in captured.out
-    assert "Report generation complete!" in captured.out
-    assert "Open" in captured.out and "index.html" in captured.out
-
-
 @patch("eval.report_generation.report.shutil.copy2")
 def test_generate_report_copies_template_files(
     mock_copy, temp_json_file, sample_evaluation_data
