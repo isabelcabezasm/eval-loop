@@ -1,7 +1,7 @@
 """Tests for concurrency limiting functionality in eval module."""
 
 import asyncio
-from asyncio import Condition, create_task
+from asyncio import Condition, DefaultEventLoopPolicy, create_task
 from functools import wraps
 
 import pytest
@@ -88,19 +88,15 @@ async def test_mixed_success_and_failure_scenarios():
             assert result == expected_type
 
 
-# custom synchronization primitive
-# thread-safe set with notification capabilities
-# this will help us to test concurrency behavior
-class SignalBox:
+class SignalSet:
+    """A set that supports waiting for items to be added."""
+
     def __init__(self):
         self._set = set()
-
-        # coordination between coroutines
-        # when one coroutine adds an item, it can wake up others that are waiting.
         self._condition = Condition()
 
-    #  Adds an item to the set and notifies all waiting coroutines
-    async def record(self, item: int) -> None:
+    async def add(self, item: int) -> None:
+        """Adds an item to the set."""
         async with self._condition:
             self._set.add(item)
             self._condition.notify_all()
@@ -111,48 +107,61 @@ class SignalBox:
     def __iter__(self):
         return iter(self._set)
 
-    # Waits until the set contains at least count items
     async def wait_until_total(self, count: int, /) -> None:
+        """Waits until the set contains at least acertain number of items."""
         async with self._condition:
             while len(self._set) < count:
                 await self._condition.wait()
 
-    # Waits until a specific item appears in the set
     async def wait_for_item(self, item: int, /) -> None:
+        """Waits until a specific item is present in the set."""
         async with self._condition:
             while item not in self._set:
                 await self._condition.wait()
 
 
+class CustomEventLoopPolicy(DefaultEventLoopPolicy):
+    def new_event_loop(self):
+        loop = super().new_event_loop()
+        loop.set_task_factory(asyncio.eager_task_factory)  # pyright: ignore[reportAttributeAccessIssue]
+        return loop
+
+
+@pytest.fixture
+def eager_task_event_loop():
+    return CustomEventLoopPolicy()
+
+
 @pytest.mark.asyncio
-async def test_concurrency_limit_with_controlled_advancement():
+async def test_limit_concurrency_with_controlled_advancement(eager_task_event_loop):
+    # We use an event loop with eager task factory to ensure tasks start immediately and
+    # avoid race conditions on assertions.
+
     # arrange
-    started = SignalBox()
-    finished = SignalBox()
+
+    started = SignalSet()
+    finished = SignalSet()
 
     @limit_concurrency(2)
     async def execute(id: int) -> None:
-        await started.record(id)
+        await started.add(id)
         await finished.wait_for_item(id)
 
     # act + assert
+
     for i in range(1, 4):
-        # create 3 tasks (1, 2, 3)
         _ = create_task(execute(i))
 
-    # check that exactly two have started
-    await started.wait_until_total(2)  # Waits until exactly 2 tasks have started,
-    assert len(started) == 2  # confirms the third is blocked
+    await started.wait_until_total(2)
+    assert len(started) == 2
 
-    # finish one of the started tasks
-    await finished.record(
-        next(iter(started))
-    )  # finish one of the started tasks, this unblock the third one
+    # finish one of the tasks
+    await finished.add(next(iter(started)))
 
-    # assert that now all tasks can start
+    # assert that all tasks are started
     await started.wait_until_total(3)
     assert len(started) == 3
 
     # finish all tasks
     for item in started:
-        await finished.record(item)
+        await finished.add(item)
