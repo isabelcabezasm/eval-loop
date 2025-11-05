@@ -204,6 +204,24 @@ async def evaluate_answer(
     )
 
 
+def calculate_sample_std(scores: list[float], mean: float) -> float:
+    """
+    Calculate sample standard deviation using Bessel's correction.
+    
+    Args:
+        scores: List of numeric values
+        mean: The arithmetic mean of the scores
+        
+    Returns:
+        Sample standard deviation (0.0 for single values)
+    """
+    if len(scores) <= 1:
+        return 0.0
+    
+    variance = sum((score - mean) ** 2 for score in scores) / (len(scores) - 1)
+    return variance ** 0.5
+
+
 def calculate_stats(evaluation_results) -> EvaluationResult:
     """
     Calculate statistical metrics from evaluation results.
@@ -225,30 +243,14 @@ def calculate_stats(evaluation_results) -> EvaluationResult:
     # Calculate accuracy statistics
     accuracy_scores = [result.accuracy.accuracy_mean for result in evaluation_results]
     accuracy_mean = sum(accuracy_scores) / len(accuracy_scores)
-    # Use sample standard deviation with Bessel's correction (N-1)
-    if len(accuracy_scores) > 1:
-        accuracy_variance = (
-            sum((score - accuracy_mean) ** 2 for score in accuracy_scores) 
-            / (len(accuracy_scores) - 1)
-        )
-        accuracy_std = accuracy_variance ** 0.5
-    else:
-        accuracy_std = 0.0
+    accuracy_std = calculate_sample_std(accuracy_scores, accuracy_mean)
 
     # Calculate topic coverage statistics
     coverage_scores = [
         result.topic_coverage.coverage_score for result in evaluation_results
     ]
     coverage_mean = sum(coverage_scores) / len(coverage_scores)
-    # Use sample standard deviation with Bessel's correction (N-1)
-    if len(coverage_scores) > 1:
-        coverage_variance = (
-            sum((score - coverage_mean) ** 2 for score in coverage_scores) 
-            / (len(coverage_scores) - 1)
-        )
-        coverage_std = coverage_variance ** 0.5
-    else:
-        coverage_std = 0.0
+    coverage_std = calculate_sample_std(coverage_scores, coverage_mean)
 
     return EvaluationResult(
         evaluation_outputs=evaluation_results,

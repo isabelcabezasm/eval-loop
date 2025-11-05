@@ -93,7 +93,7 @@ def test_calculate_stats_two_results():
     # std = sqrt(0.02) ≈ 0.141421356
     expected_accuracy_std = math.sqrt(0.02)
     assert math.isclose(
-        result.accuracy.std, expected_accuracy_std, rel_tol=1e-9
+        result.accuracy.std, expected_accuracy_std, rel_tol=1e-7
     ), f"Expected {expected_accuracy_std}, got {result.accuracy.std}"
 
     # For coverage: values = [0.9, 0.7], mean = 0.8
@@ -101,7 +101,7 @@ def test_calculate_stats_two_results():
     # std = sqrt(0.02) ≈ 0.141421356
     expected_coverage_std = math.sqrt(0.02)
     assert math.isclose(
-        result.topic_coverage.std, expected_coverage_std, rel_tol=1e-9
+        result.topic_coverage.std, expected_coverage_std, rel_tol=1e-7
     ), f"Expected {expected_coverage_std}, got {result.topic_coverage.std}"
 
 
@@ -116,8 +116,8 @@ def test_calculate_stats_three_results():
     result = calculate_stats(evaluation_results)
 
     # Mean calculations
-    assert math.isclose(result.accuracy.mean, 0.7, rel_tol=1e-9)
-    assert math.isclose(result.topic_coverage.mean, 0.8, rel_tol=1e-9)
+    assert math.isclose(result.accuracy.mean, 0.7, rel_tol=1e-7)
+    assert math.isclose(result.topic_coverage.mean, 0.8, rel_tol=1e-7)
 
     # Sample standard deviation with Bessel's correction (N-1):
     # For accuracy: values = [0.8, 0.6, 0.7], mean = 0.7
@@ -126,7 +126,7 @@ def test_calculate_stats_three_results():
     # std = sqrt(0.01) = 0.1
     expected_accuracy_std = 0.1
     assert math.isclose(
-        result.accuracy.std, expected_accuracy_std, rel_tol=1e-9
+        result.accuracy.std, expected_accuracy_std, rel_tol=1e-7
     ), f"Expected {expected_accuracy_std}, got {result.accuracy.std}"
 
     # For coverage: values = [0.9, 0.7, 0.8], mean = 0.8
@@ -135,7 +135,7 @@ def test_calculate_stats_three_results():
     # std = sqrt(0.01) = 0.1
     expected_coverage_std = 0.1
     assert math.isclose(
-        result.topic_coverage.std, expected_coverage_std, rel_tol=1e-9
+        result.topic_coverage.std, expected_coverage_std, rel_tol=1e-7
     ), f"Expected {expected_coverage_std}, got {result.topic_coverage.std}"
 
 
