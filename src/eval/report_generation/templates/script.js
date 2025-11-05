@@ -2,6 +2,12 @@
 const entityColorMap = new Map();
 let colorIndex = 0;
 
+/**
+ * Gets or assigns a consistent color index for a given entity.
+ * Colors are assigned sequentially and cycle through 20 available colors.
+ * @param {string} entity - The entity name to get a color for
+ * @returns {number} The color index (0-19) for the entity
+ */
 function getEntityColor(entity) {
     if (!entityColorMap.has(entity)) {
         entityColorMap.set(entity, colorIndex % 20);
@@ -10,12 +16,24 @@ function getEntityColor(entity) {
     return entityColorMap.get(entity);
 }
 
+/**
+ * Determines the CSS class name based on a score value.
+ * Used for color-coding scores as good (green), medium (yellow), or poor (red).
+ * @param {number} score - The score value between 0 and 1
+ * @returns {string} CSS class name: 'score-good', 'score-medium', or 'score-poor'
+ */
 function getScoreClass(score) {
     if (score >= 0.7) return 'score-good';
     if (score >= 0.4) return 'score-medium';
     return 'score-poor';
 }
 
+/**
+ * Converts line break characters to HTML <br> tags and markdown bold to HTML <b> tags.
+ * Handles various line break formats (CRLF, LF, CR) for cross-platform compatibility.
+ * @param {string} text - The text to convert
+ * @returns {string} HTML-formatted text with line breaks and bold formatting
+ */
 function convertLineBreaks(text) {
     if (!text) return text;
     return text
@@ -25,6 +43,12 @@ function convertLineBreaks(text) {
         .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
 }
 
+/**
+ * Formats reasoning text for display, handling both array and string formats.
+ * Arrays are converted to HTML unordered lists, strings are formatted with line breaks.
+ * @param {string|Array<string>} reasoning - The reasoning text to format
+ * @returns {string} HTML-formatted reasoning text
+ */
 function formatReasoning(reasoning) {
     if (Array.isArray(reasoning)) {
         return '<ul>' + reasoning.map(item =>
@@ -33,6 +57,13 @@ function formatReasoning(reasoning) {
     return convertLineBreaks(reasoning);
 }
 
+/**
+ * Searches for entities in text using case-insensitive whole-word matching.
+ * Only returns entities that are found as complete words in the text.
+ * @param {string} text - The text to search in
+ * @param {Array<string>} entities - Array of entity strings to search for
+ * @returns {Array<string>} Array of entities found in the text
+ */
 function findEntitiesInText(text, entities) {
     if (!text || !entities || entities.length === 0) {
         return [];
@@ -53,6 +84,14 @@ function findEntitiesInText(text, entities) {
     return foundEntities;
 }
 
+/**
+ * Highlights entities in text by wrapping them with colored spans.
+ * Entities are sorted by length (longest first) to avoid partial matches.
+ * Each entity gets a consistent color based on its assigned color index.
+ * @param {string} text - The text to highlight entities in
+ * @param {Array<string>} entities - Array of entity strings to highlight
+ * @returns {string} HTML text with highlighted entities and converted line breaks
+ */
 function highlightEntitiesInText(text, entities) {
     if (!text || !entities || entities.length === 0) {
         return convertLineBreaks(text);
@@ -79,6 +118,12 @@ function highlightEntitiesInText(text, entities) {
     return convertLineBreaks(highlightedText);
 }
 
+/**
+ * Renders a list of axioms as styled tags in an HTML section.
+ * Returns an empty string if no axioms are provided.
+ * @param {Array<string>} axioms - Array of axiom strings to display
+ * @returns {string} HTML string containing the axioms section, or empty string if no axioms
+ */
 function renderAxioms(axioms) {
     if (!axioms || axioms.length === 0) {
         return '';
@@ -96,6 +141,16 @@ function renderAxioms(axioms) {
     `;
 }
 
+/**
+ * Renders entity information in a three-column grid layout.
+ * Displays query entities, expected answer entities, and LLM answer entities.
+ * Each entity pair shows trigger variable → consequence variable with consistent colors.
+ * @param {Object} entities - Object containing three arrays of entity pairs
+ * @param {Array} entities.user_query_entities - Entities from user query
+ * @param {Array} entities.expected_answer_entities - Entities from expected answer
+ * @param {Array} entities.llm_answer_entities - Entities from LLM response
+ * @returns {string} HTML string containing the entities grid layout
+ */
 function renderEntities(entities) {
     return `
         <div class="entities">
@@ -163,6 +218,13 @@ function renderEntities(entities) {
     `;
 }
 
+/**
+ * Renders detailed accuracy information showing entity-level scores and reasons.
+ * Displays each entity's accuracy score as a percentage with explanatory text.
+ * @param {Object} accuracy - Accuracy object containing entity_accuracies array
+ * @param {Array} accuracy.entity_accuracies - Array of entity accuracy results
+ * @returns {string} HTML string containing the accuracy details section
+ */
 function renderAccuracyDetails(accuracy) {
     return `
         <div class="accuracy-details">
@@ -186,6 +248,13 @@ function renderAccuracyDetails(accuracy) {
     `;
 }
 
+/**
+ * Renders a complete evaluation item with collapsible content.
+ * Includes query, expected/LLM responses with entity highlighting, scores, and detailed analysis.
+ * Only highlights entities that appear in both expected and LLM responses for clarity.
+ * @param {Object} evaluation - Complete evaluation object containing input, responses, and scores
+ * @returns {string} HTML string containing the full evaluation display
+ */
 function renderEvaluation(evaluation) {
     const accuracyClass = getScoreClass(evaluation.accuracy.accuracy_mean);
     const coverageClass = getScoreClass(
@@ -316,6 +385,11 @@ function renderEvaluation(evaluation) {
     `;
 }
 
+/**
+ * Pre-processes all evaluation data to assign consistent colors to entities.
+ * Ensures the same entity always gets the same color across all evaluations.
+ * Collects all unique entities and assigns them sequential color indices.
+ */
 function initializeEntityColors() {
     // Pre-process all entities to assign consistent colors
     const allEntities = new Set();
@@ -344,6 +418,11 @@ function initializeEntityColors() {
     });
 }
 
+/**
+ * Calculates and displays summary statistics for all evaluations.
+ * Computes average accuracy, coverage, and overall scores, then updates DOM elements.
+ * Updates the summary statistics section at the top of the report.
+ */
 function calculateSummaryStats() {
     const evaluations = evaluationData.evaluation_outputs;
     const totalEvaluations = evaluations.length;
@@ -358,6 +437,11 @@ function calculateSummaryStats() {
     document.getElementById('overall-score').textContent = overallScore.toFixed(2);
 }
 
+/**
+ * Renders all evaluation items and inserts them into the DOM.
+ * Processes each evaluation through renderEvaluation() and concatenates the results.
+ * Updates the evaluations container with the complete HTML content.
+ */
 function renderEvaluations() {
     const container = document.getElementById('evaluations-container');
     const evaluationsHtml = evaluationData.evaluation_outputs
@@ -367,6 +451,12 @@ function renderEvaluations() {
     container.innerHTML = evaluationsHtml;
 }
 
+/**
+ * Toggles the collapsed/expanded state of an evaluation item.
+ * Called when the evaluation header is clicked to show/hide detailed content.
+ * Manages CSS classes to control visibility and styling of evaluation content.
+ * @param {HTMLElement} headerElement - The header element that was clicked
+ */
 function toggleEvaluation(headerElement) {
     const content = headerElement.nextElementSibling;
     const isCollapsed = headerElement.classList.contains('collapsed');
@@ -380,6 +470,11 @@ function toggleEvaluation(headerElement) {
     }
 }
 
+/**
+ * Main initialization function that loads evaluation data and sets up the page.
+ * Fetches JSON data, makes it globally available, and initializes all page components.
+ * Handles errors gracefully by displaying error messages to the user.
+ */
 // Load evaluation data and initialize the page
 fetch('evaluation_data.json')
     .then(response => response.json())
