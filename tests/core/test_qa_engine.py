@@ -311,11 +311,7 @@ async def test_invoke_streaming_empty_response():
     mock_agent = MagicMock(spec=ChatAgent)
 
     # Mock run_stream to return empty iterator
-    async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
-        return async_iter([])
-
-    mock_agent.run_stream = mock_run_stream
-
+    mock_agent.run_stream = lambda _prompt: async_iter([])  # pyright: ignore[reportUnknownLambdaType]
     qa_engine = QAEngine(mock_agent, MagicMock(spec=AxiomStore))
 
     # Act
