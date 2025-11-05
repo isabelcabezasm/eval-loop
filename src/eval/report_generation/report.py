@@ -2,9 +2,16 @@
 
 import argparse
 import json
+import logging
 import shutil
 from pathlib import Path
 from typing import Any
+
+from pydantic import ValidationError
+
+from eval.metrics.models import EvaluationResult
+
+logger = logging.getLogger(__name__)
 
 
 class Report:
@@ -24,13 +31,33 @@ class Report:
     def load_json_data(self) -> dict[str, Any]:
         """Load evaluation data from JSON file.
 
+        Expected JSON structure matching EvaluationResult model output.
+
         Raises:
-            ValueError: If the JSON file is empty or contains no data.
+            ValueError: If the JSON file is empty, contains no data,
+                or has invalid structure.
         """
         with open(self.data_path, encoding="utf-8") as file:
-            self.evaluation_data = json.load(file)
-            if not self.evaluation_data:
+            data = json.load(file)
+            if not data:
                 raise ValueError("Evaluation data cannot be empty")
+
+            # Validate structure using Pydantic model_validate
+            try:
+                validated_model = EvaluationResult.model_validate(data)
+                self.evaluation_data = validated_model.model_dump()
+
+                logger.info(
+                    "Evaluation data validated: %d evaluation outputs",
+                    len(self.evaluation_data["evaluation_outputs"]),
+                )
+            except ValidationError as e:
+                logger.error("JSON data does not match EvaluationResult schema: %s", e)
+                raise ValueError(
+                    f"Invalid evaluation data structure: {e.error_count()} "
+                    f"validation error(s). See logs for details."
+                ) from e
+
             return self.evaluation_data
 
     def generate_report(self):
@@ -81,8 +108,8 @@ class Report:
         html_file_path = output_path / "index.html"
         shutil.copy2(html_source, html_file_path)
 
-        print("\nReport generation complete!")
-        print(f"Open {html_file_path} in your web browser to view the report.")
+        logger.info("Report generation complete!")
+        logger.info("Open %s in your web browser to view the report.", html_file_path)
 
     @classmethod
     def create_and_generate(cls, data_path: str, output_dir: str | None = None):
@@ -97,6 +124,9 @@ class Report:
 
 def main():
     """Main entry point for report generation."""
+    # Configure logging
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
     parser = argparse.ArgumentParser(description="Generate evaluation reports")
     parser.add_argument(
         "--data_path", required=True, help="Path to the evaluation data JSON file"

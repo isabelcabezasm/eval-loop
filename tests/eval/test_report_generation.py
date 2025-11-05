@@ -10,24 +10,103 @@ from eval.report_generation.report import Report
 
 @pytest.fixture
 def sample_evaluation_data():
-    """Sample evaluation data for testing."""
+    """Sample evaluation data matching actual EvaluationResult output format."""
     return {
-        "metadata": {
-            "timestamp": "2024-11-04T12:00:00",
-            "model": "gpt-4",
-        },
-        "results": [
+        "evaluation_outputs": [
             {
-                "question": "What is the capital of France?",
-                "answer": "Paris",
-                "score": 0.95,
+                "input": {
+                    "id": 1,
+                    "query": "What is the capital of France?",
+                    "context": "Test context",
+                    "expected_answer": "Paris",
+                    "reasoning": ["Test reasoning"],
+                    "axioms_used": ["AXIOM-001"],
+                },
+                "llm_response": "The capital of France is Paris.",
+                "entities": {
+                    "user_query_entities": [
+                        {
+                            "trigger_variable": "France",
+                            "consequence_variable": "capital",
+                        }
+                    ],
+                    "llm_answer_entities": [
+                        {
+                            "trigger_variable": "France",
+                            "consequence_variable": "capital",
+                        },
+                        {
+                            "trigger_variable": "capital city",
+                            "consequence_variable": "Paris",
+                        },
+                    ],
+                    "expected_answer_entities": [
+                        {"trigger_variable": "France", "consequence_variable": "Paris"}
+                    ],
+                },
+                "accuracy": {
+                    "entity_accuracies": [
+                        {
+                            "entity": "France-capital",
+                            "reason": "Correctly identified relationship",
+                            "score": 0.95,
+                        }
+                    ],
+                    "accuracy_mean": 0.95,
+                },
+                "topic_coverage": {
+                    "reason": "Good coverage of expected topics",
+                    "coverage_score": 0.9,
+                },
             },
             {
-                "question": "What is 2+2?",
-                "answer": "4",
-                "score": 1.0,
+                "input": {
+                    "id": 2,
+                    "query": "What is 2+2?",
+                    "context": "Math question",
+                    "expected_answer": "4",
+                    "reasoning": ["Basic addition"],
+                    "axioms_used": [],
+                },
+                "llm_response": "2+2 equals 4.",
+                "entities": {
+                    "user_query_entities": [
+                        {
+                            "trigger_variable": "addition",
+                            "consequence_variable": "result",
+                        }
+                    ],
+                    "llm_answer_entities": [
+                        {"trigger_variable": "2+2", "consequence_variable": "4"}
+                    ],
+                    "expected_answer_entities": [
+                        {"trigger_variable": "calculation", "consequence_variable": "4"}
+                    ],
+                },
+                "accuracy": {
+                    "entity_accuracies": [
+                        {
+                            "entity": "addition-result",
+                            "reason": "Perfect match",
+                            "score": 1.0,
+                        }
+                    ],
+                    "accuracy_mean": 1.0,
+                },
+                "topic_coverage": {
+                    "reason": "Full coverage of expected content",
+                    "coverage_score": 1.0,
+                },
             },
         ],
+        "accuracy": {
+            "mean": 0.975,
+            "std": 0.025,
+        },
+        "topic_coverage": {
+            "mean": 0.95,
+            "std": 0.05,
+        },
     }
 
 
@@ -89,6 +168,71 @@ def test_load_json_data_invalid_json(tmp_path):
     report = Report(data_path=str(invalid_json_file))
 
     with pytest.raises(json.JSONDecodeError):
+        report.load_json_data()
+
+
+def test_load_json_data_missing_structure_keys(tmp_path):
+    """Test loading JSON data with missing required structure keys raises ValueError."""
+    incomplete_json_file = tmp_path / "incomplete.json"
+    incomplete_data = {"some_key": "some_value"}
+    with open(incomplete_json_file, "w", encoding="utf-8") as f:
+        json.dump(incomplete_data, f)
+
+    report = Report(data_path=str(incomplete_json_file))
+
+    with pytest.raises(ValueError, match="Invalid evaluation data structure"):
+        report.load_json_data()
+
+
+def test_load_json_data_complete_structure_no_error(tmp_path):
+    """Test loading JSON data with complete structure succeeds."""
+    complete_json_file = tmp_path / "complete.json"
+    complete_data = {
+        "evaluation_outputs": [],
+        "accuracy": {"mean": 0.0, "std": 0.0},
+        "topic_coverage": {"mean": 0.0, "std": 0.0},
+    }
+    with open(complete_json_file, "w", encoding="utf-8") as f:
+        json.dump(complete_data, f)
+
+    report = Report(data_path=str(complete_json_file))
+    loaded_data = report.load_json_data()
+
+    # Verify data was loaded successfully
+    assert loaded_data == complete_data
+
+
+def test_load_json_data_invalid_evaluation_outputs_type(tmp_path):
+    """Test that non-list evaluation_outputs raises ValueError."""
+    invalid_json_file = tmp_path / "invalid.json"
+    invalid_data = {
+        "evaluation_outputs": "not a list",
+        "accuracy": {"mean": 0.0, "std": 0.0},
+        "topic_coverage": {"mean": 0.0, "std": 0.0},
+    }
+    with open(invalid_json_file, "w", encoding="utf-8") as f:
+        json.dump(invalid_data, f)
+
+    report = Report(data_path=str(invalid_json_file))
+
+    with pytest.raises(ValueError, match="Invalid evaluation data structure"):
+        report.load_json_data()
+
+
+def test_load_json_data_invalid_accuracy_structure(tmp_path):
+    """Test that accuracy without mean/std raises ValueError."""
+    invalid_json_file = tmp_path / "invalid.json"
+    invalid_data = {
+        "evaluation_outputs": [],
+        "accuracy": {"wrong_key": 0.0},
+        "topic_coverage": {"mean": 0.0, "std": 0.0},
+    }
+    with open(invalid_json_file, "w", encoding="utf-8") as f:
+        json.dump(invalid_data, f)
+
+    report = Report(data_path=str(invalid_json_file))
+
+    with pytest.raises(ValueError, match="Invalid evaluation data structure"):
         report.load_json_data()
 
 
