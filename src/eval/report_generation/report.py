@@ -36,7 +36,6 @@ class Report:
 
     def generate_report(self):
         """Generate evaluation report from data."""
-        print(f"Generating report from data at: {self.data_path}")
 
         # Check if input file exists
         if not os.path.exists(self.data_path):
@@ -44,7 +43,6 @@ class Report:
             return
 
         # Load evaluation data
-        print(f"Loading evaluation data from {self.data_path}...")
         self.load_json_data()
 
         # Determine output directory
@@ -57,32 +55,27 @@ class Report:
 
         # Create output directory
         output_path.mkdir(exist_ok=True)
-        print(f"Output directory: {output_path.absolute()}")
 
         # Copy CSS file (no template rendering needed)
         template_dir = Path(__file__).parent / "templates"
         css_source = template_dir / "styles.css"
         css_file_path = output_path / "styles.css"
         shutil.copy2(css_source, css_file_path)
-        print(f"Copied CSS file: {css_file_path}")
 
         # Copy JavaScript file (no template rendering needed)
         js_source = template_dir / "script.js"
         js_file_path = output_path / "script.js"
         shutil.copy2(js_source, js_file_path)
-        print(f"Copied JavaScript file: {js_file_path}")
 
         # Generate evaluation data JSON file
         data_file_path = output_path / "evaluation_data.json"
         with open(data_file_path, "w", encoding="utf-8") as data_file:
             json.dump(self.evaluation_data, data_file, indent=2)
-        print(f"Generated data file: {data_file_path}")
 
         # Copy HTML file (no template rendering needed)
         html_source = template_dir / "index.html"
         html_file_path = output_path / "index.html"
         shutil.copy2(html_source, html_file_path)
-        print(f"Copied HTML file: {html_file_path}")
 
         print("\nReport generation complete!")
         print(f"Open {html_file_path} in your web browser to view the report.")
