@@ -93,7 +93,7 @@ async def act_invoke_stream(qa_engine: QAEngine) -> str:
     async for chunk in qa_engine.invoke_streaming(question="Test question"):
         if isinstance(chunk, TextContent):
             result += chunk.content
-        else:  # isinstance(chunk, (AxiomCitationContent, RealityCitationContent))
+        else:  # the chunk only can be AxiomCitationContent or RealityCitationContent
             result += chunk.content
     return result
 
