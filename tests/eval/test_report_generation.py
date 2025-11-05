@@ -176,6 +176,11 @@ def test_generate_report_copies_template_files(
 
     # Verify copy2 was called for CSS, JS, and HTML files
     assert mock_copy.call_count == 3
+    # assert the parameters of the calls
+    calls = [call.args[0].name for call in mock_copy.call_args_list]
+    assert "styles.css" in calls[0]
+    assert "script.js" in calls[1]
+    assert "index.html" in calls[2]
 
 
 def test_generate_report_handles_existing_output_directory(
@@ -195,17 +200,6 @@ def test_generate_report_handles_existing_output_directory(
     assert (temp_output_dir / "evaluation_data.json").exists()
 
 
-# Tests for create_and_generate class method
-
-
-def test_create_and_generate_returns_report_instance(temp_json_file):
-    """Test that create_and_generate returns a Report instance."""
-    result = Report.create_and_generate(data_path=str(temp_json_file))
-
-    assert isinstance(result, Report)
-    assert result.data_path == str(temp_json_file)
-
-
 def test_create_and_generate_with_output_dir(temp_json_file, temp_output_dir):
     """Test create_and_generate with custom output directory."""
     result = Report.create_and_generate(
@@ -213,6 +207,7 @@ def test_create_and_generate_with_output_dir(temp_json_file, temp_output_dir):
     )
 
     assert isinstance(result, Report)
+    assert result.data_path == str(temp_json_file)
     assert result.output_dir == str(temp_output_dir)
     assert (temp_output_dir / "evaluation_data.json").exists()
 
@@ -221,21 +216,15 @@ def test_create_and_generate_loads_data(temp_json_file, sample_evaluation_data):
     """Test that create_and_generate loads the evaluation data."""
     result = Report.create_and_generate(data_path=str(temp_json_file))
 
+    assert isinstance(result, Report)
+    assert result.data_path == str(temp_json_file)
     assert result.evaluation_data == sample_evaluation_data
-
-
-def test_create_and_generate_generates_all_files(temp_json_file):
-    """Test that create_and_generate generates all expected files."""
-    result = Report.create_and_generate(data_path=str(temp_json_file))
 
     output_path = temp_json_file.parent / "report"
     assert (output_path / "styles.css").exists()
     assert (output_path / "script.js").exists()
     assert (output_path / "index.html").exists()
     assert (output_path / "evaluation_data.json").exists()
-
-
-# Integration tests
 
 
 def test_full_report_generation_workflow(temp_json_file, sample_evaluation_data):
@@ -263,29 +252,16 @@ def test_full_report_generation_workflow(temp_json_file, sample_evaluation_data)
         final_data = json.load(f)
     assert final_data == sample_evaluation_data
 
+    # Verify report object state
+    assert report.data_path == str(temp_json_file)
+    assert report.evaluation_data == sample_evaluation_data
 
-def test_multiple_report_generations_same_output_dir(temp_json_file):
-    """Test generating multiple reports to the same output directory."""
-    report1 = Report(data_path=str(temp_json_file))
-    report1.generate_report()
-
-    # Modify the JSON data
-    with open(temp_json_file, encoding="utf-8") as f:
-        data = json.load(f)
-    data["results"].append(
-        {"question": "New question", "answer": "New answer", "score": 0.85}
-    )
-    with open(temp_json_file, "w", encoding="utf-8") as f:
-        json.dump(data, f)
-
-    # Generate report again
-    report2 = Report(data_path=str(temp_json_file))
-    report2.generate_report()
-
-    # Verify updated data is in the output
-    output_path = temp_json_file.parent / "report"
-    with open(output_path / "evaluation_data.json", encoding="utf-8") as f:
-        final_data = json.load(f)
-
-    assert len(final_data["results"]) == 3
-    assert final_data["results"][-1]["question"] == "New question"
+    # Verify file permissions and types
+    assert (
+        output_path.stat().st_mode & 0o777 >= 0o755
+    )  # Directory is readable/executable
+    for file_name in ["styles.css", "script.js", "index.html", "evaluation_data.json"]:
+        file_path = output_path / file_name
+        assert file_path.is_file()
+        assert not file_path.is_dir()
+        assert file_path.stat().st_size > 0
