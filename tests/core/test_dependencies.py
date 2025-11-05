@@ -18,6 +18,20 @@ from core.dependencies import (
 )
 
 
+@pytest.fixture(autouse=True)
+def patch_azure_cli_credential():
+    """Mock AzureCliCredential to avoid actual authentication."""
+    with patch("core.dependencies.AzureCliCredential") as mock:
+        yield mock
+
+
+@pytest.fixture(autouse=True)
+def patch_azure_chat_openai_client():
+    """Mock AzureOpenAIChatClient to avoid actual Azure OpenAI calls."""
+    with patch("core.dependencies.AzureOpenAIChatClient") as mock:
+        yield mock
+
+
 @pytest.fixture
 def mock_load_from_json():
     """Mock load_from_json to avoid reading actual files."""
@@ -54,9 +68,8 @@ def test_credential_returns_azure_cli_credential():
 
 
 def test_credential_caches_result():
-    """Test that credential() caches its result and doesn't create multiple
-    instances.
-    """
+    """Test that credential() caches its result and doesn't create multiple instances
+    for performance and consistency reasons."""
     # act
     result1 = credential()
     result2 = credential()

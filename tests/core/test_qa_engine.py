@@ -73,7 +73,7 @@ async def test_invoke_stream_calls_agent_correctly():
     subject = QAEngine(mock_agent, axiom_store)
 
     # Act
-    result = []
+    result: list[TextContent | CitationContent] = []
     async for chunk in subject.invoke_streaming("Test question"):
         result.append(chunk)
 
@@ -93,7 +93,7 @@ async def act_invoke_stream(qa_engine: QAEngine) -> str:
     async for chunk in qa_engine.invoke_streaming(question="Test question"):
         if isinstance(chunk, TextContent):
             result += chunk.content
-        elif isinstance(chunk, CitationContent):
+        else:  # the chunk only can be AxiomCitationContent or RealityCitationContent
             result += chunk.content
     return result
 
@@ -311,17 +311,11 @@ async def test_invoke_streaming_empty_response():
     mock_agent = MagicMock(spec=ChatAgent)
 
     # Mock run_stream to return empty iterator
-    async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
-        # Return an empty async iterator
-        return
-        yield  # noqa: unreachable - needed for type checker
-
-    mock_agent.run_stream = mock_run_stream
-
+    mock_agent.run_stream = lambda _prompt: async_iter([])  # pyright: ignore[reportUnknownLambdaType]
     qa_engine = QAEngine(mock_agent, MagicMock(spec=AxiomStore))
 
     # Act
-    result = []
+    result: list[TextContent | CitationContent] = []
     async for chunk in qa_engine.invoke_streaming(question="Test question"):
         result.append(chunk)
 
@@ -367,7 +361,7 @@ async def test_invoke_streaming_multiple_citations_in_sequence():
     qa_engine = QAEngine(mock_agent, axiom_store)
 
     # Act
-    result = []
+    result: list[TextContent | CitationContent] = []
     async for chunk in qa_engine.invoke_streaming(question="Test question"):
         result.append(chunk)
 
@@ -710,7 +704,7 @@ async def test_invoke_streaming_handles_chunk_scenarios(
     ]
 
     # Act
-    result = []
+    result: list[TextContent | CitationContent] = []
     async for chunk in qa_engine.invoke_streaming(question="Test", reality=reality):
         result.append(chunk)
 
