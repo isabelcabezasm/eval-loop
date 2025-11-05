@@ -35,12 +35,16 @@ class Report:
             return self.evaluation_data
 
     def generate_report(self):
-        """Generate evaluation report from data."""
+        """Generate evaluation report from data.
 
+        Raises:
+            FileNotFoundError: If the input JSON file doesn't exist.
+            ValueError: If the evaluation data is invalid or empty.
+            OSError: If there are issues creating the output directory or copying files.
+        """
         # Check if input file exists
         if not os.path.exists(self.data_path):
-            print(f"Error: JSON file '{self.data_path}' not found.")
-            return
+            raise FileNotFoundError(f"JSON file '{self.data_path}' not found.")
 
         # Load evaluation data
         self.load_json_data()

@@ -92,13 +92,14 @@ def test_load_json_data_invalid_json(tmp_path):
         report.load_json_data()
 
 
-def test_generate_report_file_not_found(capsys):
-    """Test report generation when input file doesn't exist."""
+def test_generate_report_file_not_found():
+    """Test report generation when input file doesn't exist raises FileNotFoundError."""
     report = Report(data_path="/nonexistent/file.json")
-    report.generate_report()
 
-    captured = capsys.readouterr()
-    assert "Error: JSON file '/nonexistent/file.json' not found." in captured.out
+    with pytest.raises(
+        FileNotFoundError, match="JSON file '/nonexistent/file.json' not found"
+    ):
+        report.generate_report()
 
 
 def test_generate_report_with_default_output_dir(
