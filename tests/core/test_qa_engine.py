@@ -312,9 +312,7 @@ async def test_invoke_streaming_empty_response():
 
     # Mock run_stream to return empty iterator
     async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
-        # Return an empty async iterator
-        return
-        yield  # unreachable - needed for type checker
+        return async_iter([])
 
     mock_agent.run_stream = mock_run_stream
 
