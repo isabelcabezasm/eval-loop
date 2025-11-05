@@ -42,10 +42,6 @@ class Report:
             ValueError: If the evaluation data is invalid or empty.
             OSError: If there are issues creating the output directory or copying files.
         """
-        # Check if input file exists
-        if not os.path.exists(self.data_path):
-            raise FileNotFoundError(f"JSON file '{self.data_path}' not found.")
-
         # Load evaluation data
         self.load_json_data()
 

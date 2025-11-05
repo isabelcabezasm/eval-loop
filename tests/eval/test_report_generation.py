@@ -96,9 +96,7 @@ def test_generate_report_file_not_found():
     """Test report generation when input file doesn't exist raises FileNotFoundError."""
     report = Report(data_path="/nonexistent/file.json")
 
-    with pytest.raises(
-        FileNotFoundError, match="JSON file '/nonexistent/file.json' not found"
-    ):
+    with pytest.raises(FileNotFoundError):
         report.generate_report()
 
 
