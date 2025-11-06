@@ -95,7 +95,7 @@ class Report:
 
         # Create output directory
         try:
-            output_path.mkdir(exist_ok=True)
+            output_path.mkdir(parents=True, exist_ok=True)
         except PermissionError as e:
             raise PermissionError(
                 f"Cannot create output directory {output_path}: {e}"
