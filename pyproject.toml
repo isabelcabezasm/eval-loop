@@ -2,7 +2,7 @@
 name = "constitutional-qa-agent"
 description = "Constitutional Q&A Agent"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [
   { name = "Isabel Cabezas", email = "isacabe@microsoft.com" },
@@ -52,7 +52,7 @@ path = "src/eval/__init__.py"
 packages = ["src/eval", "src/core"]
 
 [tool.pyright]
-pythonVersion = "3.10"
+pythonVersion = "3.12"
 typeCheckingMode = "strict"
 include = ["src", "tests"]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md#diagnostic-settings-defaults
@@ -72,7 +72,7 @@ reportUnreachable = "error"
 [tool.ruff]
 src = ["src", "tests"]
 line-length = 88
-target-version = "py310"
+target-version = "py312"
 show-fixes = true
 lint.select = [
   "B0",     # bugbear
@@ -85,7 +85,7 @@ lint.select = [
 
 [tool.black]
 line-length = 88
-target-version = ['py310']
+target-version = ['py312']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
