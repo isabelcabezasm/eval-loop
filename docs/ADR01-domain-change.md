@@ -63,7 +63,7 @@ eg.
   "id": "string",           // Unique identifier for the axiom (e.g., "R001")
   "title": "string",        // Title Human-readable to identify the reality
   "description":  "string"  // Explanation of the reality
-},
+}
 ```
 
 eg.
