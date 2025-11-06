@@ -52,7 +52,7 @@ path = "src/eval/__init__.py"
 packages = ["src/eval", "src/core"]
 
 [tool.pyright]
-pythonVersion = "3.13"
+pythonVersion = "3.12"
 typeCheckingMode = "strict"
 include = ["src", "tests"]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md#diagnostic-settings-defaults
