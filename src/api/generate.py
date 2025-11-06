@@ -16,7 +16,6 @@ from pydantic import (
 from core.dependencies import qa_engine
 from core.qa_engine import (
     AxiomCitationContent,
-    Message,
     RealityCitationContent,
     TextContent,
 )
@@ -28,7 +27,7 @@ def _parse_reality(value: object) -> list[RealityStatement] | object:
         # Not a blob, hence needs not be parsed
         return value
 
-    return load_from_json(value)
+    return load_from_json(value.decode("utf-8"))
 
 
 def _parse_base64(value: Any) -> bytes | object:

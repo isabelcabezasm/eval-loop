@@ -70,8 +70,9 @@ def test_generate_endpoint(
     """
     # arrange - realistic question about insurance and economic factors
     request = {
-        "question": "How might premium rates be affected for someone with a chronic condition "
-        "given current economic trends?",
+        "question": (
+            "How might premium rates be affected for someone with a chronic condition given current economic trends?"
+        ),
         "reality": reality(),
     }
 
@@ -87,7 +88,7 @@ def test_generate_endpoint(
     has_text = False
     has_axiom_citation = False
     has_reality_citation = False
-    text_chunks = []
+    text_chunks: list[str] = []
 
     for line in lines:
         obj = json.loads(line)

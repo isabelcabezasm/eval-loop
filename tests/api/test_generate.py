@@ -1,6 +1,5 @@
 import base64
 import json
-from base64 import b64encode
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, replace
 from typing import Final
