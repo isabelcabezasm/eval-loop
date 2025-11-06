@@ -61,7 +61,7 @@ eg.
 ```json
 {
   "id": "string",           // Unique identifier for the reality (e.g., "R001")
-  "description":  "string"  // Explanation of the reality
+  "description": "string"   // Explanation of the reality
 }
 ```
 
