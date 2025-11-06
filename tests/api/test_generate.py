@@ -60,12 +60,18 @@ DESERIALIZATION_SUCCESS_TEST_DATA: Final = [
 
 
 @pytest.mark.parametrize("input, predicate", DESERIALIZATION_SUCCESS_TEST_DATA)
-def test_deserializes_payload_from_json(input: RequestFixture, predicate: Callable[[GenerateRequest], bool]):
-    assert predicate(GenerateRequest.model_validate_json(json.dumps(asdict(input))))
+def test_deserializes_payload_from_json(
+    input: RequestFixture, predicate: Callable[[GenerateRequest], bool]
+):
+    assert predicate(
+        GenerateRequest.model_validate_json(json.dumps(asdict(input)))
+    )
 
 
 @pytest.mark.parametrize("input, predicate", DESERIALIZATION_SUCCESS_TEST_DATA)
-def test_deserializes_payload_from_python(input: RequestFixture, predicate: Callable[[GenerateRequest], bool]):
+def test_deserializes_payload_from_python(
+    input: RequestFixture, predicate: Callable[[GenerateRequest], bool]
+):
     assert predicate(GenerateRequest.model_validate(asdict(input)))
 
 
@@ -79,6 +85,8 @@ def test_deserializes_payload_from_python(input: RequestFixture, predicate: Call
         ),
     ],
 )
-def test_deserialization_failures_on_bad_request(input: RequestFixture, error: str):
+def test_deserialization_failures_on_bad_request(
+    input: RequestFixture, error: str
+):
     with pytest.raises(ValidationError, match=error):
         _ = GenerateRequest.model_validate_json(json.dumps(asdict(input)))

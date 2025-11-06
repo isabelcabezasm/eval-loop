@@ -18,7 +18,9 @@ from core.reality import RealityStatement
 @cache
 def _load_template(file: str) -> Template:
     """Load a Jinja2 template from the prompts directory."""
-    return Environment(loader=FileSystemLoader(root() / "src/core/prompts")).get_template(file)
+    return Environment(
+        loader=FileSystemLoader(root() / "src/core/prompts")
+    ).get_template(file)
 
 
 def _format_constitution(axiom_store: AxiomStore) -> str:
@@ -84,4 +86,6 @@ def build_user_prompt(
     formatted_reality = _format_reality(reality)
 
     # Render template with constitution, reality, and question
-    return template.render(constitution=constitution, reality=formatted_reality, question=question)
+    return template.render(
+        constitution=constitution, reality=formatted_reality, question=question
+    )

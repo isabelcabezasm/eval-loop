@@ -50,7 +50,9 @@ Reality = Annotated[
 class GenerateRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    question: str = Field(..., min_length=1, description="Question must not be empty")
+    question: str = Field(
+        ..., min_length=1, description="Question must not be empty"
+    )
     reality: Reality | None = Field(description="Current reality")
 
 
@@ -99,7 +101,9 @@ async def generate(request: GenerateRequest):
     """
 
     async def stream():
-        async for chunk in qa_engine().invoke_streaming(question=request.question, reality=request.reality or []):
+        async for chunk in qa_engine().invoke_streaming(
+            question=request.question, reality=request.reality or []
+        ):
             match chunk:
                 case TextContent():
                     response = TextResponse(text=chunk.content)

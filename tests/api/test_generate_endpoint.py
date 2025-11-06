@@ -77,7 +77,9 @@ def test_generate_endpoint(
     }
 
     # act
-    response = test_client.post("/api/generate", json=request).raise_for_status()
+    response = test_client.post(
+        "/api/generate", json=request
+    ).raise_for_status()
 
     # assert
     lines = [line for line in response.text.splitlines() if line]
@@ -109,25 +111,37 @@ def test_generate_endpoint(
             assert "subject" in obj, "Axiom citation missing 'subject' field"
             assert "entity" in obj, "Axiom citation missing 'entity' field"
             assert "trigger" in obj, "Axiom citation missing 'trigger' field"
-            assert "conditions" in obj, "Axiom citation missing 'conditions' field"
-            assert "description" in obj, "Axiom citation missing 'description' field"
+            assert "conditions" in obj, (
+                "Axiom citation missing 'conditions' field"
+            )
+            assert "description" in obj, (
+                "Axiom citation missing 'description' field"
+            )
             assert "category" in obj, "Axiom citation missing 'category' field"
 
             # Validate id format
-            assert obj["id"].startswith("AXIOM-"), f"Axiom ID should start with 'AXIOM-': {obj['id']}"
+            assert obj["id"].startswith("AXIOM-"), (
+                f"Axiom ID should start with 'AXIOM-': {obj['id']}"
+            )
             has_axiom_citation = True
 
         elif obj["type"] == "reality_citation":
             # Reality citation (context reference) - validate structure
             assert "id" in obj, "Reality citation missing 'id' field"
             assert "entity" in obj, "Reality citation missing 'entity' field"
-            assert "attribute" in obj, "Reality citation missing 'attribute' field"
+            assert "attribute" in obj, (
+                "Reality citation missing 'attribute' field"
+            )
             assert "value" in obj, "Reality citation missing 'value' field"
             assert "number" in obj, "Reality citation missing 'number' field"
-            assert "description" in obj, "Reality citation missing 'description' field"
+            assert "description" in obj, (
+                "Reality citation missing 'description' field"
+            )
 
             # Validate id format
-            assert obj["id"].startswith("REALITY-"), f"Reality ID should start with 'REALITY-': {obj['id']}"
+            assert obj["id"].startswith("REALITY-"), (
+                f"Reality ID should start with 'REALITY-': {obj['id']}"
+            )
             has_reality_citation = True
 
         else:
@@ -138,11 +152,17 @@ def test_generate_endpoint(
 
     # Check that we got substantial text (not just citations)
     combined_text = "".join(text_chunks)
-    assert len(combined_text) > 20, "Response should contain substantial text content"
+    assert len(combined_text) > 20, (
+        "Response should contain substantial text content"
+    )
 
     # Constitution citations should always appear since we're asking about health-related topics
-    assert has_axiom_citation, "Response should reference constitution axioms for this health/insurance question"
+    assert has_axiom_citation, (
+        "Response should reference constitution axioms for this health/insurance question"
+    )
 
     # Reality citations should only appear when reality context is provided
     if reality():
-        assert has_reality_citation, "Response should reference reality statements when context is provided"
+        assert has_reality_citation, (
+            "Response should reference reality statements when context is provided"
+        )
