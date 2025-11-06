@@ -22,7 +22,9 @@ class Axiom:
 class AxiomStore:
     def __init__(self, axioms: Iterable[Axiom], /):
         super().__init__()
-        self._axioms: dict[AxiomId, Axiom] = {axiom.id: axiom for axiom in axioms}
+        self._axioms: dict[AxiomId, Axiom] = {
+            axiom.id: axiom for axiom in axioms
+        }
 
     def get(self, id: AxiomId) -> Axiom | None:
         return self._axioms.get(id)
@@ -42,7 +44,8 @@ def load_from_json(json_data: str) -> AxiomStore:
         category: str
 
         class Config:
-            extra = "ignore"  # Ignore extra fields like 'object', 'link', 'amendments'
+            # Ignore extra fields like 'object', 'link', 'amendments'
+            extra = "ignore"
 
     parsed_axioms = {AxiomId(axiom["id"]): RawAxiom.model_validate(axiom) for axiom in json.loads(json_data)}
 

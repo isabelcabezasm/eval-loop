@@ -1,7 +1,8 @@
 """
 Run all QA Engine samples.
 
-This script automatically discovers and runs all sample files in the samples directory.
+This script automatically discovers and runs all sample files in the
+samples directory.
 """
 
 import subprocess
@@ -39,7 +40,10 @@ def main():
         )
 
         if result.returncode != 0:
-            print(f"\n⚠️  {sample_file.name} exited with code {result.returncode}")
+            print(
+                f"\n⚠️  {sample_file.name} exited with code "
+                + f"{result.returncode}"
+            )
 
         if i < len(sample_files):
             print("\n" + "=" * 80)

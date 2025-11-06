@@ -36,7 +36,9 @@ def _format_constitution(axiom_store: AxiomStore) -> str:
     return template.render(axioms=[asdict(axiom) for axiom in axioms])
 
 
-def _format_reality(reality: list[RealityStatement] | None = None) -> str | None:
+def _format_reality(
+    reality: list[RealityStatement] | None = None,
+) -> str | None:
     """
     Load the reality template and format it with reality statements.
 
@@ -44,13 +46,16 @@ def _format_reality(reality: list[RealityStatement] | None = None) -> str | None
         reality: Optional list of reality statements to format.
 
     Returns:
-        Formatted reality text if reality statements are provided, None otherwise.
+        Formatted reality text if reality statements are provided,
+        None otherwise.
     """
     if not reality:
         return None
 
     template = _load_template("reality.j2")
-    return template.render(reality=[asdict(statement) for statement in reality])
+    return template.render(
+        reality=[asdict(statement) for statement in reality]
+    )
 
 
 def build_user_prompt(
