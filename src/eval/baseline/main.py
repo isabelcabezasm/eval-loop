@@ -6,8 +6,9 @@ async def generate_answer(*, query: str) -> str:
     """
     Generate an answer for the given query.
 
-    This function asynchronously processes a query and returns a generated answer.
-    Currently implements a placeholder that echoes the query in the response.
+    This function asynchronously processes a query and returns a
+    generated answer. Currently implements a placeholder that echoes
+    the query in the response.
 
     Args:
         query (str): The input query string to generate an answer for.

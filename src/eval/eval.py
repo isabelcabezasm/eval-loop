@@ -21,16 +21,21 @@ class EvaluationSampleInput(BaseModel):
     """
     A data model representing input data for evaluation samples.
 
-    This class defines the structure for evaluation sample inputs used in the evaluation
-    process, containing all necessary information to assess model performance.
+    This class defines the structure for evaluation sample inputs
+    used in the evaluation process, containing all necessary
+    information to assess model performance.
 
     Attributes:
-        id (int): Unique identifier for the evaluation sample. query (str): The input
-        question or prompt to be evaluated. context (str): Contextual information or
-        background data relevant to the query. expected_answer (str): The correct or
-        expected response for the given query. reasoning (list[str]): List of reasoning
-        steps or explanations that lead to the expected answer. axioms_used (list[str]):
-        List of axioms, rules, or principles applied in deriving the expected answer.
+        id (int): Unique identifier for the evaluation sample.
+        query (str): The input question or prompt to be evaluated.
+        context (str): Contextual information or background data
+            relevant to the query.
+        expected_answer (str): The correct or expected response for
+            the given query.
+        reasoning (list[str]): List of reasoning steps or
+            explanations that lead to the expected answer.
+        axioms_used (list[str]): List of axioms, rules, or principles
+            applied in deriving the expected answer.
     """
 
     id: int
@@ -43,12 +48,12 @@ class EvaluationSampleInput(BaseModel):
 
 class EvaluationSampleOutput(BaseModel):
     """
-    Represents the output of an evaluation sample containing input data, model response,
-    and metrics.
+    Represents the output of an evaluation sample containing input
+    data, model response, and metrics.
 
-    This class encapsulates the results of evaluating a single sample, including the
-    original input, the language model's response, extracted entities, and computed
-    performance metrics.
+    This class encapsulates the results of evaluating a single sample,
+    including the original input, the language model's response,
+    extracted entities, and computed performance metrics.
 
     Attributes:
         input (EvaluationSampleInput): The original input data used for evaluation
@@ -68,10 +73,12 @@ class EvaluationSampleOutput(BaseModel):
 
 class Metric(BaseModel):
     """
-    A data model representing statistical metrics with mean and standard deviation.
+    A data model representing statistical metrics with mean and standard
+    deviation.
 
     Attributes:
-        mean (float): The arithmetic mean of the data. std (float): The standard
+        mean (float): The arithmetic mean of the data. std (float): The
+        standard
         deviation of the data.
     """
 
@@ -83,8 +90,10 @@ class AccuracyMetric(Metric):
     """
     A metric class for calculating accuracy of predictions.
 
-    This metric computes the accuracy as the fraction of predictions that match the true
-    labels. Accuracy is calculated as the number of correct predictions divided by the
+    This metric computes the accuracy as the fraction of predictions that
+    match the true
+    labels. Accuracy is calculated as the number of correct predictions
+    divided by the
     total number of predictions.
 
     The metric can be used for classification tasks where exact matches between
@@ -108,7 +117,8 @@ class CoverageMetric(Metric):
         Inherits all attributes from the base Metric class.
 
     Methods:
-        Inherits all methods from the base Metric class and may override specific
+        Inherits all methods from the base Metric class and may override
+        specific
         methods to implement coverage-specific calculations.
 
     Usage:
@@ -121,8 +131,10 @@ class QuestionAnswerFunction(Protocol):
     """
     Protocol for functions that generate answers from user queries.
 
-    This protocol defines the interface for async functions that take a user's query
-    string and return a generated answer. Implementations should process the query and
+    This protocol defines the interface for async functions that take a user's
+    query
+    string and return a generated answer. Implementations should process the
+    query and
     generate contextually relevant responses based on the input.
 
     Methods:
@@ -154,7 +166,8 @@ class EvaluationResult(BaseModel):
     """
     Represents the complete result of an evaluation run.
 
-    This class encapsulates all outputs and metrics from evaluating a model or system,
+    This class encapsulates all outputs and metrics from evaluating a model or
+    system,
     providing a comprehensive view of performance across multiple dimensions.
 
     Attributes:
@@ -225,7 +238,9 @@ def calculate_stats(
         )
 
     # Calculate accuracy statistics
-    accuracy_scores = [result.accuracy.accuracy_mean for result in evaluation_results]
+    accuracy_scores = [
+        result.accuracy.accuracy_mean for result in evaluation_results
+    ]
     accuracy_mean = sum(accuracy_scores) / len(accuracy_scores)
     accuracy_variance = sum(
         (score - accuracy_mean) ** 2 for score in accuracy_scores
@@ -275,7 +290,9 @@ async def run_evaluation(
 
         llm_response = await question_answer_fn(query=parsed_input.query)
 
-        _ = (output_path / f"results_{parsed_input.id}.md").write_text(llm_response)
+        _ = (output_path / f"results_{parsed_input.id}.md").write_text(
+            llm_response
+        )
         return await evaluate_answer(parsed_input, llm_response)
 
     evaluation_results = await asyncio.gather(

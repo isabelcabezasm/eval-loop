@@ -6,11 +6,12 @@ async def get_accuracy(
     *, entity_list: EntityExtraction, llm_answer: str, expected_answer: str
 ) -> AccuracyEvaluationResults:
     """
-    Evaluate the accuracy of LLM predictions for specific entities using Azure OpenAI.
+    Evaluate the accuracy of LLM predictions for specific entities using Azure
+    OpenAI.
 
-    This function assesses whether the underlying semantics and behaviors of the
-    predicted entities in the LLM answer match those in the expected answer,
-    regardless of how they are specifically expressed.
+    This function assesses whether the underlying semantics and behaviors of
+    the predicted entities in the LLM answer match those in the expected
+    answer, regardless of how they are specifically expressed.
 
     Args:
         entity_list (list[str]): List of entities to evaluate for accuracy.

@@ -72,7 +72,7 @@ reportUnreachable = "error"
 
 [tool.ruff]
 src = ["src", "tests"]
-line-length = 88
+line-length = 79
 target-version = "py312"
 show-fixes = true
 lint.select = [

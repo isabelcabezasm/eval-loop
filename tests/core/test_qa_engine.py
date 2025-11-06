@@ -91,7 +91,8 @@ async def act_invoke_stream(qa_engine: QAEngine) -> str:
     async for chunk in qa_engine.invoke_streaming(question="Test question"):
         if isinstance(chunk, TextContent):
             result += chunk.content
-        else:  # the chunk only can be AxiomCitationContent or RealityCitationContent
+        else:
+            # chunk is AxiomCitationContent or RealityCitationContent
             result += chunk.content
     return result
 
@@ -112,7 +113,10 @@ async def act_invoke(qa_engine: QAEngine) -> str:
 async def test_invoke_returns_correct_message(
     act: Callable[[QAEngine], Awaitable[str]],
 ):
-    """Test that both streaming and non-streaming invoke return the correct message."""
+    """
+    Test that both streaming and non-streaming invoke return the
+    correct message.
+    """
     # Arrange
     mock_agent = MagicMock(spec=ChatAgent)
 
@@ -282,7 +286,10 @@ async def test_invoke_streaming_citation_handling(
 
 
 def test_citation_content_property():
-    """Test that AxiomCitationContent.content property returns formatted axiom ID."""
+    """
+    Test that AxiomCitationContent.content property returns formatted
+    axiom ID.
+    """
     # Arrange
     axiom = Axiom(
         id=AxiomId("AXIOM-001"),
@@ -367,7 +374,9 @@ async def test_invoke_streaming_multiple_citations_in_sequence():
     # Should have: empty text, citation 1, empty text, citation 2
     # (Empty texts result from the regex processing)
     assert len(result) == 4
-    citation_chunks = [c for c in result if isinstance(c, AxiomCitationContent)]
+    citation_chunks = [
+        c for c in result if isinstance(c, AxiomCitationContent)
+    ]
     assert len(citation_chunks) == 2
     assert citation_chunks[0].item.id == AxiomId("AXIOM-001")
     assert citation_chunks[1].item.id == AxiomId("AXIOM-002")
@@ -703,7 +712,9 @@ async def test_invoke_streaming_handles_chunk_scenarios(
 
     # Act
     result: list[TextContent | CitationContent] = []
-    async for chunk in qa_engine.invoke_streaming(question="Test", reality=reality):
+    async for chunk in qa_engine.invoke_streaming(
+        question="Test", reality=reality
+    ):
         result.append(chunk)
 
     # Assert
@@ -711,8 +722,12 @@ async def test_invoke_streaming_handles_chunk_scenarios(
     assert full_text == expected_text
 
     # Verify citation counts
-    axiom_citations = [c for c in result if isinstance(c, AxiomCitationContent)]
-    reality_citations = [c for c in result if isinstance(c, RealityCitationContent)]
+    axiom_citations = [
+        c for c in result if isinstance(c, AxiomCitationContent)
+    ]
+    reality_citations = [
+        c for c in result if isinstance(c, RealityCitationContent)
+    ]
 
     assert len(axiom_citations) == num_axiom_citations
     assert len(reality_citations) == num_reality_citations
