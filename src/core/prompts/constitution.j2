@@ -1,0 +1,28 @@
+{%- for axiom in axioms -%}
+## {{ axiom.id }}
+ 
+### Subject
+ 
+{{ axiom.subject }}
+ 
+### Object
+ 
+{{ axiom.entity }}
+ 
+### Link
+ 
+{{ axiom.trigger }}
+ 
+### Conditions
+ 
+{{ axiom.conditions }}
+ 
+### Description
+ 
+{{ axiom.description }}
+ 
+### Amendments
+ 
+Category: {{ axiom.category }}
+ 
+{% endfor %}

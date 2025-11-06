@@ -11,29 +11,24 @@
     "customizations": {
         "vscode": {
             "extensions": [
-                "github.copilot", // GitHub Copilot + Copilot Chat
+                "github.copilot", // GitHub Copilot
+                "github.copilot-chat",
                 "markdown-lint.markdownlinter",
                 "ms-python.python", // Python extension
-                "ms-python.vscode-pylance", // Pylance extension for Python
                 "ms-python.debugpy", // Debugpy extension for Python        
-                "ms-python.pylint",
                 "ms-toolsai.jupyter",
                 "charliermarsh.ruff",
                 "ms-pyright.pyright",
                 "tamasfe.even-better-toml",
                 "redhat.vscode-yaml",
                 "streetsidesoftware.code-spell-checker",
-                "ms-vscode.vscode-json",
-                "github.copilot",
-                "github.copilot-chat"
+                "ms-vscode.vscode-json"
             ],
             "settings": {
                 "python.defaultInterpreterPath": "/usr/local/bin/python",
                 "python.linting.enabled": true,
                 "python.linting.ruffEnabled": true,
-                "python.linting.pylintEnabled": false,
                 "python.formatting.provider": "black",
-                "python.linting.mypyEnabled": true,
                 "python.analysis.typeCheckingMode": "basic",
                 "python.analysis.autoImportCompletions": true,
                 "files.associations": {

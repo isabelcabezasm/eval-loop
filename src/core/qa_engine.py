@@ -5,7 +5,6 @@ This module provides the QAEngine class that handles question-answering
 using Azure OpenAI with constitution-based prompting via the Microsoft Agent Framework.
 """
 
-import json
 import re
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
@@ -15,7 +14,8 @@ from agent_framework import ChatAgent
 from pydantic import BaseModel, computed_field
 
 from core.axiom_store import Axiom, AxiomId, AxiomStore
-from core.paths import root
+from core.prompt import build_user_prompt
+from core.reality import RealityId, RealityStatement
 
 
 class Message(BaseModel):
@@ -25,65 +25,57 @@ class Message(BaseModel):
     content: str
 
 
-class CitationContent(BaseModel):
-    """Response containing the axiom cited in streaming chunk."""
-
-    axiom: Axiom
-
-    @computed_field
-    @property
-    def content(self) -> str:
-        """Return formatted axiom ID."""
-        return f"[{self.axiom.id}]"
-
-
 class TextContent(BaseModel):
     """Response containing simple text content from a streaming chunk."""
 
     content: str
 
 
+class AxiomCitationContent(BaseModel):
+    """Response containing an axiom citation in streaming chunk."""
+
+    item: Axiom
+
+    @computed_field
+    @property
+    def content(self) -> str:
+        """Return formatted citation ID."""
+        return f"[{self.item.id}]"
+
+
+class RealityCitationContent(BaseModel):
+    """Response containing a reality citation in streaming chunk."""
+
+    item: RealityStatement
+
+    @computed_field
+    @property
+    def content(self) -> str:
+        """Return formatted citation ID."""
+        return f"[{self.item.id}]"
+
+
+# Union type for citation content with discriminator
+CitationContent = AxiomCitationContent | RealityCitationContent
+
+
 @dataclass(frozen=True)
-class CitationCandidate:
-    """Candidate citation found in streaming text."""
+class AxiomCitationCandidate:
+    """Candidate axiom citation found in streaming text."""
 
     id: AxiomId
     text: str
 
 
-async def process_chunk(
-    chunks: AsyncIterator[str],
-) -> AsyncIterator[TextContent | CitationCandidate]:
-    """
-    Process a series of chunks and returns text or parsed references.
+@dataclass(frozen=True)
+class RealityCitationCandidate:
+    """Candidate reality citation found in streaming text."""
 
-    Args:
-        chunks: Text chunk content to process
+    id: RealityId
+    text: str
 
-    Returns:
-        AsyncIterator of TextContent or CitationCandidate instances
-    """
-    buffer = ""
 
-    async for chunk in chunks:
-        buffer += chunk
-
-        while match := re.search(r"\[(AXIOM-\d+)\]", buffer):
-            # Yield text before the citation
-            yield TextContent(content=buffer[: match.start()])
-            # Yield the citation candidate
-            yield CitationCandidate(id=AxiomId(match.group(1)), text=match.group(0))
-
-            buffer = buffer[match.end() :]
-
-        # Yield buffer if it doesn't contain an incomplete citation
-        if buffer and (("[" not in buffer) or ("]" in buffer)):
-            yield TextContent(content=buffer)
-            buffer = ""
-
-    # Yield remaining buffer
-    if buffer:
-        yield TextContent(content=buffer)
+CitationCandidate = AxiomCitationCandidate | RealityCitationCandidate
 
 
 class QAEngine:
@@ -96,124 +88,95 @@ class QAEngine:
 
     Attributes:
         agent (ChatAgent): The chat agent for model inference.
-        axiom_store (AxiomStore | None): Storage for axioms/constitution data.
+        axiom_store (AxiomStore): Storage for axioms/constitution data.
     """
 
     def __init__(
         self,
         agent: ChatAgent,
-        axiom_store: AxiomStore | None = None,
+        axiom_store: AxiomStore,
     ):
         """
         Initialize the QA Engine.
 
         Args:
             agent: ChatAgent instance for model inference.
-            axiom_store: Optional storage for axioms (defaults to loading from file).
+            axiom_store: Storage for axioms/constitution data.
         """
+        super().__init__()
         self.agent = agent
         self.axiom_store = axiom_store
 
-    def _load_constitution_data(self) -> list[Axiom]:
+    async def _process_chunk(
+        self,
+        chunks: AsyncIterator[str],
+    ) -> AsyncIterator[TextContent | AxiomCitationCandidate | RealityCitationCandidate]:
         """
-        Load constitution data from JSON file.
-
-        Returns:
-            List of axioms from the constitution JSON file.
-        """
-        constitution_file = root() / "data/constitution.json"
-        with open(constitution_file, encoding="utf-8") as f:
-            return [Axiom(**item) for item in json.load(f)]
-
-    def _load_and_format_constitution(self) -> str:
-        """
-        Load the constitution template and format it with axiom data.
-
-        Returns:
-            Formatted constitution text with axioms.
-        """
-        # Load constitution template
-        constitution_template_file = root() / "src/core/prompts/constitution.md"
-        with open(constitution_template_file, encoding="utf-8") as f:
-            template_content = f.read()
-
-        # Load axiom data
-        axioms = self.axiom_store or self._load_constitution_data()
-        axiom_list = axioms.list() if isinstance(axioms, AxiomStore) else axioms
-
-        # Format constitution by replacing template variables for each axiom
-        formatted_constitution = ""
-        for axiom in axiom_list:
-            # Create a copy of the template for each axiom
-            axiom_section = template_content
-
-            # Replace template variables with axiom data
-            # Map axiom fields to template variables
-            replacements = {
-                "{{ id }}": axiom.id,
-                "{{ subject }}": axiom.subject,
-                "{{ object }}": axiom.entity,  # Map entity to object
-                "{{ link }}": axiom.trigger,  # Map trigger to link
-                "{{ conditions }}": axiom.conditions,
-                "{{ description }}": axiom.description,
-                # Map category to amendments
-                "{{ amendments }}": f"Category: {axiom.category}",
-            }
-
-            # Apply all replacements
-            for placeholder, value in replacements.items():
-                axiom_section = axiom_section.replace(placeholder, value)
-
-            formatted_constitution += axiom_section + "\n"
-
-        return formatted_constitution
-
-    def _load_and_format_user_prompt(self, question: str) -> str:
-        """
-        Load and format the user prompt with constitution and question.
+        Process a series of chunks and returns text or parsed references.
 
         Args:
-            question: The user's question to be answered.
+            chunks: Text chunk content to process
 
         Returns:
-            Formatted user prompt with constitution and question.
+            AsyncIterator of TextContent or citation candidate instances
         """
-        # Load user prompt template
-        user_prompt_file = root() / "src/core/prompts/user_prompt.md"
-        with open(user_prompt_file, encoding="utf-8") as f:
-            user_prompt_template = f.read()
 
-        # Get formatted constitution
-        constitution = self._load_and_format_constitution()
+        def _is_complete_or_no_citation(buffer: str) -> bool:
+            return ("[" not in buffer) or ("]" in buffer)
 
-        # Format user prompt with constitution and question using string replacement
-        formatted_prompt = user_prompt_template.replace(
-            "{{ constitution }}", constitution
-        )
-        formatted_prompt = formatted_prompt.replace("{{ question }}", question)
+        buffer = ""
 
-        return formatted_prompt
+        async for chunk in chunks:
+            buffer += chunk
 
-    async def invoke(self, question: str) -> str:
+            # Check for both AXIOM and REALITY citations
+            while match := re.search(r"\[(AXIOM-\d+|REALITY-\d+)\]", buffer):
+                # Yield text before the citation
+                yield TextContent(content=buffer[: match.start()])
+
+                # Determine citation type and create appropriate ID
+                citation_id = match.group(1)
+                if citation_id.startswith("AXIOM-"):
+                    yield AxiomCitationCandidate(
+                        id=AxiomId(citation_id),
+                        text=match.group(0),
+                    )
+                else:  # REALITY-
+                    yield RealityCitationCandidate(
+                        id=RealityId(citation_id),
+                        text=match.group(0),
+                    )
+
+                buffer = buffer[match.end() :]
+
+            # Yield buffer if it doesn't contain an incomplete citation
+            if buffer and _is_complete_or_no_citation(buffer):
+                yield TextContent(content=buffer)
+                buffer = ""
+
+        # Yield remaining buffer
+        if buffer:
+            yield TextContent(content=buffer)
+
+    async def invoke(
+        self, question: str, reality: list[RealityStatement] | None = None
+    ) -> str:
         """
-        Process a user question and generate a response using Azure OpenAI.
-
-        This method collects all chunks from the streaming response and returns
-        the complete response as a single string.
+        Generate AI response by collecting all streaming chunks into a single string.
 
         Args:
             question: The user's question.
+            reality: Optional reality statements for additional context.
 
         Returns:
-            The complete AI-generated response based on the constitution and prompts.
+            Complete AI response with citations formatted as text.
 
         Note:
             TODO: Add support for conversation history with Message list.
-            TODO: Add support for reality
         """
         # Collect all chunks from the streaming response
         result = ""
-        async for chunk in self.invoke_streaming(question):
+        async for chunk in self.invoke_streaming(question, reality):
             result += chunk.content
 
         return result
@@ -221,31 +184,30 @@ class QAEngine:
     async def invoke_streaming(
         self,
         question: str,
+        reality: list[RealityStatement] | None = None,
     ) -> AsyncIterator[TextContent | CitationContent]:
         """
-        Process a user question and stream the response with citation detection.
+        Stream AI response with real-time citation detection and validation.
 
-        This method:
-        1. Loads and formats the constitution with axiom data
-        2. Prepares the system prompt (used as agent instructions)
-        3. Formats the user prompt with the question and constitution
-        4. Creates a ChatAgent with system instructions
-        5. Streams the response from Azure OpenAI via the Agent Framework
-        6. Parses citations in the format [AXIOM-XXX] and yields them as CitationContent
-        7. Yields regular text as TextContent
+        Parses [AXIOM-XXX] and [REALITY-XXX] citations from the streamed response,
+        validates them, and yields either TextContent or CitationContent chunks.
+        Thread-safe for concurrent requests with different reality statements.
 
         Args:
             question: The user's question.
+            reality: Optional reality statements for additional context.
 
         Yields:
-            TextContent or CitationContent chunks as they are streamed and parsed.
+            TextContent, AxiomCitationContent, or RealityCitationContent chunks.
 
         Note:
             TODO: Add support for conversation history with Message list.
-            TODO: Add support for reality
         """
-        # Load and format user prompt with constitution and question
-        user_prompt = self._load_and_format_user_prompt(question)
+        # Create local reality store for this request
+        reality_store = {s.id: s for s in reality} if reality else {}
+
+        # Load and format user prompt with constitution, reality, and question
+        user_prompt = build_user_prompt(self.axiom_store, question, reality)
 
         # Create async generator for streaming chunks
         async def stream() -> AsyncIterator[str]:
@@ -254,19 +216,23 @@ class QAEngine:
                     yield chunk.text
 
         # Process chunks for citations
-        async for chunk in process_chunk(stream()):
+        async for chunk in self._process_chunk(stream()):
             match chunk:
                 case TextContent():
                     yield chunk
-                case CitationCandidate() as candidate:
-                    # Validate citation against axiom store
-                    axiom_store = (
-                        self.axiom_store
-                        if isinstance(self.axiom_store, AxiomStore)
-                        else None
-                    )
-                    if axiom_store and (axiom := axiom_store.get(id=candidate.id)):
-                        yield CitationContent(axiom=axiom)
+                case AxiomCitationCandidate() as candidate:
+                    # Validate axiom citation against store
+                    axiom = self.axiom_store.get(id=candidate.id)
+                    if axiom:
+                        yield AxiomCitationContent(item=axiom)
                     else:
                         # If axiom not found, yield as plain text
+                        yield TextContent(content=candidate.text)
+                case RealityCitationCandidate() as candidate:
+                    # Validate reality citation against local store
+                    reality_statement = reality_store.get(candidate.id)
+                    if reality_statement:
+                        yield RealityCitationContent(item=reality_statement)
+                    else:
+                        # If reality not found, yield as plain text
                         yield TextContent(content=candidate.text)
