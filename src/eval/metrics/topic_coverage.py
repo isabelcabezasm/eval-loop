@@ -5,7 +5,9 @@ from eval.metrics.models import (
 )
 
 
-async def get_topic_coverage(*, entity_list: EntityExtraction) -> TopicCoverageEvaluationResults:
+async def get_topic_coverage(
+    *, entity_list: EntityExtraction
+) -> TopicCoverageEvaluationResults:
     """
     Evaluate the topic coverage of LLM predictions by comparing expected and
     generated entities.

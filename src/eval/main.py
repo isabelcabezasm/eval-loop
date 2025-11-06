@@ -20,7 +20,10 @@ def run_evaluation_with_qa_function(
     _ = parser.add_argument(
         "--data_path",
         required=False,
-        help=("Path to the data file or directory (optional, defaults to data/eval_dataset.json)"),
+        help=(
+            "Path to the data file or directory "
+            "(optional, defaults to data/eval_dataset.json)"
+        ),
     )
 
     args = parser.parse_args()

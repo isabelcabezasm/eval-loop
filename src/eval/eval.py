@@ -178,7 +178,9 @@ class EvaluationResult(BaseModel):
     topic_coverage: CoverageMetric
 
 
-async def evaluate_answer(sample_input: EvaluationSampleInput, llm_answer: str) -> EvaluationSampleOutput:
+async def evaluate_answer(
+    sample_input: EvaluationSampleInput, llm_answer: str
+) -> EvaluationSampleOutput:
     """
     Evaluate the quality of an LLM's answer against the given input.
 
@@ -234,13 +236,19 @@ def calculate_stats(
         result.accuracy.accuracy_mean for result in evaluation_results
     ]
     accuracy_mean = sum(accuracy_scores) / len(accuracy_scores)
-    accuracy_variance = sum((score - accuracy_mean) ** 2 for score in accuracy_scores) / len(accuracy_scores)
+    accuracy_variance = sum(
+        (score - accuracy_mean) ** 2 for score in accuracy_scores
+    ) / len(accuracy_scores)
     accuracy_std = accuracy_variance**0.5 if len(accuracy_scores) > 1 else 0.0
 
     # Calculate topic coverage statistics
-    coverage_scores = [result.topic_coverage.coverage_score for result in evaluation_results]
+    coverage_scores = [
+        result.topic_coverage.coverage_score for result in evaluation_results
+    ]
     coverage_mean = sum(coverage_scores) / len(coverage_scores)
-    coverage_variance = sum((score - coverage_mean) ** 2 for score in coverage_scores) / len(coverage_scores)
+    coverage_variance = sum(
+        (score - coverage_mean) ** 2 for score in coverage_scores
+    ) / len(coverage_scores)
     coverage_std = coverage_variance**0.5 if len(coverage_scores) > 1 else 0.0
 
     return EvaluationResult(
@@ -281,7 +289,9 @@ async def run_evaluation(
         )
         return await evaluate_answer(parsed_input, llm_response)
 
-    evaluation_results = await asyncio.gather(*map(process_sample, json.loads(input_path.read_text())))
+    evaluation_results = await asyncio.gather(
+        *map(process_sample, json.loads(input_path.read_text()))
+    )
     result = calculate_stats(evaluation_results)
 
     # save the results

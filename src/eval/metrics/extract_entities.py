@@ -2,7 +2,9 @@ from eval.metrics.dependencies import qa_eval_engine
 from eval.metrics.models import EntityExtraction
 
 
-async def get_entities(*, user_prompt: str, llm_answer: str, expected_answer: str) -> EntityExtraction:
+async def get_entities(
+    *, user_prompt: str, llm_answer: str, expected_answer: str
+) -> EntityExtraction:
     """
     Extract entities from the LLM answer using Azure OpenAI.
 
@@ -19,4 +21,6 @@ async def get_entities(*, user_prompt: str, llm_answer: str, expected_answer: st
         EntityExtraction: The extracted entities from the LLM answer.
     """
 
-    return await qa_eval_engine().entity_extraction(user_prompt, llm_answer, expected_answer)
+    return await qa_eval_engine().entity_extraction(
+        user_prompt, llm_answer, expected_answer
+    )
