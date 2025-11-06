@@ -172,3 +172,4 @@ async def run_evaluation(
     report.generate_report()
 
     print(f"Saved evaluation results to: {result_path}")
+    print(f"Generated evaluation report in: {output_path}")
