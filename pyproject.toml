@@ -50,7 +50,7 @@ packages = ["src/eval", "src/core", "src/api"]
 
 [tool.pyright]
 pythonVersion = "3.10"
-typeCheckingMode = "basic"
+typeCheckingMode = "strict"
 include = ["src", "tests"]
 exclude = ["**/__pycache__", "**/node_modules"]
 reportMissingImports = true
