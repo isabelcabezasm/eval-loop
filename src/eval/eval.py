@@ -1,6 +1,7 @@
 import asyncio
 import json
 from asyncio import Semaphore
+from collections.abc import Callable, Coroutine
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
@@ -182,11 +183,14 @@ def limit_concurrency(limit: int = 5):
     Returns:
         Decorated function with concurrency limiting
     """
+
     semaphore = Semaphore(limit)
 
-    def decorator(func):
+    def decorator[**P, R](
+        func: Callable[P, Coroutine[None, None, R]],
+    ) -> Callable[P, Coroutine[None, None, R]]:
         @wraps(func)
-        async def wrapper(*args, **kwargs):
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             async with semaphore:
                 return await func(*args, **kwargs)
 

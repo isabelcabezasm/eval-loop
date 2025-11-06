@@ -2,7 +2,6 @@
 
 import asyncio
 from asyncio import Condition, DefaultEventLoopPolicy, create_task
-from functools import wraps
 
 import pytest
 
@@ -92,7 +91,7 @@ class SignalSet:
     """A set that supports waiting for items to be added."""
 
     def __init__(self):
-        self._set = set()
+        self._set = set[int]()
         self._condition = Condition()
 
     async def add(self, item: int) -> None:
@@ -133,7 +132,9 @@ def eager_task_event_loop():
 
 
 @pytest.mark.asyncio
-async def test_limit_concurrency_with_controlled_advancement(eager_task_event_loop):
+async def test_limit_concurrency_with_controlled_advancement(
+    eager_task_event_loop: CustomEventLoopPolicy,
+):
     # We use an event loop with eager task factory to ensure tasks start immediately and
     # avoid race conditions on assertions.
 
