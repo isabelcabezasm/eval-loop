@@ -34,6 +34,7 @@ class MockStreamChunk:
     """Mock class for agent stream chunks."""
 
     def __init__(self, text: str):
+        super().__init__()
         self.text = text
 
 
