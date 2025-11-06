@@ -2,7 +2,8 @@
 QA Engine for constitutional AI assistant.
 
 This module provides the QAEngine class that handles question-answering
-using Azure OpenAI with constitution-based prompting via the Microsoft Agent Framework.
+using Azure OpenAI with constitution-based prompting via the Microsoft
+Agent Framework.
 """
 
 import re
@@ -83,8 +84,8 @@ class QAEngine:
     Question-Answering engine for constitutional queries.
 
     This class handles the orchestration of prompts, constitution loading,
-    and interaction with Azure OpenAI via the Microsoft Agent Framework to provide
-    contextualized responses based on predefined axioms.
+    and interaction with Azure OpenAI via the Microsoft Agent Framework
+    to provide contextualized responses based on predefined axioms.
 
     Attributes:
         agent (ChatAgent): The chat agent for model inference.
@@ -110,7 +111,9 @@ class QAEngine:
     async def _process_chunk(
         self,
         chunks: AsyncIterator[str],
-    ) -> AsyncIterator[TextContent | AxiomCitationCandidate | RealityCitationCandidate]:
+    ) -> AsyncIterator[
+        TextContent | AxiomCitationCandidate | RealityCitationCandidate
+    ]:
         """
         Process a series of chunks and returns text or parsed references.
 
@@ -162,7 +165,8 @@ class QAEngine:
         self, question: str, reality: list[RealityStatement] | None = None
     ) -> str:
         """
-        Generate AI response by collecting all streaming chunks into a single string.
+        Generate AI response by collecting all streaming chunks into a
+        single string.
 
         Args:
             question: The user's question.
@@ -187,18 +191,21 @@ class QAEngine:
         reality: list[RealityStatement] | None = None,
     ) -> AsyncIterator[TextContent | CitationContent]:
         """
-        Stream AI response with real-time citation detection and validation.
+        Stream AI response with real-time citation detection and
+        validation.
 
-        Parses [AXIOM-XXX] and [REALITY-XXX] citations from the streamed response,
-        validates them, and yields either TextContent or CitationContent chunks.
-        Thread-safe for concurrent requests with different reality statements.
+        Parses [AXIOM-XXX] and [REALITY-XXX] citations from the streamed
+        response, validates them, and yields either TextContent or
+        CitationContent chunks. Thread-safe for concurrent requests with
+        different reality statements.
 
         Args:
             question: The user's question.
             reality: Optional reality statements for additional context.
 
         Yields:
-            TextContent, AxiomCitationContent, or RealityCitationContent chunks.
+            TextContent, AxiomCitationContent, or
+            RealityCitationContent chunks.
 
         Note:
             TODO: Add support for conversation history with Message list.

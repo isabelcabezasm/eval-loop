@@ -4,14 +4,19 @@ import asyncio
 from eval.eval import QuestionAnswerFunction, run_evaluation
 
 
-def run_evaluation_with_qa_function(question_answer_fn: QuestionAnswerFunction):
+def run_evaluation_with_qa_function(
+    question_answer_fn: QuestionAnswerFunction,
+):
     """
-    Reusable main function that parses command line arguments and runs the evaluation.
+    Reusable main function that parses command line arguments and runs the
+    evaluation.
 
     Args:
         question_answer_fn: The question-answer function to use for evaluation
     """
-    parser = argparse.ArgumentParser(description="Run evaluation on provided data")
+    parser = argparse.ArgumentParser(
+        description="Run evaluation on provided data"
+    )
     _ = parser.add_argument(
         "--data_path",
         required=False,
@@ -26,7 +31,8 @@ def run_evaluation_with_qa_function(question_answer_fn: QuestionAnswerFunction):
     # Run the async evaluation function
     asyncio.run(
         run_evaluation(
-            question_answer_fn=question_answer_fn, input_data_path=args.data_path
+            question_answer_fn=question_answer_fn,
+            input_data_path=args.data_path,
         )
     )
 
