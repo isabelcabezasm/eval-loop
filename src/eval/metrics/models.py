@@ -21,12 +21,14 @@ class Entity(BaseModel):
     """
 
     trigger_variable: str = Field(
-        description="The name of the variable, \
-            related with habits, activities, ..."
+        description=(
+            "The name of the variable, related with habits, activities, ..."
+        )
     )
     consequence_variable: str = Field(
-        description="The name of the variable, \
-            related with outcomes, effects, ..."
+        description=(
+            "The name of the variable, related with outcomes, effects, ..."
+        )
     )
 
 
@@ -94,9 +96,9 @@ class TopicCoverageEvaluationResults(BaseModel):
     """
     A model for storing topic coverage evaluation results.
 
-    This model evaluates how well the generated answer covers the
-    expected topics by comparing entities between expected and generated
-    content. It focuses on recall (coverage) rather than precision.
+    This model evaluates how well the generated answer covers the expected
+    topics by comparing entities between expected and generated content. It
+    focuses on recall (coverage) rather than precision.
     """
 
     reason: str = Field(
