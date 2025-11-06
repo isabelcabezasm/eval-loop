@@ -52,7 +52,7 @@ DESERIALIZATION_SUCCESS_TEST_DATA: Final = [
         id="Full request payload reality",
     ),
     pytest.param(
-        replace(DEFAULT_REQUEST, reality=[]),
+        replace(DEFAULT_REQUEST, reality=reality_json([])),
         predicate(lambda actual: actual.reality == []),
         id="Empty reality",
     ),
