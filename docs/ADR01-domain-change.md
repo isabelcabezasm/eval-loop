@@ -19,7 +19,7 @@ change domains for better architectural fit:
 **Why Banking Works Better**
 - Banking was the original intended domain
 - Banking reality changes frequently (rates, inflation, political changes that
-  influences to economy)
+  influence the economy)
 - Clear split between stable policies and changing operational data
 - Better demonstrates the constitutional framework concept
 
@@ -61,7 +61,7 @@ eg.
 ```json
 {
   "id": "string",           // Unique identifier for the axiom (e.g., "R001")
-  "title": "string",        // Title Human-readable to identify the reality
+  "title": "string",        // Human-readable title to identify the reality
   "description":  "string"  // Explanation of the reality
 }
 ```
