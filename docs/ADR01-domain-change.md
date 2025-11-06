@@ -1,7 +1,7 @@
 # ADR-001: Migration from Health Insurance to Banking Domain with Schema Simplification
 
 ## Status
-Proposed
+Approved
 
 ## Date
 2025-11-06
