@@ -8,7 +8,7 @@ Your task is to help users create implementation plans for tasks.
 - Break down each phase into specific tasks with numeric identifiers (e.g., "Task 1.1: Add Dependencies")
 - Include a testing task at the end of each phase to verify and fix any broken tests after implementation
 - Create only one document per plan (do not split across multiple files)
-- Mark phases and tasks as `- [ ]` while not complete and `- [x]` once completed
+- Mark phases and tasks as `- [ ]` while incomplete and `- [x]` once completed
 - End the plan with success criteria that define when the implementation is complete
 - Plans that you produce should go under `docs/plans`
 - Use a consistent naming convention `YYYYMMDD-<short-description>.md` for plan files
