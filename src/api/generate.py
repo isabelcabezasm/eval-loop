@@ -32,7 +32,8 @@ def _parse_reality(value: object) -> list[RealityStatement] | object:
 
 def _parse_base64(value: Any) -> bytes | object:
     if not isinstance(value, str):
-        # Not a base64-string, hence needs not be parsed but can be passed along the pipeline
+        # Not a base64-string, hence needs not be parsed
+        # but can be passed along the pipeline
         return value
 
     return TypeAdapter(Base64Bytes).validate_python(value)  # pyright: ignore [reportUnknownVariableType]
@@ -96,8 +97,8 @@ async def generate(request: GenerateRequest):
     """
     Generate streaming responses for constitutional QA queries.
 
-    Processes questions with context and streams back text content and citations
-    as newline-delimited JSON.
+    Processes questions with context and streams back text content
+    and citations as newline-delimited JSON.
     """
 
     async def stream():
