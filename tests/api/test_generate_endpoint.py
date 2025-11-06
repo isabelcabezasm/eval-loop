@@ -11,7 +11,11 @@ from core.reality import RealityId, RealityStatement
 
 
 def reality_as_base64():
-    """Create realistic macro-economic reality statements and encode them as base64."""
+    """
+    Create realistic macro-economic reality statements.
+
+    Encode them as base64.
+    """
     reality: Final = [
         RealityStatement(
             id=RealityId("REALITY-001"),
@@ -71,7 +75,8 @@ def test_generate_endpoint(
     # arrange - realistic question about insurance and economic factors
     request = {
         "question": (
-            "How might premium rates be affected for someone with a chronic condition given current economic trends?"
+            "How might premium rates be affected for someone with "
+            "a chronic condition given current economic trends?"
         ),
         "reality": reality(),
     }
@@ -156,13 +161,17 @@ def test_generate_endpoint(
         "Response should contain substantial text content"
     )
 
-    # Constitution citations should always appear since we're asking about health-related topics
+    # Constitution citations should always appear since we're asking
+    # about health-related topics
     assert has_axiom_citation, (
-        "Response should reference constitution axioms for this health/insurance question"
+        "Response should reference constitution axioms "
+        "for this health/insurance question"
     )
 
-    # Reality citations should only appear when reality context is provided
+    # Reality citations should only appear when reality context
+    # is provided
     if reality():
         assert has_reality_citation, (
-            "Response should reference reality statements when context is provided"
+            "Response should reference reality statements "
+            "when context is provided"
         )
