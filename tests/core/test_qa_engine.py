@@ -7,7 +7,6 @@ and prompt formatting.
 """
 
 from collections.abc import AsyncIterator, Awaitable, Callable, Iterable
-from typing import TypeVar
 from unittest.mock import MagicMock
 
 import pytest
@@ -24,10 +23,8 @@ from core.qa_engine import (
 )
 from core.reality import RealityId, RealityStatement
 
-T = TypeVar("T")
 
-
-async def async_iter(iterable: Iterable[T]) -> AsyncIterator[T]:
+async def async_iter[T](iterable: Iterable[T]) -> AsyncIterator[T]:
     """Convert an iterable to an async iterator for testing."""
     for element in iterable:
         yield element
