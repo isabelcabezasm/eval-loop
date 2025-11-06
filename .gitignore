@@ -61,6 +61,7 @@ venv.bak/
 *.swp
 *.swo
 *~
+.vscode/settings.json
 
 # OS generated files
 .DS_Store
