@@ -45,6 +45,7 @@ class QAEvalEngine:
         Args:
             agent: ChatAgent instance for model inference.
         """
+        super().__init__()
         self.agent = agent
 
     def _get_prompt(self, promptType: PromptTypes) -> str:
