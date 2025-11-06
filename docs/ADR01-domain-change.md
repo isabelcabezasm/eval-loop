@@ -68,7 +68,6 @@ eg.
 eg.
 
 ```json
-
 {
   "id": "R001",
   "description":  "Current inflation in Switzerland is elevated at 7.5%."
