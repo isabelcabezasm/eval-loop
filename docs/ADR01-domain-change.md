@@ -51,7 +51,7 @@ eg.
 ```json
   {
     "id": "A001",
-    "description": "Instability often disrupts markets and investor confidence,\
+    "description": "Instability often disrupts markets and investor confidence,
     leading to downturns."
   },
 ```
