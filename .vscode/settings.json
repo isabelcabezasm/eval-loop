@@ -11,9 +11,9 @@
     },
     "editor.formatOnSave": true,
     "editor.wordWrap": "on",
-    "editor.wordWrapColumn": 88,
+    "editor.wordWrapColumn": 79,
     "editor.rulers": [
-        88
+        79
     ],
     "files.exclude": {
         "**/__pycache__": true,
