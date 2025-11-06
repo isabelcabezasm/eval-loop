@@ -12,7 +12,7 @@ def run_evaluation_with_qa_function(question_answer_fn: QuestionAnswerFunction):
         question_answer_fn: The question-answer function to use for evaluation
     """
     parser = argparse.ArgumentParser(description="Run evaluation on provided data")
-    parser.add_argument(
+    _ = parser.add_argument(
         "--data_path",
         required=False,
         help=(

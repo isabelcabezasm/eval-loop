@@ -103,6 +103,7 @@ class QAEngine:
             agent: ChatAgent instance for model inference.
             axiom_store: Storage for axioms/constitution data.
         """
+        super().__init__()
         self.agent = agent
         self.axiom_store = axiom_store
 
