@@ -60,7 +60,7 @@ eg.
 
 ```json
 {
-  "id": "string",           // Unique identifier for the axiom (e.g., "R001")
+  "id": "string",           // Unique identifier for the reality (e.g., "R001")
   "description":  "string"  // Explanation of the reality
 }
 ```
