@@ -8,13 +8,9 @@
         "editor.codeActionsOnSave": {
             "source.organizeImports": "explicit",
             "source.fixAll.ruff": "explicit"
-        },
+        }
     },
     "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.organizeImports": "explicit",
-        "source.fixAll.ruff": "explicit"
-    },
     "editor.wordWrap": "on",
     "editor.wordWrapColumn": 88,
     "editor.rulers": [
