@@ -44,7 +44,8 @@ async def main():
     ]
 
     question = (
-        "How might premium rates be affected for someone with a chronic condition?"
+        "How might premium rates be affected for someone with a "
+        "chronic condition?"
     )
 
     print("Streaming QA with Reality Example")
@@ -86,7 +87,10 @@ async def main():
     if reality_citations:
         print("\nReality References:")
         for statement in reality_citations:
-            print(f"  [{statement.id}] {statement.attribute}: {statement.number}")
+            print(
+                f"  [{statement.id}] {statement.attribute}: "
+                + f"{statement.number}"
+            )
 
     if axiom_citations or reality_citations:
         print("-" * 80)
