@@ -20,6 +20,4 @@ async def get_accuracy(
     Returns:
         AccuracyEvaluation: The accuracy evaluation results for all entities.
     """
-    return await qa_eval_engine().accuracy_evaluation(
-        entity_list, llm_answer, expected_answer
-    )
+    return await qa_eval_engine().accuracy_evaluation(entity_list, llm_answer, expected_answer)

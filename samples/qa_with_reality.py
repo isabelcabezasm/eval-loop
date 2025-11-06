@@ -43,9 +43,7 @@ async def main():
         ),
     ]
 
-    question = (
-        "How might premium rates be affected for someone with a chronic condition?"
-    )
+    question = "How might premium rates be affected for someone with a chronic condition?"
 
     print("Streaming QA with Reality Example")
     print("=" * 80)

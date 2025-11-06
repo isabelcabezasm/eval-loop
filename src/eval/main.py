@@ -15,20 +15,13 @@ def run_evaluation_with_qa_function(question_answer_fn: QuestionAnswerFunction):
     _ = parser.add_argument(
         "--data_path",
         required=False,
-        help=(
-            "Path to the data file or directory "
-            "(optional, defaults to data/eval_dataset.json)"
-        ),
+        help=("Path to the data file or directory (optional, defaults to data/eval_dataset.json)"),
     )
 
     args = parser.parse_args()
 
     # Run the async evaluation function
-    asyncio.run(
-        run_evaluation(
-            question_answer_fn=question_answer_fn, input_data_path=args.data_path
-        )
-    )
+    asyncio.run(run_evaluation(question_answer_fn=question_answer_fn, input_data_path=args.data_path))
 
 
 def main():

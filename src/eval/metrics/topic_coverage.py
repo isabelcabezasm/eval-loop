@@ -2,9 +2,7 @@ from eval.metrics.dependencies import qa_eval_engine
 from eval.metrics.models import EntityExtraction, TopicCoverageEvaluationResults
 
 
-async def get_topic_coverage(
-    *, entity_list: EntityExtraction
-) -> TopicCoverageEvaluationResults:
+async def get_topic_coverage(*, entity_list: EntityExtraction) -> TopicCoverageEvaluationResults:
     """
     Evaluate the topic coverage of LLM predictions by comparing expected and
     generated entities.

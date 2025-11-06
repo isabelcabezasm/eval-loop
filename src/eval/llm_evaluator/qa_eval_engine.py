@@ -53,9 +53,7 @@ class QAEvalEngine:
         with open(file_path, encoding="utf-8") as f:
             return f.read()
 
-    async def _perform_model_invocation[T: BaseModel](
-        self, prompt: str, output_type: type[T]
-    ) -> T:
+    async def _perform_model_invocation[T: BaseModel](self, prompt: str, output_type: type[T]) -> T:
         """Invoke the model and parse the output into the specified Pydantic model."""
 
         # Use asyncio to run the async agent with structured output
@@ -63,9 +61,7 @@ class QAEvalEngine:
         assert isinstance(response.value, output_type)
         return response.value
 
-    async def entity_extraction(
-        self, user_query: str, llm_answer: str, expected_answer: str
-    ) -> EntityExtraction:
+    async def entity_extraction(self, user_query: str, llm_answer: str, expected_answer: str) -> EntityExtraction:
         """
         Extract and compare entities between the LLM-generated answer and expected
         answer.
@@ -105,13 +101,9 @@ class QAEvalEngine:
             llm_answer=llm_answer,
             expected_answer=expected_answer,
         )
-        return await self._perform_model_invocation(
-            metric_prompt, AccuracyEvaluationResults
-        )
+        return await self._perform_model_invocation(metric_prompt, AccuracyEvaluationResults)
 
-    async def topic_coverage_evaluation(
-        self, entity_list: EntityExtraction
-    ) -> TopicCoverageEvaluationResults:
+    async def topic_coverage_evaluation(self, entity_list: EntityExtraction) -> TopicCoverageEvaluationResults:
         """
         Evaluate the topic coverage of the LLM-generated answer against the expected
         answer.
@@ -137,6 +129,4 @@ class QAEvalEngine:
             expected_entities=expected_entities_str,
             generated_entities=generated_entities_str,
         )
-        return await self._perform_model_invocation(
-            metric_prompt, TopicCoverageEvaluationResults
-        )
+        return await self._perform_model_invocation(metric_prompt, TopicCoverageEvaluationResults)

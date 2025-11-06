@@ -158,9 +158,7 @@ class QAEngine:
         if buffer:
             yield TextContent(content=buffer)
 
-    async def invoke(
-        self, question: str, reality: list[RealityStatement] | None = None
-    ) -> str:
+    async def invoke(self, question: str, reality: list[RealityStatement] | None = None) -> str:
         """
         Generate AI response by collecting all streaming chunks into a single string.
 

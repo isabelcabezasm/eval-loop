@@ -14,4 +14,3 @@ async def health_check():
         str: A simple "ok" status message indicating the service is healthy.
     """
     return "ok"
- 

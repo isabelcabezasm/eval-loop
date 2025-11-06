@@ -94,15 +94,13 @@ router = APIRouter()
 async def generate(request: GenerateRequest):
     """
     Generate streaming responses for constitutional QA queries.
-    
+
     Processes questions with context and streams back text content and citations
     as newline-delimited JSON.
     """
+
     async def stream():
-        async for chunk in qa_engine().invoke_streaming(
-            question=request.question,
-            reality=request.reality or []
-        ):
+        async for chunk in qa_engine().invoke_streaming(question=request.question, reality=request.reality or []):
             match chunk:
                 case TextContent():
                     response = TextResponse(text=chunk.content)

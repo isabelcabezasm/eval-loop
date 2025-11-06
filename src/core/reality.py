@@ -29,10 +29,7 @@ def load_from_json(json_data: str, /) -> list[RealityStatement]:
         class Config:
             extra = "ignore"  # Ignore extra fields if present
 
-    parsed_statements = [
-        RawRealityStatement.model_validate(statement)
-        for statement in json.loads(json_data)
-    ]
+    parsed_statements = [RawRealityStatement.model_validate(statement) for statement in json.loads(json_data)]
 
     return [
         RealityStatement(

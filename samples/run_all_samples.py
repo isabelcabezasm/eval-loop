@@ -15,9 +15,7 @@ def main():
     samples_dir = Path(__file__).parent
 
     # Find all Python files except this one
-    sample_files = sorted(
-        f for f in samples_dir.glob("*.py") if f.name != "run_all_samples.py"
-    )
+    sample_files = sorted(f for f in samples_dir.glob("*.py") if f.name != "run_all_samples.py")
 
     if not sample_files:
         print("No sample files found.")

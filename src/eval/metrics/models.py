@@ -19,12 +19,8 @@ class Entity(BaseModel):
     Example: Tobacco use significantly increases mortality risk.
     """
 
-    trigger_variable: str = Field(
-        description="The name of the variable, related with habits, activities, ..."
-    )
-    consequence_variable: str = Field(
-        description="The name of the variable, related with outcomes, effects, ..."
-    )
+    trigger_variable: str = Field(description="The name of the variable, related with habits, activities, ...")
+    consequence_variable: str = Field(description="The name of the variable, related with outcomes, effects, ...")
 
 
 class EntityExtraction(BaseModel):
@@ -33,15 +29,9 @@ class EntityExtraction(BaseModel):
     context.
     """
 
-    user_query_entities: list[Entity] = Field(
-        description="Entities extracted from the user query."
-    )
-    llm_answer_entities: list[Entity] = Field(
-        description="Entities extracted from the LLM answer."
-    )
-    expected_answer_entities: list[Entity] = Field(
-        description="Entities extracted from the expected answer."
-    )
+    user_query_entities: list[Entity] = Field(description="Entities extracted from the user query.")
+    llm_answer_entities: list[Entity] = Field(description="Entities extracted from the LLM answer.")
+    expected_answer_entities: list[Entity] = Field(description="Entities extracted from the expected answer.")
 
 
 class EntityAccuracy(BaseModel):
@@ -50,9 +40,7 @@ class EntityAccuracy(BaseModel):
     """
 
     entity: str = Field(description="The entity being evaluated for accuracy.")
-    reason: str = Field(
-        description="Explanation of why this accuracy score was assigned."
-    )
+    reason: str = Field(description="Explanation of why this accuracy score was assigned.")
     score: float = Field(
         description="Accuracy score for the entity, between 0.0 and 1.0.",
         ge=0.0,
@@ -65,9 +53,7 @@ class AccuracyEvaluationResults(BaseModel):
     A model for storing accuracy evaluation results for multiple entities.
     """
 
-    entity_accuracies: list[EntityAccuracy] = Field(
-        description="List of accuracy evaluations for each entity."
-    )
+    entity_accuracies: list[EntityAccuracy] = Field(description="List of accuracy evaluations for each entity.")
     accuracy_mean: float = Field(
         description="Overall accuracy score across all entities, between 0.0 and 1.0.",
         ge=0.0,
@@ -80,9 +66,7 @@ class AccuracyEvaluationResults(BaseModel):
         """
         if not self.entity_accuracies:
             return 0.0
-        return sum(entity.score for entity in self.entity_accuracies) / len(
-            self.entity_accuracies
-        )
+        return sum(entity.score for entity in self.entity_accuracies) / len(self.entity_accuracies)
 
 
 class TopicCoverageEvaluationResults(BaseModel):

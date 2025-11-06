@@ -44,10 +44,7 @@ def load_from_json(json_data: str) -> AxiomStore:
         class Config:
             extra = "ignore"  # Ignore extra fields like 'object', 'link', 'amendments'
 
-    parsed_axioms = {
-        AxiomId(axiom["id"]): RawAxiom.model_validate(axiom)
-        for axiom in json.loads(json_data)
-    }
+    parsed_axioms = {AxiomId(axiom["id"]): RawAxiom.model_validate(axiom) for axiom in json.loads(json_data)}
 
     return AxiomStore(
         Axiom(
