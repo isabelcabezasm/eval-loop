@@ -4,20 +4,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Protocol
 
-from pydantic import BaseModel
-
 from core.paths import root
 from eval.metrics.accuracy import get_accuracy
 from eval.metrics.extract_entities import get_entities
 from eval.metrics.models import (
-    AccuracyEvaluationResults,
     AccuracyMetric,
     CoverageMetric,
-    EntityExtraction,
     EvaluationResult,
     EvaluationSampleInput,
     EvaluationSampleOutput,
-    TopicCoverageEvaluationResults,
 )
 from eval.metrics.topic_coverage import get_topic_coverage
 from eval.report_generation.report import Report
