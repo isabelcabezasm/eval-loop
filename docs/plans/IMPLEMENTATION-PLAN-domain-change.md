@@ -48,8 +48,6 @@ creating comprehensive banking domain content.
    @dataclass(frozen=True)
    class Axiom:
        id: AxiomId
-       condition: str
-       consequence: str
        description: str
    ```
 
@@ -57,8 +55,6 @@ creating comprehensive banking domain content.
    ```python
    class RawAxiom(BaseModel):
        id: str
-       condition: str
-       consequence: str
        description: str
        
        class Config:
@@ -93,7 +89,6 @@ creating comprehensive banking domain content.
    @dataclass(frozen=True)
    class RealityStatement:
        id: RealityId
-       title: str
        description: str
    ```
 
@@ -101,7 +96,6 @@ creating comprehensive banking domain content.
    ```python
    class RawRealityStatement(BaseModel):
        id: str
-       title: str
        description: str
        
        class Config:
@@ -138,9 +132,7 @@ creating comprehensive banking domain content.
    # NEW:
    Axiom(
        id=AxiomId("A001"),
-       condition="Central bank increases interest rates",
-       consequence="Borrowing costs increase",
-       description="Higher interest rates make loans more expensive, reducing spending and investment."
+       description="When central banks increase interest rates, borrowing costs rise for consumers and businesses, reducing spending and investment."
    )
    ```
 
@@ -159,8 +151,7 @@ creating comprehensive banking domain content.
    # NEW:
    RealityStatement(
        id=RealityId("R001"),
-       title="Current Swiss Inflation Rate",
-       description="Inflation in Switzerland is at 7.5%."
+       description="Current inflation in Switzerland is 7.5%."
    )
    ```
 
@@ -280,11 +271,7 @@ Replace the current template with:
 {%- for axiom in axioms -%}
 ## {{ axiom.id }}
 
-**Condition**: {{ axiom.condition }}
-
-**Consequence**: {{ axiom.consequence }}
-
-**Description**: {{ axiom.description }}
+{{ axiom.description }}
 
 {% endfor %}
 ```
@@ -302,7 +289,7 @@ Replace the current template with:
 Replace the current template with:
 ```jinja2
 {%- for statement in reality -%}
-## {{ statement.id }}: {{ statement.title }}
+## {{ statement.id }}
 
 {{ statement.description }}{% if not loop.last %}
 
@@ -358,9 +345,8 @@ You are a helpful AI assistant specialized in banking and finance matters. Your 
 ```python
 # Update assertions checking for old field names in prompts
 assert "A001" in captured_prompt  # Instead of "AXIOM-001"
-assert "condition" in captured_prompt.lower()  # New field name
-assert "consequence" in captured_prompt.lower()  # New field name
-# Remove checks for old fields like "subject", "entity", "trigger"
+assert "description" in captured_prompt.lower()
+# Remove checks for old fields like "subject", "entity", "trigger", "condition", "consequence", "title"
 ```
 
 **Estimated Time**: 30 minutes
@@ -446,21 +432,15 @@ Example of topics to cover:
 [
   {
     "id": "A001",
-    "condition": "Political instability in a country",
-    "consequence": "Economic recession",
-    "description": "Instability often disrupts markets and investor confidence, leading to downturns."
+    "description": "Political instability often disrupts markets and investor confidence, leading to economic downturns."
   },
   {
     "id": "A002",
-    "condition": "Central bank increases interest rates",
-    "consequence": "Borrowing costs increase for consumers and businesses",
-    "description": "Higher interest rates make loans more expensive, reducing spending and investment."
+    "description": "When central banks increase interest rates, borrowing costs rise for consumers and businesses, reducing spending and investment."
   },
   {
     "id": "A003",
-    "condition": "High inflation rate persists",
-    "consequence": "Purchasing power of currency decreases",
-    "description": "As prices rise, each unit of currency buys fewer goods and services."
+    "description": "High inflation decreases the purchasing power of currency as prices rise and each unit of currency buys fewer goods and services."
   }
 ]
 ```
@@ -559,8 +539,8 @@ economic conditions.
 
 Reality statements provide specific, current facts that complement the constitution's
 general principles. For example:
-- If the constitution has an axiom about "High inflation rate persists", then a reality
-  statement should give the actual inflation rate right now (e.g., "Inflation in
+- If the constitution has an axiom about inflation effects, then a reality statement
+  should give the actual inflation rate right now (e.g., "Current inflation in
   Switzerland is 7.5%")
 
 **Example reality statements**:
@@ -569,27 +549,22 @@ general principles. For example:
 [
   {
     "id": "R001",
-    "title": "Current Inflation Rate in Switzerland",
     "description": "Current inflation in Switzerland is elevated at 7.5%."
   },
   {
     "id": "R002",
-    "title": "Swiss Unemployment Rate",
     "description": "Unemployment rate in Switzerland is 5%."
   },
   {
     "id": "R003",
-    "title": "SNB Policy Rate",
     "description": "The Swiss National Bank has set the policy rate at 1.75%."
   },
   {
     "id": "R004",
-    "title": "EUR/CHF Exchange Rate",
     "description": "Current EUR/CHF exchange rate is 0.95."
   },
   {
     "id": "R005",
-    "title": "Swiss GDP Growth",
     "description": "Switzerland's GDP grew by 2.1% in the last quarter."
   }
 ]
@@ -832,12 +807,10 @@ uv run python -m eval.main --data_path data/eval_dataset.json
    reality_data = [
        {
            "id": "R001",
-           "title": "Current SNB Rate",
            "description": "Swiss National Bank policy rate is at 1.75%."
        },
        {
            "id": "R002",
-           "title": "Swiss Inflation",
            "description": "Current inflation in Switzerland is 7.5%."
        }
    ]
@@ -1137,20 +1110,20 @@ Each phase must meet these before creating its PR:
 #### Overall Project Success (Phase 7)
 
 **Must Have (Blocking)**:
-- [x] All data models updated to new schema
-- [x] All templates updated and rendering correctly
-- [x] Constitution has minimum 10 banking axioms
-- [x] All unit tests passing
-- [x] No linting or type errors
-- [x] Sample scripts execute successfully
-- [x] No health insurance references in code
+- [ ] All data models updated to new schema
+- [ ] All templates updated and rendering correctly
+- [ ] Constitution has minimum 10 banking axioms
+- [ ] All unit tests passing
+- [ ] No linting or type errors
+- [ ] Sample scripts execute successfully
+- [ ] No health insurance references in code
 
 **Should Have (Important)**:
-- [x] Evaluation dataset with 10+ banking questions
-- [x] Reality data file with 10+ statements
-- [x] Manual testing completed successfully
-- [x] Documentation fully updated
-- [x] ADR marked as implemented
+- [ ] Evaluation dataset with 10+ banking questions
+- [ ] Reality data file with 10+ statements
+- [ ] Manual testing completed successfully
+- [ ] Documentation fully updated
+- [ ] ADR marked as implemented
 
 **Nice to Have (Optional)**:
 - [ ] 20+ comprehensive banking axioms
