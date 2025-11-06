@@ -38,8 +38,8 @@ simultaneously simplify the constitutional schema.
 
 ```json
 {
-  "id": "string",           // Unique identifier (e.g., "RULE-001")
-  "condition": "string",    // When this rule applies (trigger + conditions)
+  "id": "string",           // Unique identifier for the axiom (e.g., "A001")
+  "condition": "string",    // When this rule applies
   "consequence": "string",  // What happens when the condition is met
   "description": "string"   // Human-readable explanation of the rule
 }
@@ -60,9 +60,9 @@ eg.
 
 ```json
 {
-  "id": "string",
-  "title": "string",
-  "description":  "string"
+  "id": "string",           // Unique identifier for the axiom (e.g., "R001")
+  "title": "string",        // Title Human-readable to identify the reality
+  "description":  "string"  // Explanation of the reality
 },
 ```
 
@@ -71,12 +71,12 @@ eg.
 ```json
 
 {
-  "id": "S001",
+  "id": "R001",
   "title": "Inflation",
   "description":  "Current inflation in Switzerland is elevated at 7.5%."
 },
 {
-  "id": "S002",
+  "id": "R002",
   "title": "Employment rate",
   "description": "Unemployment rate in Switzerland is 5%."
 }
