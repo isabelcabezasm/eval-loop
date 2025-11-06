@@ -27,6 +27,9 @@ change domains for better architectural fit:
 - Current schema has too many overlapping fields (subject, entity, trigger, conditions)
 - Simpler structure is easier to understand, maintain and access
 - Reduces complexity for demonstration purposes
+- We start with the bare minimum in both schemas: id and description for the first
+  iteration, and will add complexity only if data-driven experiments show it improves
+  performance or helps the LLM
 
 
 ## Decision
@@ -39,9 +42,7 @@ simultaneously simplify the constitutional schema.
 ```json
 {
   "id": "string",           // Unique identifier for the axiom (e.g., "A001")
-  "condition": "string",    // When this rule applies
-  "consequence": "string",  // What happens when the condition is met
-  "description": "string"   // Human-readable explanation of the rule
+  "description": "string"   // Explanation of the rule
 }
 ```
 
@@ -50,9 +51,8 @@ eg.
 ```json
   {
     "id": "A001",
-    "condition": "Political instability in a country",
-    "consequence": "Economic recession",
-    "description": "Instability often disrupts markets and investor confidence, leading to downturns."
+    "description": "Instability often disrupts markets and investor confidence,\
+    leading to downturns."
   },
 ```
 
@@ -61,7 +61,6 @@ eg.
 ```json
 {
   "id": "string",           // Unique identifier for the axiom (e.g., "R001")
-  "title": "string",        // Human-readable title to identify the reality
   "description":  "string"  // Explanation of the reality
 }
 ```
@@ -72,12 +71,10 @@ eg.
 
 {
   "id": "R001",
-  "title": "Inflation",
   "description":  "Current inflation in Switzerland is elevated at 7.5%."
 },
 {
   "id": "R002",
-  "title": "Employment rate",
   "description": "Unemployment rate in Switzerland is 5%."
 }
 ```
