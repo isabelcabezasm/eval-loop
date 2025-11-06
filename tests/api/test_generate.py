@@ -14,7 +14,7 @@ from core.reality import RealityStatement
 REALITY: Final = [reality_statement(1), reality_statement(2)]
 
 
-def reality_json(reality: list[RealityStatement]) -> str:
+def reality_base64_json(reality: list[RealityStatement]) -> str:
     reality_dicts = [asdict(statement) for statement in reality]
     reality_json = json.dumps(reality_dicts)
     reality_base64 = base64.b64encode(reality_json.encode()).decode()
@@ -29,7 +29,7 @@ class RequestFixture:
 
 DEFAULT_REQUEST: Final = RequestFixture(
     question="What is the capital of France?",
-    reality=reality_json(REALITY),
+    reality=reality_base64_json(REALITY),
 )
 
 
@@ -52,7 +52,7 @@ DESERIALIZATION_SUCCESS_TEST_DATA: Final = [
         id="Full request payload reality",
     ),
     pytest.param(
-        replace(DEFAULT_REQUEST, reality=reality_json([])),
+        replace(DEFAULT_REQUEST, reality=reality_base64_json([])),
         predicate(lambda actual: actual.reality == []),
         id="Empty reality",
     ),
