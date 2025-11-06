@@ -35,17 +35,6 @@
             }
         },
         {
-            "name": "Run Main Core",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "core.main",
-            "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}/src"
-            }
-        },
-        {
             "name": "Python: Pytest",
             "type": "debugpy",
             "request": "launch",
