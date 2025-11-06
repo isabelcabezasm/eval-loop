@@ -1,4 +1,4 @@
-from typing import Literal, TypeVar
+from typing import Literal
 
 from agent_framework import ChatAgent
 from anyio import Path
@@ -9,8 +9,6 @@ from eval.metrics.models import (
     EntityExtraction,
     TopicCoverageEvaluationResults,
 )
-
-T = TypeVar("T", bound=BaseModel)
 
 
 class QAEvalEngine:
@@ -45,6 +43,7 @@ class QAEvalEngine:
         Args:
             agent: ChatAgent instance for model inference.
         """
+        super().__init__()
         self.agent = agent
 
     def _get_prompt(self, promptType: PromptTypes) -> str:
@@ -54,7 +53,9 @@ class QAEvalEngine:
         with open(file_path, encoding="utf-8") as f:
             return f.read()
 
-    async def _perform_model_invocation(self, prompt: str, output_type: type[T]) -> T:
+    async def _perform_model_invocation[T: BaseModel](
+        self, prompt: str, output_type: type[T]
+    ) -> T:
         """Invoke the model and parse the output into the specified Pydantic model."""
 
         # Use asyncio to run the async agent with structured output

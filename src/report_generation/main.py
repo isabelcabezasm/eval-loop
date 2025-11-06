@@ -13,7 +13,7 @@ def generate_report(data_path: str):
 def main():
     """Main entry point for report generation."""
     parser = argparse.ArgumentParser(description="Generate evaluation reports")
-    parser.add_argument(
+    _ = parser.add_argument(
         "--data_path", required=True, help="Path to the evaluation data"
     )
 
