@@ -28,8 +28,8 @@
                 "python.defaultInterpreterPath": "/usr/local/bin/python",
                 "python.linting.enabled": true,
                 "python.linting.ruffEnabled": true,
-                "python.formatting.provider": "black",
-                "python.analysis.typeCheckingMode": "basic",
+                "python.formatting.provider": "ruff",
+                "python.analysis.typeCheckingMode": "strict",
                 "python.analysis.autoImportCompletions": true,
                 "files.associations": {
                     "*.toml": "toml"
