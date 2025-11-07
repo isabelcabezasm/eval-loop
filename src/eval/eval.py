@@ -1,6 +1,8 @@
 import asyncio
 import json
+from asyncio import Semaphore
 from datetime import datetime
+from functools import wraps
 from pathlib import Path
 from typing import Protocol
 
@@ -176,6 +178,28 @@ class EvaluationResult(BaseModel):
     evaluation_outputs: list[EvaluationSampleOutput]
     accuracy: AccuracyMetric
     topic_coverage: CoverageMetric
+
+
+def limit_concurrency(limit: int = 5):
+    """
+    Decorator to limit the concurrency of async functions.
+    Args:
+        limit: Maximum number of concurrent executions allowed
+               (default: 5)
+    Returns:
+        Decorated function with concurrency limiting
+    """
+    semaphore = Semaphore(limit)
+
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            async with semaphore:
+                return await func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 async def evaluate_answer(
