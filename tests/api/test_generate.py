@@ -52,7 +52,19 @@ DESERIALIZATION_SUCCESS_TEST_DATA: Final = [
         id="Full request payload reality",
     ),
     pytest.param(
-        replace(DEFAULT_REQUEST, reality=reality_base64_json([])),
+        replace(DEFAULT_REQUEST, reality=
+                [asdict(statement) for statement in REALITY]),
+        predicate(
+            lambda actual: actual
+            == GenerateRequest(
+                question="What is the capital of France?",
+                reality=REALITY,
+            )
+        ),
+        id="Full request payload reality as python object",
+    ),
+    pytest.param(
+        replace(DEFAULT_REQUEST, reality=[]),
         predicate(lambda actual: actual.reality == []),
         id="Empty reality",
     ),
