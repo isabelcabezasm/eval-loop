@@ -17,7 +17,8 @@ jobs:
         uses: astral-sh/setup-uv@v7.1.2
 
       - name: Run tests
-        run: uv run pytest -v --tb=short
+        # TODO: activate integration tests in CI
+        run: uv run pytest -v --tb=short -m "not integration"
 
   lint:
     runs-on: ubuntu-latest

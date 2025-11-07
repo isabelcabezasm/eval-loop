@@ -1,5 +1,6 @@
 [project]
 name = "constitutional-qa-agent"
+version = "0.1.0"
 description = "Constitutional Q&A Agent"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -9,7 +10,6 @@ authors = [
   { name = "Marc Gomez", email = "marcgomez@microsoft.com" },
   { name = "Bastian Burger", email = "bastian.burger@microsoft.com" },
 ]
-dynamic = ["version"]
 
 dependencies = [
   "azure-identity>=1.23.0",
@@ -46,11 +46,8 @@ constitutional-qa-agent = "eval.baseline.main:main"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.hatch.version]
-path = "src/eval/__init__.py"
-
 [tool.hatch.build.targets.wheel]
-packages = ["src/eval", "src/core"]
+packages = ["src/eval", "src/core", "src/api"]
 
 [tool.pyright]
 pythonVersion = "3.12"
@@ -88,6 +85,7 @@ lint.select = [
 minversion = "7.0"
 testpaths = ["tests"]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
 markers = [
   "slow: marks tests as slow (deselect with '-m \"not slow\"')",
   "integration: marks tests as integration tests",
