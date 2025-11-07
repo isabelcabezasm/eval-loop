@@ -14,41 +14,41 @@ with simplified schemas for both constitution and reality data structures.
 
 ## Phase 1: Constitution Code Changes
 
-### - [ ] Task 1.1: Update Constitution Schema
+### - [x] Task 1.1: Update Constitution Schema
 - Simplify constitution schema to only include `id` and `description` fields
 - Remove fields: `subject`, `entity`, `trigger`, `conditions`, and any other
   fields
 - Update data models in `src/core/models.py` or equivalent
 - Update type definitions and validation logic
 
-### - [ ] Task 1.2: Update Constitution Loading Logic
+### - [x] Task 1.2: Update Constitution Loading Logic
 - Update parsers/loaders in `src/core/` to handle simplified constitution
   schema
 - Remove logic handling old complex fields
 - Ensure backward compatibility is cleanly removed
 
-### - [ ] Task 1.3: Update Constitution Query Processing
+### - [x] Task 1.3: Update Constitution Query Processing
 - Review query processing logic in `src/core/` related to constitution
 - Ensure prompts and context building work with simplified constitution schema
 - Update any field references in prompts or retrieval logic
 
-### - [ ] Task 1.4: Update Constitution Retrieval Logic
+### - [x] Task 1.4: Update Constitution Retrieval Logic
 - Review retrieval/search mechanisms for constitution data
 - Ensure they work effectively with description-only content
 - Update any indexing or embedding logic if needed
 
-### - [ ] Task 1.5: Update API Constitution Response Models
+### - [x] Task 1.5: Update API Constitution Response Models
 - Update `AxiomCitationResponse` in `src/api/generate.py`
 - Remove fields: `subject`, `entity`, `trigger`, `conditions`, `category`
 - Keep only `id` and `description` fields
 - Update the response mapping in the `generate()` endpoint
 
-### - [ ] Task 1.6: Update Constitution Test Fixtures
+### - [x] Task 1.6: Update Constitution Test Fixtures
 - Update test fixtures in `tests/` to use simplified constitution schema
 - Keep health insurance domain content for now (domain change comes later)
 - Ensure tests still pass with schema changes
 
-### - [ ] Task 1.7: Run Tests for Phase 1
+### - [x] Task 1.7: Run Tests for Phase 1
 - Run all tests to identify broken functionality
 - Fix any test failures related to constitution schema changes
 - Verify constitution-related functionality works with new schema

@@ -111,16 +111,9 @@ def test_generate_endpoint(
         elif obj["type"] == "axiom_citation":
             # Axiom citation (constitution reference) - validate structure
             assert "id" in obj, "Axiom citation missing 'id' field"
-            assert "subject" in obj, "Axiom citation missing 'subject' field"
-            assert "entity" in obj, "Axiom citation missing 'entity' field"
-            assert "trigger" in obj, "Axiom citation missing 'trigger' field"
-            assert "conditions" in obj, (
-                "Axiom citation missing 'conditions' field"
-            )
             assert "description" in obj, (
                 "Axiom citation missing 'description' field"
             )
-            assert "category" in obj, "Axiom citation missing 'category' field"
 
             # Validate id format
             assert obj["id"].startswith("AXIOM-"), (

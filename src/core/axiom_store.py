@@ -3,7 +3,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import NewType
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 AxiomId = NewType("AxiomId", str)
 
@@ -11,12 +11,7 @@ AxiomId = NewType("AxiomId", str)
 @dataclass(frozen=True)
 class Axiom:
     id: AxiomId
-    subject: str
-    entity: str
-    trigger: str
-    conditions: str
     description: str
-    category: str
 
 
 class AxiomStore:
@@ -35,17 +30,10 @@ class AxiomStore:
 
 def load_from_json(json_data: str) -> AxiomStore:
     class RawAxiom(BaseModel):
-        id: str
-        subject: str
-        entity: str
-        trigger: str
-        conditions: str
-        description: str
-        category: str
+        model_config = ConfigDict(extra="ignore")  # Ignore extra fields
 
-        class Config:
-            # Ignore extra fields like 'object', 'link', 'amendments'
-            extra = "ignore"
+        id: str
+        description: str
 
     parsed_axioms = {
         AxiomId(axiom["id"]): RawAxiom.model_validate(axiom)
@@ -55,12 +43,7 @@ def load_from_json(json_data: str) -> AxiomStore:
     return AxiomStore(
         Axiom(
             id=axiom_id,
-            subject=parsed_axiom.subject,
-            entity=parsed_axiom.entity,
-            trigger=parsed_axiom.trigger,
-            conditions=parsed_axiom.conditions,
             description=parsed_axiom.description,
-            category=parsed_axiom.category,
         )
         for axiom_id, parsed_axiom in parsed_axioms.items()
     )
