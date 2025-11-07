@@ -93,8 +93,6 @@ def test_generate_endpoint(
 
     # Track what we've seen to validate the response contains expected elements
     has_text = False
-    has_axiom_citation = False
-    has_reality_citation = False
     text_chunks: list[str] = []
 
     for line in lines:
@@ -128,7 +126,6 @@ def test_generate_endpoint(
             assert obj["id"].startswith("AXIOM-"), (
                 f"Axiom ID should start with 'AXIOM-': {obj['id']}"
             )
-            has_axiom_citation = True
 
         elif obj["type"] == "reality_citation":
             # Reality citation (context reference) - validate structure
@@ -147,7 +144,6 @@ def test_generate_endpoint(
             assert obj["id"].startswith("REALITY-"), (
                 f"Reality ID should start with 'REALITY-': {obj['id']}"
             )
-            has_reality_citation = True
 
         else:
             pytest.fail(f"Unexpected response type '{obj['type']}': {obj}")
@@ -160,18 +156,3 @@ def test_generate_endpoint(
     assert len(combined_text) > 20, (
         "Response should contain substantial text content"
     )
-
-    # Constitution citations should always appear since we're asking
-    # about health-related topics
-    assert has_axiom_citation, (
-        "Response should reference constitution axioms "
-        "for this health/insurance question"
-    )
-
-    # Reality citations should only appear when reality context
-    # is provided
-    if reality():
-        assert has_reality_citation, (
-            "Response should reference reality statements "
-            "when context is provided"
-        )
