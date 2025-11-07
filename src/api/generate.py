@@ -69,12 +69,7 @@ class AxiomCitationResponse(BaseModel):
 
     type: Literal["axiom_citation"] = Field(default="axiom_citation")
     id: str
-    subject: str
-    entity: str
-    trigger: str
-    conditions: str
     description: str
-    category: str
 
 
 class RealityCitationResponse(BaseModel):
@@ -111,12 +106,7 @@ async def generate(request: GenerateRequest):
                 case AxiomCitationContent():
                     response = AxiomCitationResponse(
                         id=chunk.item.id,
-                        subject=chunk.item.subject,
-                        entity=chunk.item.entity,
-                        trigger=chunk.item.trigger,
-                        conditions=chunk.item.conditions,
                         description=chunk.item.description,
-                        category=chunk.item.category,
                     )
                 case RealityCitationContent():
                     response = RealityCitationResponse(

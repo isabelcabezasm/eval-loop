@@ -11,12 +11,7 @@ AxiomId = NewType("AxiomId", str)
 @dataclass(frozen=True)
 class Axiom:
     id: AxiomId
-    subject: str
-    entity: str
-    trigger: str
-    conditions: str
     description: str
-    category: str
 
 
 class AxiomStore:
@@ -36,15 +31,10 @@ class AxiomStore:
 def load_from_json(json_data: str) -> AxiomStore:
     class RawAxiom(BaseModel):
         id: str
-        subject: str
-        entity: str
-        trigger: str
-        conditions: str
         description: str
-        category: str
 
         class Config:
-            # Ignore extra fields like 'object', 'link', 'amendments'
+            # Ignore extra fields like 'subject', 'entity', 'trigger', 'conditions', 'category'
             extra = "ignore"
 
     parsed_axioms = {
@@ -55,12 +45,7 @@ def load_from_json(json_data: str) -> AxiomStore:
     return AxiomStore(
         Axiom(
             id=axiom_id,
-            subject=parsed_axiom.subject,
-            entity=parsed_axiom.entity,
-            trigger=parsed_axiom.trigger,
-            conditions=parsed_axiom.conditions,
             description=parsed_axiom.description,
-            category=parsed_axiom.category,
         )
         for axiom_id, parsed_axiom in parsed_axioms.items()
     )

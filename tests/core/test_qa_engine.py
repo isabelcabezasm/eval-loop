@@ -58,12 +58,7 @@ async def test_invoke_stream_calls_agent_correctly():
         [
             Axiom(
                 id=AxiomId("AXIOM-001"),
-                subject="subject",
-                entity="entity",
-                trigger="trigger",
-                conditions="conditions",
                 description="description",
-                category="category",
             )
         ]
     )
@@ -155,12 +150,7 @@ async def test_formatted_prompt_includes_constitution():
     axioms = [
         Axiom(
             id=AxiomId("AXIOM-001"),
-            subject="Test Subject",
-            entity="Test Entity",
-            trigger="Test Trigger",
-            conditions="Test Conditions",
             description="Test Description",
-            category="Test Category",
         )
     ]
 
@@ -174,10 +164,6 @@ async def test_formatted_prompt_includes_constitution():
     # Assert that the prompt includes constitution data
     assert captured_prompt is not None
     assert "AXIOM-001" in captured_prompt
-    assert "Test Subject" in captured_prompt
-    assert "Test Entity" in captured_prompt
-    assert "Test Trigger" in captured_prompt
-    assert "Test Conditions" in captured_prompt
     assert "Test Description" in captured_prompt
     assert "Test question?" in captured_prompt
 
@@ -193,12 +179,7 @@ async def test_formatted_prompt_includes_constitution():
                 AxiomCitationContent(
                     item=Axiom(
                         id=AxiomId("AXIOM-001"),
-                        subject="subject",
-                        entity="entity",
-                        trigger="trigger",
-                        conditions="conditions",
                         description="description",
-                        category="category",
                     )
                 ),
                 TextContent(content=" world"),
@@ -228,12 +209,7 @@ async def test_formatted_prompt_includes_constitution():
                 AxiomCitationContent(
                     item=Axiom(
                         id=AxiomId("AXIOM-001"),
-                        subject="subject",
-                        entity="entity",
-                        trigger="trigger",
-                        conditions="conditions",
                         description="description",
-                        category="category",
                     )
                 ),
                 TextContent(content=" citations "),
@@ -264,12 +240,7 @@ async def test_invoke_streaming_citation_handling(
         [
             Axiom(
                 id=AxiomId("AXIOM-001"),
-                subject="subject",
-                entity="entity",
-                trigger="trigger",
-                conditions="conditions",
                 description="description",
-                category="category",
             )
         ]
     )
@@ -293,12 +264,7 @@ def test_citation_content_property():
     # Arrange
     axiom = Axiom(
         id=AxiomId("AXIOM-001"),
-        subject="subject",
-        entity="entity",
-        trigger="trigger",
-        conditions="conditions",
         description="description",
-        category="category",
     )
 
     # Act
@@ -344,21 +310,11 @@ async def test_invoke_streaming_multiple_citations_in_sequence():
         [
             Axiom(
                 id=AxiomId("AXIOM-001"),
-                subject="subject1",
-                entity="entity1",
-                trigger="trigger1",
-                conditions="conditions1",
                 description="description1",
-                category="category1",
             ),
             Axiom(
                 id=AxiomId("AXIOM-002"),
-                subject="subject2",
-                entity="entity2",
-                trigger="trigger2",
-                conditions="conditions2",
                 description="description2",
-                category="category2",
             ),
         ]
     )
@@ -399,12 +355,7 @@ async def test_invoke_collects_all_streaming_chunks():
         [
             Axiom(
                 id=AxiomId("AXIOM-001"),
-                subject="subject",
-                entity="entity",
-                trigger="trigger",
-                conditions="conditions",
                 description="description",
-                category="category",
             )
         ]
     )
@@ -449,21 +400,11 @@ def test_axiom_store_integration():
     axioms = [
         Axiom(
             id=AxiomId("AXIOM-001"),
-            subject="subject1",
-            entity="entity1",
-            trigger="trigger1",
-            conditions="conditions1",
             description="description1",
-            category="category1",
         ),
         Axiom(
             id=AxiomId("AXIOM-002"),
-            subject="subject2",
-            entity="entity2",
-            trigger="trigger2",
-            conditions="conditions2",
             description="description2",
-            category="category2",
         ),
     ]
 
@@ -477,7 +418,6 @@ def test_axiom_store_integration():
     # Assert
     assert retrieved_axiom is not None
     assert retrieved_axiom.id == AxiomId("AXIOM-001")
-    assert retrieved_axiom.subject == "subject1"
 
 
 @pytest.mark.asyncio
@@ -669,21 +609,11 @@ async def test_invoke_streaming_handles_chunk_scenarios(
         [
             Axiom(
                 id=AxiomId("AXIOM-001"),
-                subject="subject",
-                entity="entity",
-                trigger="trigger",
-                conditions="conditions",
                 description="description",
-                category="category",
             ),
             Axiom(
                 id=AxiomId("AXIOM-12"),
-                subject="subject",
-                entity="entity",
-                trigger="trigger",
-                conditions="conditions",
                 description="description",
-                category="category",
             ),
         ]
     )
