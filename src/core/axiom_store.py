@@ -3,7 +3,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import NewType
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 AxiomId = NewType("AxiomId", str)
 
@@ -30,12 +30,10 @@ class AxiomStore:
 
 def load_from_json(json_data: str) -> AxiomStore:
     class RawAxiom(BaseModel):
+        model_config = ConfigDict(extra="ignore")  # Ignore extra fields
+
         id: str
         description: str
-
-        class Config:
-            # Ignore extra fields like 'subject', 'entity', 'trigger', 'conditions', 'category'
-            extra = "ignore"
 
     parsed_axioms = {
         AxiomId(axiom["id"]): RawAxiom.model_validate(axiom)
