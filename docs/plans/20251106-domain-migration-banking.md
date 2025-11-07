@@ -37,15 +37,22 @@ with simplified schemas for both constitution and reality data structures.
 - Ensure they work effectively with description-only content
 - Update any indexing or embedding logic if needed
 
-### - [ ] Task 1.5: Update Constitution Test Fixtures
+### - [ ] Task 1.5: Update API Constitution Response Models
+- Update `AxiomCitationResponse` in `src/api/generate.py`
+- Remove fields: `subject`, `entity`, `trigger`, `conditions`, `category`
+- Keep only `id` and `description` fields
+- Update the response mapping in the `generate()` endpoint
+
+### - [ ] Task 1.6: Update Constitution Test Fixtures
 - Update test fixtures in `tests/` to use simplified constitution schema
 - Keep health insurance domain content for now (domain change comes later)
 - Ensure tests still pass with schema changes
 
-### - [ ] Task 1.6: Run Tests for Phase 1
+### - [ ] Task 1.7: Run Tests for Phase 1
 - Run all tests to identify broken functionality
 - Fix any test failures related to constitution schema changes
 - Verify constitution-related functionality works with new schema
+- Ensure API tests pass with updated response models
 
 ---
 
@@ -72,16 +79,23 @@ with simplified schemas for both constitution and reality data structures.
 - Ensure they work effectively with description-only content
 - Update any indexing or embedding logic if needed
 
-### - [ ] Task 2.5: Update Reality Test Fixtures
+### - [ ] Task 2.5: Update API Reality Response Models
+- Update `RealityCitationResponse` in `src/api/generate.py`
+- Remove fields: `entity`, `attribute`, `value`, `number`
+- Keep only `id` and `description` fields
+- Update the response mapping in the `generate()` endpoint
+
+### - [ ] Task 2.6: Update Reality Test Fixtures
 - Update test fixtures in `tests/` to use simplified reality schema
 - Keep health insurance domain content for now (domain change comes later)
 - Ensure tests still pass with schema changes
 
-### - [ ] Task 2.6: Run Tests for Phase 2
+### - [ ] Task 2.7: Run Tests for Phase 2
 - Run all tests to verify reality-related changes
 - Fix any broken tests
 - Verify both constitution and reality functionality work together running
   `samples/qa_with_reality.py`
+- Ensure API tests pass with updated response models
 
 ---
 
@@ -107,15 +121,22 @@ with simplified schemas for both constitution and reality data structures.
 - Ensure questions test both constitutional axioms and reality data
 - Maintain similar difficulty distribution
 
-### - [ ] Task 3.4: Update Test Data
+### - [ ] Task 3.4: Update API Test Data
+- Update test files in `tests/api/` to use banking domain data
+- Update `tests/api/test_generate.py` with banking examples
+- Replace health insurance questions with banking questions
+- Update test assertions for banking domain
+
+### - [ ] Task 3.5: Update Test Data
 - Update all test files in `tests/` to use banking domain data
 - Replace health insurance examples with banking examples
 - Update assertions and expected outputs for banking domain
 
-### - [ ] Task 3.5: Run Tests for Phase 3
+### - [ ] Task 3.6: Run Tests for Phase 3
 - Run all tests to verify data migration
 - Fix any test failures related to domain change
 - Verify system works end-to-end with banking data
+- Test API endpoints with banking domain questions
 
 ---
 
@@ -137,10 +158,17 @@ with simplified schemas for both constitution and reality data structures.
 - Update inline comments and docstrings
 - Ensure examples in code use banking domain
 
-### - [ ] Task 4.4: Run Tests for Phase 4
+### - [ ] Task 4.4: Update API Documentation
+- Update API endpoint documentation in `src/api/generate.py`
+- Update docstrings to reflect banking domain
+- Ensure example requests/responses use banking examples
+- Update any API-related comments with banking context
+
+### - [ ] Task 4.5: Run Tests for Phase 4
 - Run all tests to verify documentation examples work
 - Fix any broken tests
 - Verify all sample scripts execute successfully
+- Test API endpoints manually with banking questions
 
 ---
 
@@ -172,11 +200,21 @@ with simplified schemas for both constitution and reality data structures.
 - Verify constitutional axioms are properly applied
 - Verify reality data is correctly integrated
 - Test edge cases and error handling
+- Test API endpoints with various banking questions
+- Verify API response format with simplified schemas
 
-### - [ ] Task 5.6: Clean Up Old Artifacts
+### - [ ] Task 5.6: API Integration Testing
+- Start the API server and test `/api/generate` endpoint
+- Send requests with banking domain questions
+- Verify streaming responses work correctly
+- Test with and without reality data
+- Validate response format matches simplified schema
+
+### - [ ] Task 5.7: Clean Up Old Artifacts
 - Remove any health insurance specific files
 - Clean up old run results if needed
 - Remove any deprecated code or comments
+- Remove any old API examples or documentation
 
 ---
 
@@ -196,13 +234,16 @@ The migration is complete when:
 8. ✅ No health insurance references remain in code or documentation
 9. ✅ System correctly handles both constitutional axioms and reality data for
    banking questions
+10. ✅ API endpoints work correctly with simplified schemas
+11. ✅ API response models only contain `id` and `description` fields
+12. ✅ API tests pass with banking domain data
 
 ---
 
 ## Notes
 
-- Phase 1: Focus on constitution schema and code changes only
-- Phase 2: Focus on reality schema and code changes only
+- Phase 1: Focus on constitution schema and code changes (including API)
+- Phase 2: Focus on reality schema and code changes (including API)
 - Phase 3: Migrate all data from health insurance to banking domain
 - Phase 4: Update documentation and examples
 - Phase 5: Comprehensive validation and cleanup
@@ -211,3 +252,5 @@ The migration is complete when:
   dependencies
 - Keep commits atomic and well-described for easy rollback if needed
 - Test frequently during implementation to catch issues early
+- API response models must be updated in sync with core data models
+- API tests require updates to reflect both schema and domain changes
