@@ -27,18 +27,10 @@ async def main():
     reality = [
         RealityStatement(
             id=RealityId("REALITY-001"),
-            entity="Economy",
-            attribute="Inflation Rate",
-            value="High",
-            number="7.5%",
             description="Current inflation is elevated at 7.5%.",
         ),
         RealityStatement(
             id=RealityId("REALITY-002"),
-            entity="Healthcare",
-            attribute="Medical Cost Trend",
-            value="Increasing",
-            number="12% YoY",
             description="Medical costs rising at 12% year-over-year.",
         ),
     ]
@@ -53,7 +45,7 @@ async def main():
     print(f"Question: {question}\n")
     print("Reality Context:")
     for statement in reality:
-        print(f"  [{statement.id}] {statement.attribute}: {statement.number}")
+        print(f"  [{statement.id}] {statement.description}")
     print("-" * 80)
 
     # Collect citations
@@ -82,15 +74,12 @@ async def main():
     if axiom_citations:
         print("\nAxiom References:")
         for axiom in axiom_citations:
-            print(f"  [{axiom.id}] {axiom.subject}")
+            print(f"  [{axiom.id}] {axiom.description}")
 
     if reality_citations:
         print("\nReality References:")
         for statement in reality_citations:
-            print(
-                f"  [{statement.id}] {statement.attribute}: "
-                + f"{statement.number}"
-            )
+            print(f"  [{statement.id}] {statement.description}")
 
     if axiom_citations or reality_citations:
         print("-" * 80)

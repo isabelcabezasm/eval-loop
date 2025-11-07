@@ -70,3 +70,68 @@ fields to just 2 fields (id and description).
 - `tests/core/test_qa_engine.py`
 - `tests/api/test_generate_endpoint.py`
 
+---
+
+### Phase 2: Reality Code Changes (Completed)
+
+**Summary:** Successfully simplified the reality schema from 6 fields to just 2
+fields (id and description), mirroring the changes made to constitution in
+Phase 1.
+
+**Changes Made:**
+
+1. **Task 2.1: Update Reality Schema**
+   - Simplified `RealityStatement` dataclass in `src/core/reality.py` to only
+     include `id` and `description`
+   - Removed fields: `entity`, `attribute`, `value`, `number`
+   - Updated `RawRealityStatement` BaseModel validation class
+   - Maintained consistent code style with Phase 1 changes
+
+2. **Task 2.2: Update Reality Data Loading Logic**
+   - Updated `load_from_json()` function in `src/core/reality.py` to only parse
+     `id` and `description` fields
+   - Removed all field mapping logic for deprecated fields
+   - Cleaned up comment formatting for consistency
+
+3. **Task 2.3: Update Reality Query Processing**
+   - Simplified Jinja2 template `src/core/prompts/reality.j2`
+   - Removed all section headers (entity, attribute, value, number)
+   - Now shows only reality ID as header and description as content
+   - Template structure now matches `constitution.j2` for consistency
+
+4. **Task 2.4: Update Reality Retrieval Logic**
+   - No changes needed - retrieval logic in `src/core/qa_engine.py` works with
+     the simplified schema
+   - Reality store (dictionary lookup) works correctly with simplified
+     RealityStatement dataclass
+
+5. **Task 2.5: Update API Reality Response Models**
+   - Updated `RealityCitationResponse` in `src/api/generate.py`
+   - Removed fields: `entity`, `attribute`, `value`, `number`
+   - Kept only `id` and `description` fields
+   - Updated response mapping in `generate()` endpoint to only include `id` and
+     `description`
+
+6. **Task 2.6: Update Reality Test Fixtures**
+   - Updated `reality_statement()` helper function in
+     `tests/core/reality_test_data.py`
+   - Removed all deprecated field references
+   - Updated `samples/qa_with_reality.py` to use simplified reality schema
+   - Updated reality display logic in sample to show only description
+   - Updated `tests/api/test_generate_endpoint.py` to validate simplified
+     response structure
+   - Removed assertions checking for deprecated fields in API response
+
+**Files Modified:**
+- `src/core/reality.py`
+- `src/core/prompts/reality.j2`
+- `src/api/generate.py`
+- `tests/core/reality_test_data.py`
+- `tests/api/test_generate_endpoint.py`
+- `samples/qa_with_reality.py`
+
+**Next Steps:**
+- Task 2.7: Run tests to verify all changes work correctly
+- Verify `samples/qa_with_reality.py` executes successfully
+- Ensure API tests pass with updated response models
+
