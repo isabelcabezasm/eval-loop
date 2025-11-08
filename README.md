@@ -1,12 +1,19 @@
 # Constitutional Q&A Agent
 
-A Q&A agent for health insurance queries, grounded on a constitutional framework. The system combines three key elements:
+A Q&A agent for banking and economic queries, grounded on a constitutional framework. The system combines three key elements:
 
 - **Constitution**: A static "school of thought" document defining axioms and principles that govern the domain
 - **Reality**: The current state of the world and factual context
 - **Question**: User queries that may include hypothetical scenarios, potentially overriding aspects of reality or constitution for reasoning purposes
 
 The agent leverages Azure OpenAI to provide responses that are consistent with the constitutional framework while adapting to the given context and hypothetical scenarios.
+
+## Example Use Case
+
+The agent demonstrates the constitutional framework concept through the banking domain:
+- **Constitution (stable)**: Economic and banking principles that remain constant (e.g., "Political instability disrupts markets and investor confidence")
+- **Reality (dynamic)**: Current economic indicators for Switzerland that change over time (e.g., "Current inflation rate in Switzerland is 2.1% as of Q3 2024")
+- **Questions**: Banking queries combining principles with current conditions (e.g., "How might borrowing costs be affected for someone seeking a mortgage in Switzerland?")
 
 ## Development Environment
 

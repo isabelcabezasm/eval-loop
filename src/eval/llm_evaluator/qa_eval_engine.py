@@ -13,7 +13,7 @@ from eval.metrics.models import (
 
 class QAEvalEngine:
     """
-    Question-Answering engine for evaluation of health insurance queries.
+    Question-Answering engine for evaluation of banking and economic queries.
 
     This class provides specialized evaluation capabilities for accuracy
     assessment and entity extraction using structured outputs.
