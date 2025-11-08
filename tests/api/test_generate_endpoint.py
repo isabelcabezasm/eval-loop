@@ -19,15 +19,24 @@ def reality_as_base64():
     reality: Final = [
         RealityStatement(
             id=RealityId("R-001"),
-            description="Current inflation rate in Switzerland is 2.1% as of Q3 2024.",
+            description=(
+                "Current inflation rate in Switzerland is 2.1% as of "
+                "Q3 2024."
+            ),
         ),
         RealityStatement(
             id=RealityId("R-002"),
-            description="Swiss unemployment rate stands at 2.3%, among the lowest in Europe.",
+            description=(
+                "Swiss unemployment rate stands at 2.3%, among the "
+                "lowest in Europe."
+            ),
         ),
         RealityStatement(
             id=RealityId("R-003"),
-            description="The Swiss National Bank (SNB) maintains a policy interest rate of 1.75%.",
+            description=(
+                "The Swiss National Bank (SNB) maintains a policy "
+                "interest rate of 1.75%."
+            ),
         ),
     ]
     reality_json = json.dumps([asdict(r) for r in reality])

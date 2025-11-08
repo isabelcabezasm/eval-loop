@@ -45,7 +45,10 @@ DESERIALIZATION_SUCCESS_TEST_DATA: Final = [
         predicate(
             lambda actual: actual
             == GenerateRequest(
-                question="How does inflation affect interest rates in Switzerland?",
+                question=(
+                    "How does inflation affect interest rates in "
+                    "Switzerland?"
+                ),
                 reality=REALITY,
             )
         ),
