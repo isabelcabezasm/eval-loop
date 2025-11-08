@@ -1,82 +1,82 @@
 [
     {
-        "id": "A001",
+        "id": "A-001",
         "description": "Political instability often disrupts markets and investor confidence, leading to economic downturns."
     },
     {
-        "id": "A002",
+        "id": "A-002",
         "description": "Central bank interest rate changes directly influence borrowing costs, consumer spending, and investment decisions."
     },
     {
-        "id": "A003",
+        "id": "A-003",
         "description": "High inflation erodes purchasing power and can trigger central bank interventions to stabilize prices."
     },
     {
-        "id": "A004",
+        "id": "A-004",
         "description": "Unemployment rates reflect economic health and influence consumer confidence and spending patterns."
     },
     {
-        "id": "A005",
+        "id": "A-005",
         "description": "Currency exchange rate fluctuations impact international trade competitiveness and investment returns."
     },
     {
-        "id": "A006",
+        "id": "A-006",
         "description": "Government fiscal policy, including taxation and spending, shapes economic growth and market conditions."
     },
     {
-        "id": "A007",
+        "id": "A-007",
         "description": "Market diversification reduces portfolio risk by spreading investments across different asset classes and sectors."
     },
     {
-        "id": "A008",
+        "id": "A-008",
         "description": "Financial market liquidity ensures efficient price discovery and enables investors to enter and exit positions."
     },
     {
-        "id": "A009",
+        "id": "A-009",
         "description": "Credit rating changes for governments or corporations significantly affect borrowing costs and investor sentiment."
     },
     {
-        "id": "A010",
+        "id": "A-010",
         "description": "Banking sector capital adequacy requirements ensure financial stability and protect depositors."
     },
     {
-        "id": "A011",
+        "id": "A-011",
         "description": "Monetary policy transmission affects the economy through credit availability, asset prices, and exchange rates."
     },
     {
-        "id": "A012",
+        "id": "A-012",
         "description": "Systemic risk in the banking sector can trigger cascading failures across the financial system."
     },
     {
-        "id": "A013",
+        "id": "A-013",
         "description": "Consumer debt levels influence economic resilience and vulnerability to economic shocks."
     },
     {
-        "id": "A014",
+        "id": "A-014",
         "description": "Trade balance affects currency values and can indicate underlying economic competitiveness."
     },
     {
-        "id": "A015",
+        "id": "A-015",
         "description": "Asset price bubbles form when valuations exceed fundamental values, creating systemic risk."
     },
     {
-        "id": "A016",
+        "id": "A-016",
         "description": "Banking regulation and supervision maintain financial system stability and protect consumers."
     },
     {
-        "id": "A017",
+        "id": "A-017",
         "description": "Economic growth expectations drive investment decisions and market valuations."
     },
     {
-        "id": "A018",
+        "id": "A-018",
         "description": "Interest rate spreads between different maturities reflect market expectations and economic conditions."
     },
     {
-        "id": "A019",
+        "id": "A-019",
         "description": "Financial market transparency and disclosure requirements protect investors and ensure fair markets."
     },
     {
-        "id": "A020",
+        "id": "A-020",
         "description": "International capital flows can destabilize emerging markets and affect global financial conditions."
     }
 ]

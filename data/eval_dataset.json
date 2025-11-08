@@ -10,7 +10,7 @@
             "Market disruptions can trigger capital flight and reduced economic activity."
         ],
         "axioms_used": [
-            "A001"
+            "A-001"
         ]
     },
     {
@@ -24,7 +24,7 @@
             "Lower rates make borrowing cheaper, stimulating spending and investment."
         ],
         "axioms_used": [
-            "A002"
+            "A-002"
         ]
     },
     {
@@ -38,7 +38,7 @@
             "Central banks use interest rates and other tools to control inflation."
         ],
         "axioms_used": [
-            "A003"
+            "A-003"
         ]
     },
     {
@@ -52,7 +52,7 @@
             "Lower employment reduces aggregate consumer spending power."
         ],
         "axioms_used": [
-            "A004"
+            "A-004"
         ]
     },
     {
@@ -66,7 +66,7 @@
             "Spreading investments reduces overall portfolio volatility."
         ],
         "axioms_used": [
-            "A007"
+            "A-007"
         ]
     },
     {
@@ -80,12 +80,12 @@
             "Stable economic conditions suggest continuation of current policy."
         ],
         "axioms_used": [
-            "A002",
-            "A003"
+            "A-002",
+            "A-003"
         ],
         "reality_used": [
-            "R001",
-            "R003"
+            "R-001",
+            "R-003"
         ]
     },
     {
@@ -99,10 +99,10 @@
             "Strong employment levels maintain economic momentum."
         ],
         "axioms_used": [
-            "A004"
+            "A-004"
         ],
         "reality_used": [
-            "R002"
+            "R-002"
         ]
     },
     {
@@ -116,11 +116,11 @@
             "High capital levels protect depositors and system stability."
         ],
         "axioms_used": [
-            "A010",
-            "A016"
+            "A-010",
+            "A-016"
         ],
         "reality_used": [
-            "R007"
+            "R-007"
         ]
     }
 ]

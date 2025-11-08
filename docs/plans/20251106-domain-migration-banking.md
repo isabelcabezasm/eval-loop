@@ -105,14 +105,14 @@ with simplified schemas for both constitution and reality data structures.
 - Create new `data/constitution.json` with banking axioms
 - Include examples like market stability, investor confidence, economic
   principles
-- Ensure each axiom has unique `id` (e.g., "A001", "A002") and `description`
+- Ensure each axiom has unique `id` (e.g., "A-001", "A-002") and `description`
 - Use simplified schema (id + description only)
 
 ### - [x] Task 3.2: Create Banking Domain Reality Data
 - Create or update reality data file with banking realities
 - Include banking realities like inflation rates, unemployment, political
   changes
-- Ensure each reality has unique `id` (e.g., "R001", "R002") and `description`
+- Ensure each reality has unique `id` (e.g., "R-001", "R-002") and `description`
 - Use Switzerland as the example country per ADR
 
 ### - [x] Task 3.3: Update Evaluation Dataset

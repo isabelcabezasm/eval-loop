@@ -18,15 +18,15 @@ def reality_as_base64():
     """
     reality: Final = [
         RealityStatement(
-            id=RealityId("R001"),
+            id=RealityId("R-001"),
             description="Current inflation rate in Switzerland is 2.1% as of Q3 2024.",
         ),
         RealityStatement(
-            id=RealityId("R002"),
+            id=RealityId("R-002"),
             description="Swiss unemployment rate stands at 2.3%, among the lowest in Europe.",
         ),
         RealityStatement(
-            id=RealityId("R003"),
+            id=RealityId("R-003"),
             description="The Swiss National Bank (SNB) maintains a policy interest rate of 1.75%.",
         ),
     ]
@@ -104,8 +104,8 @@ def test_generate_endpoint(
             )
 
             # Validate id format
-            assert obj["id"].startswith("A"), (
-                f"Axiom ID should start with 'A': {obj['id']}"
+            assert obj["id"].startswith("A-"), (
+                f"Axiom ID should start with 'A-': {obj['id']}"
             )
 
         elif obj["type"] == "reality_citation":
@@ -116,8 +116,8 @@ def test_generate_endpoint(
             )
 
             # Validate id format
-            assert obj["id"].startswith("R"), (
-                f"Reality ID should start with 'R': {obj['id']}"
+            assert obj["id"].startswith("R-"), (
+                f"Reality ID should start with 'R-': {obj['id']}"
             )
 
         else:

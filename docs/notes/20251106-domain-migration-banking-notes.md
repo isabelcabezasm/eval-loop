@@ -162,17 +162,17 @@ to banking domain, focusing on Switzerland as the example country per ADR-001.
 **Changes Made:**
 
 1. **Task 3.1: Create Banking Domain Constitution Data**
-   - Created new `data/constitution.json` with 20 banking axioms (A001-A020)
+   - Created new `data/constitution.json` with 20 banking axioms (A-001 to A-020)
    - Includes economic principles: market stability, investor confidence, 
      interest rates, inflation, unemployment, diversification, liquidity, 
      regulation, etc.
    - Uses simplified schema (id + description only)
-   - Example: `A001` - Political instability disrupts markets and investor 
+   - Example: `A-001` - Political instability disrupts markets and investor 
      confidence
 
 2. **Task 3.2: Create Banking Domain Reality Data**
    - Created new `data/reality.json` with 15 banking reality statements 
-     (R001-R015)
+     (R-001 to R-015)
    - Focuses on Switzerland as specified in ADR-001
    - Includes current economic indicators: inflation rate (2.1%), unemployment 
      (2.3%), SNB policy rate (1.75%), CHF exchange rate, GDP growth, debt-to-GDP
@@ -220,8 +220,8 @@ to banking domain, focusing on Switzerland as the example country per ADR-001.
    - Verified reality.json has 15 reality statements with correct schema 
      (id + description)
    - Verified eval_dataset.json has 8 questions with correct structure
-   - Confirmed all axiom references use "A" prefix (A001-A020)
-   - Confirmed all reality references use "R" prefix (R001-R015)
+   - Confirmed all axiom references use "A" prefix (A-001 to A-020)
+   - Confirmed all reality references use "R" prefix (R-001 to R-015)
    - Verified Python syntax for all modified files
    - Data migration successful - system ready for banking domain
 
@@ -241,8 +241,8 @@ to banking domain, focusing on Switzerland as the example country per ADR-001.
 - ✅ Constitution: 20 axioms with simplified schema (id + description)
 - ✅ Reality: 15 statements for Switzerland with simplified schema
 - ✅ Evaluation: 8 questions testing axioms and reality
-- ✅ All axiom IDs follow "A001-A020" format
-- ✅ All reality IDs follow "R001-R015" format
+- ✅ All axiom IDs follow "A-001 to A-020" format
+- ✅ All reality IDs follow "R-001 to R-015" format
 - ✅ Python syntax validated for all modified files
 - ✅ Test assertions updated for new ID formats
 - ✅ Sample scripts updated with banking domain questions

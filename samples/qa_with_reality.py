@@ -26,11 +26,11 @@ async def main():
     # Define reality statements (macro-economic conditions for Switzerland)
     reality = [
         RealityStatement(
-            id=RealityId("R001"),
+            id=RealityId("R-001"),
             description="Current inflation rate in Switzerland is 2.1% as of Q3 2024.",
         ),
         RealityStatement(
-            id=RealityId("R003"),
+            id=RealityId("R-003"),
             description="The Swiss National Bank (SNB) maintains a policy interest rate of 1.75%.",
         ),
     ]
