@@ -9,6 +9,7 @@ This example shows how to:
 
 import asyncio
 
+from core.axiom_store import Axiom
 from core.dependencies import qa_engine
 from core.qa_engine import (
     AxiomCitationContent,
@@ -54,8 +55,8 @@ async def main():
     print("-" * 80)
 
     # Collect citations
-    axiom_citations = []
-    reality_citations = []
+    axiom_citations: list[Axiom] = []
+    reality_citations: list[RealityStatement] = []
 
     # Stream the response
     async for chunk in engine.invoke_streaming(question, reality=reality):
