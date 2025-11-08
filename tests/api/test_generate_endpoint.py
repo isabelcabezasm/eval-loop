@@ -20,8 +20,7 @@ def reality_as_base64():
         RealityStatement(
             id=RealityId("R-001"),
             description=(
-                "Current inflation rate in Switzerland is 2.1% as of "
-                "Q3 2024."
+                "Current inflation rate in Switzerland is 2.1% as of Q3 2024."
             ),
         ),
         RealityStatement(
