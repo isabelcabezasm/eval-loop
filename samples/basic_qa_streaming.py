@@ -56,15 +56,8 @@ async def main():
         print("\n\033[1mAxiom References:\033[0m")
         print("=" * 80)
         for axiom in axiom_citations:
-            print(
-                f"\n\033[1;36m[{axiom.id}]\033[0m "
-                + f"\033[1m{axiom.subject}\033[0m"
-            )
-            print(f"  Entity: {axiom.entity}")
-            print(f"  Trigger: {axiom.trigger}")
-            print(f"  Conditions: {axiom.conditions}")
-            print(f"  Description: {axiom.description}")
-            print(f"  \033[2mCategory: {axiom.category}\033[0m")
+            print(f"\n\033[1;36m[{axiom.id}]\033[0m")
+            print(f"  {axiom.description}")
         print("=" * 80)
 
 
