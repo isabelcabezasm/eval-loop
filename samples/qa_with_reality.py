@@ -33,6 +33,12 @@ async def main():
             ),
         ),
         RealityStatement(
+            id=RealityId("R-002"),
+            description=(
+                "Current unemployment rate in Switzerland is 2.3% as of Q3 2024."
+            ),
+        ),
+        RealityStatement(
             id=RealityId("R-003"),
             description=(
                 "The Swiss National Bank (SNB) maintains a policy "
