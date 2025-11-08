@@ -624,18 +624,10 @@ async def test_invoke_streaming_handles_chunk_scenarios(
     reality = [
         RealityStatement(
             id=RealityId("REALITY-001"),
-            entity="Test",
-            attribute="Test Attr",
-            value="Test Value",
-            number="100",
             description="Test description",
         ),
         RealityStatement(
             id=RealityId("REALITY-002"),
-            entity="Healthcare",
-            attribute="Medical Costs",
-            value="Rising",
-            number="12%",
             description="Medical costs are rising.",
         ),
     ]
