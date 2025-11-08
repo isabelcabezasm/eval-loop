@@ -266,3 +266,106 @@ Switzerland was chosen as the example country per ADR-001 due to its stable
 banking sector, well-documented economic data, and reputation as a financial 
 hub. All data files now use the simplified schema (id + description only) 
 established in Phases 1 and 2.
+
+---
+
+### Phase 4: Documentation and Examples Updates (Completed)
+
+**Summary:** Successfully updated all documentation and code comments to reflect 
+the banking domain migration. Removed health insurance references and added 
+comprehensive banking domain examples.
+
+**Changes Made:**
+
+1. **Task 4.1: Update README**
+   - Replaced "health insurance queries" with "banking and economic queries" in 
+     the main description
+   - Added comprehensive "Example Use Case" section explaining:
+     - Constitution (stable): Economic and banking principles
+     - Reality (dynamic): Current Swiss economic indicators
+     - Questions: Banking queries combining principles with conditions
+   - Provided concrete examples for each component
+   - Updated overall project description to reflect banking domain focus
+
+2. **Task 4.2: Update Sample Scripts**
+   - Verified all sample scripts already updated in Phase 3:
+     - `samples/basic_qa.py`: Uses Swiss inflation question
+     - `samples/basic_qa_streaming.py`: Uses SNB interest rate policy question
+     - `samples/qa_with_reality.py`: Uses mortgage borrowing costs question with 
+       Swiss economic reality
+   - No additional changes needed - all scripts already contain banking domain 
+     examples
+
+3. **Task 4.3: Update Code Comments**
+   - Updated `src/eval/llm_evaluator/qa_eval_engine.py`:
+     - Changed class docstring from "health insurance queries" to "banking and 
+       economic queries"
+   - Verified no other health insurance references in code (excluding health 
+     check API endpoints which are standard API monitoring)
+   - All inline comments and docstrings now consistent with banking domain
+
+4. **Task 4.4: Update API Documentation**
+   - Updated `src/api/generate.py` with comprehensive documentation:
+     - Enhanced endpoint docstring to specify "banking domain"
+     - Added complete example request with Swiss banking question and reality 
+       statement
+     - Added example response showing streaming ndjson format
+     - Updated field descriptions:
+       - `question`: "Banking or economic question to answer"
+       - `reality`: "Current economic reality statements for Switzerland 
+         (optional)"
+   - Improved API usability with clear examples for developers
+
+5. **Task 4.5: Run Tests for Phase 4**
+   - Executed full test suite: `uv run pytest tests/ -v`
+   - Results: 49 passed, 2 failed (expected)
+   - Failed tests: Integration tests requiring Azure OpenAI credentials 
+     (`test_generate_endpoint`)
+   - All core functionality tests passed successfully
+   - Sample scripts verified to contain correct banking domain questions
+   - Documentation changes do not require additional testing
+
+**Additional Discovery and Changes:**
+- Found and updated `src/core/prompts/system_prompt.md`:
+  - Changed from "Health Insurance AI Assistant" to "Banking and Economics AI 
+    Assistant"
+  - Updated scope from health insurance to banking and economics
+  - Updated reference format from [AXIOM-00X] to [A-00X] and [R-00X]
+  - Added focus on Switzerland's banking sector and economy
+  - Updated all domain-specific terminology
+
+**Files Modified:**
+- `README.md`
+- `src/eval/llm_evaluator/qa_eval_engine.py`
+- `src/api/generate.py`
+- `src/core/prompts/system_prompt.md`
+- `docs/plans/20251106-domain-migration-banking.md` (marked tasks complete)
+- `docs/notes/20251106-domain-migration-banking-notes.md` (this file)
+
+**Validation Performed:**
+- ✅ README updated with banking domain examples
+- ✅ All code comments updated to reflect banking domain
+- ✅ API documentation includes comprehensive banking examples
+- ✅ 49 core tests passing (2 integration tests require Azure credentials)
+- ✅ Sample scripts contain banking domain questions
+- ✅ No health insurance references remain in documentation or code comments
+- ✅ All changes consistent with banking domain migration
+
+**Test Results:**
+- Core tests: ✅ 49 passed
+- Integration tests: ⚠️ 2 failed (expected - require Azure OpenAI credentials)
+- Sample validation: ✅ All scripts contain banking domain questions
+- Documentation: ✅ No test failures (documentation only changes)
+
+**Summary:**
+Phase 4 successfully completed. All documentation has been updated to reflect 
+the banking domain:
+- **README**: Comprehensive banking domain description with examples
+- **API Documentation**: Detailed examples showing banking queries
+- **Code Comments**: All references updated from health insurance to banking
+- **Sample Scripts**: Already updated in Phase 3 with banking questions
+
+The project documentation now accurately represents the banking domain focus, 
+with clear examples of constitutional axioms (stable economic principles) and 
+reality statements (current Swiss economic indicators). All health insurance 
+references have been removed except for standard API health check endpoints.

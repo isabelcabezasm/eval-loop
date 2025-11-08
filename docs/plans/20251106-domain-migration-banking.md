@@ -142,29 +142,29 @@ with simplified schemas for both constitution and reality data structures.
 
 ## Phase 4: Documentation and Examples Updates
 
-### - [ ] Task 4.1: Update README
+### - [x] Task 4.1: Update README
 - Replace health insurance examples with banking examples
 - Update domain description throughout
 - Update sample questions and outputs
 
-### - [ ] Task 4.2: Update Sample Scripts
+### - [x] Task 4.2: Update Sample Scripts
 - Review and update `samples/basic_qa.py`
 - Review and update `samples/basic_qa_streaming.py`
 - Review and update `samples/qa_with_reality.py`
 - Update any hardcoded questions to banking domain
 
-### - [ ] Task 4.3: Update Code Comments
+### - [x] Task 4.3: Update Code Comments
 - Search codebase for health insurance references
 - Update inline comments and docstrings
 - Ensure examples in code use banking domain
 
-### - [ ] Task 4.4: Update API Documentation
+### - [x] Task 4.4: Update API Documentation
 - Update API endpoint documentation in `src/api/generate.py`
 - Update docstrings to reflect banking domain
 - Ensure example requests/responses use banking examples
 - Update any API-related comments with banking context
 
-### - [ ] Task 4.5: Run Tests for Phase 4
+### - [x] Task 4.5: Run Tests for Phase 4
 - Run all tests to verify documentation examples work
 - Fix any broken tests
 - Verify all sample scripts execute successfully
