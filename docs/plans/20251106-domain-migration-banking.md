@@ -101,38 +101,38 @@ with simplified schemas for both constitution and reality data structures.
 
 ## Phase 3: Data Migration to Banking Domain
 
-### - [ ] Task 3.1: Create Banking Domain Constitution Data
+### - [x] Task 3.1: Create Banking Domain Constitution Data
 - Create new `data/constitution.json` with banking axioms
 - Include examples like market stability, investor confidence, economic
   principles
-- Ensure each axiom has unique `id` (e.g., "A001", "A002") and `description`
+- Ensure each axiom has unique `id` (e.g., "A-001", "A-002") and `description`
 - Use simplified schema (id + description only)
 
-### - [ ] Task 3.2: Create Banking Domain Reality Data
+### - [x] Task 3.2: Create Banking Domain Reality Data
 - Create or update reality data file with banking realities
 - Include banking realities like inflation rates, unemployment, political
   changes
-- Ensure each reality has unique `id` (e.g., "R001", "R002") and `description`
+- Ensure each reality has unique `id` (e.g., "R-001", "R-002") and `description`
 - Use Switzerland as the example country per ADR
 
-### - [ ] Task 3.3: Update Evaluation Dataset
+### - [x] Task 3.3: Update Evaluation Dataset
 - Review `data/eval_dataset.json`
 - Replace health insurance questions with banking domain questions
 - Ensure questions test both constitutional axioms and reality data
 - Maintain similar difficulty distribution
 
-### - [ ] Task 3.4: Update API Test Data
+### - [x] Task 3.4: Update API Test Data
 - Update test files in `tests/api/` to use banking domain data
 - Update `tests/api/test_generate.py` with banking examples
 - Replace health insurance questions with banking questions
 - Update test assertions for banking domain
 
-### - [ ] Task 3.5: Update Test Data
+### - [x] Task 3.5: Update Test Data
 - Update all test files in `tests/` to use banking domain data
 - Replace health insurance examples with banking examples
 - Update assertions and expected outputs for banking domain
 
-### - [ ] Task 3.6: Run Tests for Phase 3
+### - [x] Task 3.6: Run Tests for Phase 3
 - Run all tests to verify data migration
 - Fix any test failures related to domain change
 - Verify system works end-to-end with banking data

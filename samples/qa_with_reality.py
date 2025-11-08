@@ -9,6 +9,7 @@ This example shows how to:
 
 import asyncio
 
+from core.axiom_store import Axiom
 from core.dependencies import qa_engine
 from core.qa_engine import (
     AxiomCitationContent,
@@ -23,21 +24,33 @@ async def main():
     # Initialize the QA engine
     engine = qa_engine()
 
-    # Define reality statements (macro-economic conditions)
+    # Define reality statements (macro-economic conditions for Switzerland)
     reality = [
         RealityStatement(
-            id=RealityId("REALITY-001"),
-            description="Current inflation is elevated at 7.5%.",
+            id=RealityId("R-001"),
+            description=(
+                "Current inflation rate in Switzerland is 2.1% as of Q3 2024."
+            ),
         ),
         RealityStatement(
-            id=RealityId("REALITY-002"),
-            description="Medical costs rising at 12% year-over-year.",
+            id=RealityId("R-002"),
+            description=(
+                "Current unemployment rate in Switzerland is 2.3% as of Q3 "
+                "2024."
+            ),
+        ),
+        RealityStatement(
+            id=RealityId("R-003"),
+            description=(
+                "The Swiss National Bank (SNB) maintains a policy "
+                "interest rate of 1.75%."
+            ),
         ),
     ]
 
     question = (
-        "How might premium rates be affected for someone with a "
-        "chronic condition?"
+        "How might borrowing costs be affected for someone seeking "
+        "a mortgage in Switzerland?"
     )
 
     print("Streaming QA with Reality Example")
@@ -49,8 +62,8 @@ async def main():
     print("-" * 80)
 
     # Collect citations
-    axiom_citations = []
-    reality_citations = []
+    axiom_citations: list[Axiom] = []
+    reality_citations: list[RealityStatement] = []
 
     # Stream the response
     async for chunk in engine.invoke_streaming(question, reality=reality):

@@ -20,8 +20,8 @@ async def main():
 
     # Example question
     question = (
-        "What if I start exercising regularly and lose 20 pounds - "
-        "how would that affect my future premium and coverage?"
+        "How would a significant change in the Swiss National Bank's "
+        "interest rate policy affect investment decisions?"
     )
 
     print("Streaming Response Example")

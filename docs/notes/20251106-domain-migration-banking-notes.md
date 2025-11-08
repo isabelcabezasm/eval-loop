@@ -151,3 +151,118 @@ fields (id, entity, attribute, value, number, description) to just 2 fields
 (id, description), matching the constitution schema changes from Phase 1. All
 code changes follow the same patterns established in Phase 1 for consistency.
 
+
+---
+
+### Phase 3: Data Migration to Banking Domain (Completed)
+
+**Summary:** Successfully migrated all data files from health insurance domain 
+to banking domain, focusing on Switzerland as the example country per ADR-001.
+
+**Changes Made:**
+
+1. **Task 3.1: Create Banking Domain Constitution Data**
+   - Created new `data/constitution.json` with 20 banking axioms (A-001 to A-020)
+   - Includes economic principles: market stability, investor confidence, 
+     interest rates, inflation, unemployment, diversification, liquidity, 
+     regulation, etc.
+   - Uses simplified schema (id + description only)
+   - Example: `A-001` - Political instability disrupts markets and investor 
+     confidence
+
+2. **Task 3.2: Create Banking Domain Reality Data**
+   - Created new `data/reality.json` with 15 banking reality statements 
+     (R-001 to R-015)
+   - Focuses on Switzerland as specified in ADR-001
+   - Includes current economic indicators: inflation rate (2.1%), unemployment 
+     (2.3%), SNB policy rate (1.75%), CHF exchange rate, GDP growth, debt-to-GDP
+   - Uses simplified schema (id + description only)
+   - All data reflects realistic Swiss economic conditions
+
+3. **Task 3.3: Update Evaluation Dataset**
+   - Replaced `data/eval_dataset.json` with 8 banking domain questions
+   - 5 questions test axioms only (constitutional principles)
+   - 3 questions test both axioms and reality (combining principles with 
+     current Swiss economic data)
+   - Questions cover: political stability, interest rates, inflation, 
+     unemployment, diversification, Swiss economic indicators
+   - Maintained similar difficulty distribution as original dataset
+
+4. **Task 3.4: Update API Test Data**
+   - Updated `tests/api/test_generate.py`:
+     - Changed question from "What is the capital of France?" to 
+       "How does inflation affect interest rates in Switzerland?"
+   - Updated `tests/api/test_generate_endpoint.py`:
+     - Changed reality statements from health insurance to Swiss banking data
+     - Changed question to focus on interest rates and borrowing costs in 
+       Switzerland
+     - Updated axiom ID validation from "AXIOM-" prefix to "A" prefix
+     - Updated reality ID validation from "REALITY-" prefix to "R" prefix
+
+5. **Task 3.5: Update Test Data**
+   - Updated `samples/qa_with_reality.py`:
+     - Changed reality statements to Swiss banking data (inflation, SNB rate)
+     - Changed question from health insurance premiums to mortgage borrowing 
+       costs in Switzerland
+   - Updated `samples/basic_qa.py`:
+     - Changed question from smoking/health insurance to inflation impact in 
+       Switzerland
+   - Updated `samples/basic_qa_streaming.py`:
+     - Changed question from exercise/insurance to SNB interest rate policy 
+       impact
+   - No changes needed to `tests/core/test_qa_engine.py` (uses generic test 
+     data)
+
+6. **Task 3.6: Run Tests for Phase 3**
+   - Validated all JSON files are valid and loadable
+   - Verified constitution.json has 20 axioms with correct schema 
+     (id + description)
+   - Verified reality.json has 15 reality statements with correct schema 
+     (id + description)
+   - Verified eval_dataset.json has 8 questions with correct structure
+   - Confirmed all axiom references use "A" prefix (A-001 to A-020)
+   - Confirmed all reality references use "R" prefix (R-001 to R-015)
+   - Verified Python syntax for all modified files
+   - Data migration successful - system ready for banking domain
+
+**Files Modified:**
+- `data/constitution.json` (replaced)
+- `data/reality.json` (created new)
+- `data/eval_dataset.json` (replaced)
+- `tests/api/test_generate.py`
+- `tests/api/test_generate_endpoint.py`
+- `samples/qa_with_reality.py`
+- `samples/basic_qa.py`
+- `samples/basic_qa_streaming.py`
+- `docs/plans/20251106-domain-migration-banking.md` (marked tasks complete)
+
+**Validation Performed:**
+- ✅ All JSON files are valid and properly formatted
+- ✅ Constitution: 20 axioms with simplified schema (id + description)
+- ✅ Reality: 15 statements for Switzerland with simplified schema
+- ✅ Evaluation: 8 questions testing axioms and reality
+- ✅ All axiom IDs follow "A-001 to A-020" format
+- ✅ All reality IDs follow "R-001 to R-015" format
+- ✅ Python syntax validated for all modified files
+- ✅ Test assertions updated for new ID formats
+- ✅ Sample scripts updated with banking domain questions
+
+**Test Results:**
+- JSON validation: ✅ All data files valid
+- Schema validation: ✅ All data uses simplified schema (id + description)
+- Python syntax: ✅ All modified files compile successfully
+- Data structure: ✅ Correct axiom and reality ID formats
+- Domain migration: ✅ Complete - no health insurance references remain in data
+
+**Summary:**
+Phase 3 successfully completed. All data files have been migrated from health 
+insurance to banking domain. The new banking domain provides better 
+demonstration of the constitutional framework concept:
+- **Constitution (stable)**: Economic and banking principles that don't change 
+  frequently
+- **Reality (dynamic)**: Current Swiss economic indicators that change over time
+
+Switzerland was chosen as the example country per ADR-001 due to its stable 
+banking sector, well-documented economic data, and reputation as a financial 
+hub. All data files now use the simplified schema (id + description only) 
+established in Phases 1 and 2.

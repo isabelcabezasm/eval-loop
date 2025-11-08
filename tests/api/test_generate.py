@@ -28,7 +28,7 @@ class RequestFixture:
 
 
 DEFAULT_REQUEST: Final = RequestFixture(
-    question="What is the capital of France?",
+    question="How does inflation affect interest rates in Switzerland?",
     reality=reality_base64_json(REALITY),
 )
 
@@ -45,7 +45,9 @@ DESERIALIZATION_SUCCESS_TEST_DATA: Final = [
         predicate(
             lambda actual: actual
             == GenerateRequest(
-                question="What is the capital of France?",
+                question=(
+                    "How does inflation affect interest rates in Switzerland?"
+                ),
                 reality=REALITY,
             )
         ),
@@ -59,7 +61,9 @@ DESERIALIZATION_SUCCESS_TEST_DATA: Final = [
         predicate(
             lambda actual: actual
             == GenerateRequest(
-                question="What is the capital of France?",
+                question=(
+                    "How does inflation affect interest rates in Switzerland?"
+                ),
                 reality=REALITY,
             )
         ),
