@@ -1,72 +1,126 @@
 [
     {
         "id": 1,
-        "query": "How can meeting recommended physical activity guidelines influence your health insurance risk profile?",
-        "context": "Health insurance companies assess risk based on lifestyle factors such as exercise habits.",
-        "expected_answer": "It reduces long-term health risks, which can lower claim frequency and potentially improve premium stability.",
+        "query": "How does political instability affect investor confidence in financial markets?",
+        "context": "Banking and financial markets are sensitive to political conditions and governance stability.",
+        "expected_answer": "Political instability disrupts markets and reduces investor confidence, often leading to economic downturns and reduced investment activity.",
         "reasoning": [
-            "Regular physical activity improves overall health.",
-            "Lower health risks lead to fewer medical claims.",
-            "Fewer claims can result in better insurance terms or lower premiums."
+            "Political uncertainty creates unpredictable business environments.",
+            "Investors prefer stable conditions for long-term commitments.",
+            "Market disruptions can trigger capital flight and reduced economic activity."
         ],
         "axioms_used": [
-            "AXIOM-001"
+            "A001"
         ]
     },
     {
         "id": 2,
-        "query": "Why do insurers encourage annual health screenings with normal results?",
-        "context": "Preventive check-ups are often incentivized by health insurance providers.",
-        "expected_answer": "Because they lower the probability of high-cost claims, helping maintain lower premiums and better coverage options.",
+        "query": "What is the relationship between central bank interest rate changes and consumer spending?",
+        "context": "Central banks use interest rates as a primary monetary policy tool to influence economic activity.",
+        "expected_answer": "Central bank interest rate changes directly influence borrowing costs, which affects consumer spending and investment decisions. Higher rates reduce spending, while lower rates encourage it.",
         "reasoning": [
-            "Annual screenings detect issues early.",
-            "Early detection prevents expensive treatments.",
-            "Lower claim costs benefit both insurer and insured."
+            "Interest rates determine the cost of borrowing for consumers.",
+            "Higher rates make loans more expensive, reducing consumption.",
+            "Lower rates make borrowing cheaper, stimulating spending and investment."
         ],
         "axioms_used": [
-            "AXIOM-002"
+            "A002"
         ]
     },
     {
         "id": 3,
-        "query": "How does a balanced diet affect your health insurance costs over time?",
-        "context": "Nutrition habits are linked to chronic disease risk and insurance expenses.",
-        "expected_answer": "It decreases chronic disease incidence, reducing associated medical expenses and claim costs.",
+        "query": "Why might high inflation trigger central bank interventions?",
+        "context": "Inflation management is a key responsibility of central banks in maintaining economic stability.",
+        "expected_answer": "High inflation erodes purchasing power and destabilizes the economy, prompting central banks to intervene through monetary policy adjustments to stabilize prices.",
         "reasoning": [
-            "Balanced nutrition lowers chronic disease risk.",
-            "Fewer chronic conditions mean fewer claims.",
-            "Lower claims can stabilize or reduce insurance costs."
+            "Inflation reduces the real value of money.",
+            "Persistent high inflation can lead to economic instability.",
+            "Central banks use interest rates and other tools to control inflation."
         ],
         "axioms_used": [
-            "AXIOM-003"
+            "A003"
         ]
     },
     {
         "id": 4,
-        "query": "Why do insurers encourage annual health screenings with normal results?",
-        "context": "Preventive check-ups are often incentivized by health insurance providers.",
-        "expected_answer": "Because they lower the probability of high-cost claims, helping maintain lower premiums and better coverage options.",
+        "query": "How do unemployment rates reflect overall economic health?",
+        "context": "Employment levels are closely monitored as indicators of economic performance and consumer welfare.",
+        "expected_answer": "Unemployment rates reflect economic health by showing the proportion of the workforce unable to find work. High unemployment indicates economic weakness and reduces consumer confidence and spending.",
         "reasoning": [
-            "Annual screenings detect issues early.",
-            "Early detection prevents expensive treatments.",
-            "Lower claim costs benefit both insurer and insured."
+            "Employment levels indicate economic activity and demand.",
+            "High unemployment suggests insufficient economic growth.",
+            "Lower employment reduces aggregate consumer spending power."
         ],
         "axioms_used": [
-            "AXIOM-002"
+            "A004"
         ]
     },
     {
         "id": 5,
-        "query": "What effect does maintaining a balanced diet have on chronic disease incidence?",
-        "context": "Chronic diseases significantly impact health insurance costs and claim frequency.",
-        "expected_answer": "It decreases chronic disease incidence and associated costs.",
+        "query": "What role does portfolio diversification play in risk management?",
+        "context": "Investment strategies often emphasize spreading risk across different assets and sectors.",
+        "expected_answer": "Market diversification reduces portfolio risk by spreading investments across different asset classes and sectors, minimizing the impact of poor performance in any single investment.",
         "reasoning": [
-            "Balanced diet improves metabolic and cardiovascular health.",
-            "Lower chronic disease risk reduces medical interventions.",
-            "Fewer interventions mean lower insurance claims and costs."
+            "Diversification prevents concentration of risk.",
+            "Different assets respond differently to market conditions.",
+            "Spreading investments reduces overall portfolio volatility."
         ],
         "axioms_used": [
-            "AXIOM-003"
+            "A007"
+        ]
+    },
+    {
+        "id": 6,
+        "query": "Given Switzerland's current inflation rate and SNB policy rate, what might be the outlook for borrowing costs?",
+        "context": "Switzerland's economic indicators influence monetary policy decisions and market conditions.",
+        "expected_answer": "With Switzerland's inflation at 2.1% and the SNB policy rate at 1.75%, borrowing costs are likely to remain relatively stable. The moderate inflation suggests the SNB may maintain current rates unless significant economic changes occur.",
+        "reasoning": [
+            "Current inflation of 2.1% is near typical target ranges.",
+            "The SNB rate of 1.75% reflects a moderate policy stance.",
+            "Stable economic conditions suggest continuation of current policy."
+        ],
+        "axioms_used": [
+            "A002",
+            "A003"
+        ],
+        "reality_used": [
+            "R001",
+            "R003"
+        ]
+    },
+    {
+        "id": 7,
+        "query": "How does Switzerland's low unemployment rate contribute to its economic stability?",
+        "context": "Switzerland maintains one of the lowest unemployment rates in Europe, which has implications for economic confidence.",
+        "expected_answer": "Switzerland's unemployment rate of 2.3% reflects strong economic health and supports high consumer confidence and robust spending patterns, contributing to overall economic stability.",
+        "reasoning": [
+            "Low unemployment indicates strong labor demand.",
+            "High employment supports consumer confidence.",
+            "Strong employment levels maintain economic momentum."
+        ],
+        "axioms_used": [
+            "A004"
+        ],
+        "reality_used": [
+            "R002"
+        ]
+    },
+    {
+        "id": 8,
+        "query": "Why is the Swiss banking sector considered particularly stable?",
+        "context": "Switzerland's banking sector is known globally for its stability and regulatory framework.",
+        "expected_answer": "The Swiss banking sector maintains strong capital adequacy ratios well above Basel III requirements, combined with rigorous regulation and supervision, ensuring financial system stability and depositor protection.",
+        "reasoning": [
+            "Strong capital adequacy provides buffers against losses.",
+            "Regulatory oversight maintains prudent banking practices.",
+            "High capital levels protect depositors and system stability."
+        ],
+        "axioms_used": [
+            "A010",
+            "A016"
+        ],
+        "reality_used": [
+            "R007"
         ]
     }
 ]
