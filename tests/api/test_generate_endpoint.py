@@ -19,26 +19,14 @@ def reality_as_base64():
     reality: Final = [
         RealityStatement(
             id=RealityId("REALITY-001"),
-            entity="Economy",
-            attribute="Inflation Rate",
-            value="High",
-            number="7.5%",
             description="Current inflation is elevated at 7.5%.",
         ),
         RealityStatement(
             id=RealityId("REALITY-002"),
-            entity="Healthcare",
-            attribute="Medical Cost Trend",
-            value="Increasing",
-            number="12% YoY",
             description="Medical costs rising at 12% year-over-year.",
         ),
         RealityStatement(
             id=RealityId("REALITY-003"),
-            entity="Currency",
-            attribute="US Dollar Index",
-            value="Strong",
-            number="105.2",
             description="US Dollar showing strength amid global uncertainty.",
         ),
     ]
@@ -123,12 +111,6 @@ def test_generate_endpoint(
         elif obj["type"] == "reality_citation":
             # Reality citation (context reference) - validate structure
             assert "id" in obj, "Reality citation missing 'id' field"
-            assert "entity" in obj, "Reality citation missing 'entity' field"
-            assert "attribute" in obj, (
-                "Reality citation missing 'attribute' field"
-            )
-            assert "value" in obj, "Reality citation missing 'value' field"
-            assert "number" in obj, "Reality citation missing 'number' field"
             assert "description" in obj, (
                 "Reality citation missing 'description' field"
             )

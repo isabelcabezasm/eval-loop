@@ -77,10 +77,6 @@ class RealityCitationResponse(BaseModel):
 
     type: Literal["reality_citation"] = Field(default="reality_citation")
     id: str
-    entity: str
-    attribute: str
-    value: str
-    number: str
     description: str
 
 
@@ -111,10 +107,6 @@ async def generate(request: GenerateRequest):
                 case RealityCitationContent():
                     response = RealityCitationResponse(
                         id=chunk.item.id,
-                        entity=chunk.item.entity,
-                        attribute=chunk.item.attribute,
-                        value=chunk.item.value,
-                        number=chunk.item.number,
                         description=chunk.item.description,
                     )
 

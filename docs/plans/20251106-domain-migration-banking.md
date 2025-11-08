@@ -58,39 +58,39 @@ with simplified schemas for both constitution and reality data structures.
 
 ## Phase 2: Reality Code Changes
 
-### - [ ] Task 2.1: Update Reality Schema
+### - [x] Task 2.1: Update Reality Schema
 - Simplify reality schema to only include `id` and `description` fields
 - Remove any other complex fields
 - Update data models for reality data
 - Update type definitions and validation logic
 
-### - [ ] Task 2.2: Update Reality Data Loading Logic
+### - [x] Task 2.2: Update Reality Data Loading Logic
 - Update reality data parsers/loaders
 - Simplify extraction logic to work with new schema
 - Remove any field mapping logic for deprecated fields
 
-### - [ ] Task 2.3: Update Reality Query Processing
+### - [x] Task 2.3: Update Reality Query Processing
 - Review query processing logic in `src/core/` related to reality data
 - Ensure prompts and context building work with simplified reality schema
 - Update any field references in prompts or retrieval logic
 
-### - [ ] Task 2.4: Update Reality Retrieval Logic
+### - [x] Task 2.4: Update Reality Retrieval Logic
 - Review retrieval/search mechanisms for reality data
 - Ensure they work effectively with description-only content
 - Update any indexing or embedding logic if needed
 
-### - [ ] Task 2.5: Update API Reality Response Models
+### - [x] Task 2.5: Update API Reality Response Models
 - Update `RealityCitationResponse` in `src/api/generate.py`
 - Remove fields: `entity`, `attribute`, `value`, `number`
 - Keep only `id` and `description` fields
 - Update the response mapping in the `generate()` endpoint
 
-### - [ ] Task 2.6: Update Reality Test Fixtures
+### - [x] Task 2.6: Update Reality Test Fixtures
 - Update test fixtures in `tests/` to use simplified reality schema
 - Keep health insurance domain content for now (domain change comes later)
 - Ensure tests still pass with schema changes
 
-### - [ ] Task 2.7: Run Tests for Phase 2
+### - [x] Task 2.7: Run Tests for Phase 2
 - Run all tests to verify reality-related changes
 - Fix any broken tests
 - Verify both constitution and reality functionality work together running
