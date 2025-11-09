@@ -435,3 +435,41 @@ user feedback that they still referenced health insurance domain.
 Evaluation prompts have been successfully migrated from health insurance to 
 banking domain. All entity definitions, examples, and role descriptions now 
 accurately reflect the banking and economics focus of the project.
+
+---
+
+### Phase 4 Update: Test Fixes for New Citation Format (Completed)
+
+**Summary:** Fixed test failures caused by citation format change from 
+`[AXIOM-XXX]` to `[A-XXX]` and `[REALITY-XXX]` to `[R-XXX]`.
+
+**Changes Made:**
+
+1. **Updated Test Citation Format** (`tests/core/test_qa_engine.py`)
+   - Replaced all instances of `AXIOM-` with `A-` in test cases (58 occurrences)
+   - Replaced all instances of `REALITY-` with `R-` in test cases
+   - Updated test input chunks that were split across boundaries:
+     - `["foo [AXIOM", "-001]"]` → `["foo [A", "-001]"]`
+     - `["Text before [AX", "IOM-", "001] text after"]` → `["Text before [A", "-", "001] text after"]`
+     - `["Check [REALITY-", "001] for details"]` → `["Check [R-", "001] for details"]`
+   - Updated all AxiomId and RealityId instantiations to use new format
+
+**Files Modified:**
+- `tests/core/test_qa_engine.py`
+- `docs/notes/20251106-domain-migration-banking-notes.md` (this file)
+
+**Validation Performed:**
+- ✅ All 49 core tests now passing
+- ✅ Citation parsing works correctly with new format
+- ✅ Split citation chunks handled properly
+- ✅ Test assertions updated for new ID format
+
+**Test Results:**
+- Core tests: ✅ 49 passed (previously 12 failing, now all passing)
+- Integration tests: ⚠️ 2 failed (expected - require Azure OpenAI credentials)
+
+**Summary:**
+All test failures have been resolved by updating the test cases to use the new 
+citation format that was introduced in Phase 3 data migration. The tests now 
+correctly expect `[A-XXX]` and `[R-XXX]` format instead of the old `[AXIOM-XXX]` 
+and `[REALITY-XXX]` format.
