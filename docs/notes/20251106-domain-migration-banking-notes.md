@@ -369,3 +369,69 @@ The project documentation now accurately represents the banking domain focus,
 with clear examples of constitutional axioms (stable economic principles) and 
 reality statements (current Swiss economic indicators). All health insurance 
 references have been removed except for standard API health check endpoints.
+
+---
+
+### Phase 4 Update: Evaluation Prompts Migration (Completed)
+
+**Summary:** Updated evaluation loop prompts to reflect banking domain after 
+user feedback that they still referenced health insurance domain.
+
+**Changes Made:**
+
+1. **Updated Entity Extraction Prompt** 
+   (`src/eval/llm_evaluator/prompts/entity_extraction_prompt.md`)
+   - Changed entity categories from health insurance to banking:
+     - Physical activity types → Economic indicators
+     - Medical behavior → Banking activities
+     - Physical characteristics → Market factors
+     - Habits → Financial instruments
+     - Health outcomes → Economic outcomes
+   - Examples now include: inflation rate, unemployment, GDP, interest rates, 
+     mortgages, market stability, investor confidence, etc.
+
+2. **Updated Accuracy Evaluation Prompt** 
+   (`src/eval/llm_evaluator/prompts/accuracy_prompt.md`)
+   - Changed examples from health insurance to banking:
+     - "quota or fee goes up/down, more healthy, less healthy" → "interest 
+       rates increase/decrease, market stability improves/deteriorates, 
+       inflation rises/falls"
+     - Entity behaviors now reference: inflation trends, interest rate 
+       movements, economic stability
+
+3. **Updated Topic Coverage Prompt** 
+   (`src/eval/llm_evaluator/prompts/topic_coverage_prompt.md`)
+   - Changed synonym examples from health to banking:
+     - "spinning ≡ indoor cycling, smoke ≡ tobacco consumption" → "interest 
+       rate ≡ policy rate, inflation ≡ price increases"
+
+4. **Updated Evaluation System Prompt** 
+   (`src/eval/llm_evaluator/prompts/system_prompt.md`)
+   - Changed role from "senior actuary" to "senior economist"
+   - Changed focus from "premium rates, risk assessments, age, health status, 
+     claims data" to "economic indicators, banking policies, market conditions, 
+     interest rates, inflation, economic stability"
+   - Changed evaluator identity from "other actuaries" to "other economists"
+
+**Files Modified:**
+- `src/eval/llm_evaluator/prompts/entity_extraction_prompt.md`
+- `src/eval/llm_evaluator/prompts/accuracy_prompt.md`
+- `src/eval/llm_evaluator/prompts/topic_coverage_prompt.md`
+- `src/eval/llm_evaluator/prompts/system_prompt.md`
+- `docs/notes/20251106-domain-migration-banking-notes.md` (this file)
+
+**Validation Performed:**
+- ✅ All evaluation prompts updated to banking domain
+- ✅ 49 core tests passing
+- ✅ No health insurance references remaining in evaluation prompts
+- ✅ Entity categories align with banking domain
+- ✅ Examples reflect economic and banking concepts
+
+**Test Results:**
+- Core tests: ✅ 49 passed
+- Integration tests: ⚠️ 2 failed (expected - require Azure OpenAI credentials)
+
+**Summary:**
+Evaluation prompts have been successfully migrated from health insurance to 
+banking domain. All entity definitions, examples, and role descriptions now 
+accurately reflect the banking and economics focus of the project.

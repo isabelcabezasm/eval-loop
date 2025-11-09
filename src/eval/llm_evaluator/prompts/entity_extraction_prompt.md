@@ -1,11 +1,11 @@
 Extract all entities from the following sentences and organize them into three separate lists.
 
 Entities are defined as:
-- Physical activity types: aerobic, cardio, strength, mobility, sports, specific sport names, etc.
-- Medical related behavior: checkups, medical costs, healthcare quality, medical procedures, etc.
-- Physical characteristics: age, gender, weight, height, BMI, etc.
-- Habits: alcohol consumption, smoking, nutrition habits, sleep patterns, etc.
-- Health outcomes: mortality, lifestyle impact, mental health, physical health conditions, etc.
+- Economic indicators: inflation rate, unemployment rate, GDP growth, interest rates, exchange rates, etc.
+- Banking activities: lending, borrowing, deposits, mortgages, investment decisions, etc.
+- Market factors: market stability, investor confidence, political changes, regulations, etc.
+- Financial instruments: bonds, equities, currencies, derivatives, commodities, etc.
+- Economic outcomes: economic growth, recession, market volatility, financial stability, etc.
 
 Extract entities as simple strings (not objects or relationships).
 
