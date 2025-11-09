@@ -133,18 +133,18 @@ class QAEngine:
             buffer += chunk
 
             # Check for both AXIOM and REALITY citations
-            while match := re.search(r"\[(AXIOM-\d+|REALITY-\d+)\]", buffer):
+            while match := re.search(r"\[(A-\d+|R-\d+)\]", buffer):
                 # Yield text before the citation
                 yield TextContent(content=buffer[: match.start()])
 
                 # Determine citation type and create appropriate ID
                 citation_id = match.group(1)
-                if citation_id.startswith("AXIOM-"):
+                if citation_id.startswith("A-"):
                     yield AxiomCitationCandidate(
                         id=AxiomId(citation_id),
                         text=match.group(0),
                     )
-                else:  # REALITY-
+                else:  # R-
                     yield RealityCitationCandidate(
                         id=RealityId(citation_id),
                         text=match.group(0),
