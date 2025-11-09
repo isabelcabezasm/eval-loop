@@ -32,8 +32,8 @@ def _parse_reality(value: object) -> list[RealityStatement] | object:
 
 def _parse_base64(value: Any) -> bytes | object:
     if not isinstance(value, str):
-        # Not a base64-string, hence needs not be parsed
-        # but can be passed along the pipeline
+        # Not a base64-string, hence needs not be parsed but can be passed
+        # along the pipeline
         return value
 
     return TypeAdapter(Base64Bytes).validate_python(value)  # pyright: ignore [reportUnknownVariableType]
@@ -51,10 +51,8 @@ Reality = Annotated[
 class GenerateRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    question: str = Field(
-        ..., min_length=1, description="Question must not be empty"
-    )
-    reality: Reality | None = Field(description="Current reality")
+    question: str = Field(..., min_length=1, description="Question to answer")
+    reality: Reality | None = Field(description="Current reality (optional)")
 
 
 class TextResponse(BaseModel):
@@ -88,8 +86,28 @@ async def generate(request: GenerateRequest):
     """
     Generate streaming responses for constitutional QA queries.
 
-    Processes questions with context and streams back text content
-    and citations as newline-delimited JSON.
+    Processes questions with constitutional axioms and reality context,
+    streaming back text content and citations as newline-delimited JSON.
+
+    Example Request:
+        {
+            "question": "How does inflation affect interest rates in
+            Switzerland?",
+            "reality": [
+                {
+                    "id": "R-001", "description": "Current inflation rate in
+                    Switzerland is 2.1% as of Q3 2024."
+                }
+            ]
+        }
+
+    Example Response (streaming ndjson):
+        {"type": "text", "text": "Based on economic principles..."}
+        {"type": "axiom_citation",
+        "id": "A-005",
+        "description": "Interest rates..."}
+        {"type": "reality_citation", "id": "R-001",
+        "description": "Current inflation..."}
     """
 
     async def stream():
