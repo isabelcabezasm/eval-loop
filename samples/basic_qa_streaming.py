@@ -9,8 +9,13 @@ This example shows how to:
 
 import asyncio
 
+from core.axiom_store import Axiom
 from core.dependencies import qa_engine
-from core.qa_engine import AxiomCitationContent, TextContent
+from core.qa_engine import (
+    AxiomCitationContent,
+    RealityCitationContent,
+    TextContent,
+)
 
 
 async def main():
@@ -31,7 +36,7 @@ async def main():
     print("-" * 80)
 
     # Collect citations for reference section
-    axiom_citations = []
+    axiom_citations: list[Axiom] = []
 
     # Stream the response
     async for chunk in engine.invoke_streaming(question):
@@ -48,6 +53,9 @@ async def main():
                 )
                 if chunk.item not in axiom_citations:
                     axiom_citations.append(chunk.item)
+            case RealityCitationContent():
+                # Skip reality citations in this basic example
+                pass
 
     print("\n" + "-" * 80)
 
