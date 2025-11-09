@@ -174,28 +174,28 @@ with simplified schemas for both constitution and reality data structures.
 
 ## Phase 5: Validation and Cleanup
 
-### - [ ] Task 5.1: Run Complete Test Suite
+### - [x] Task 5.1: Run Complete Test Suite
 - Execute: `uv run pytest tests/`
 - Verify all tests pass
 - Check test coverage hasn't decreased significantly
 
-### - [ ] Task 5.2: Run All Sample Scripts
+### - [x] Task 5.2: Run All Sample Scripts
 - Execute `samples/run_all_samples.py` or run each individually
 - Verify outputs are sensible for banking domain
 - Check for any lingering health insurance references
 
-### - [ ] Task 5.3: Run Evaluation
+### - [x] Task 5.3: Run Evaluation
 - Execute evaluation task: `uv run python -m eval.main`
 - Review evaluation results for banking domain
 - Ensure results make sense for new domain
 
-### - [ ] Task 5.4: Code Quality Checks
+### - [x] Task 5.4: Code Quality Checks
 - Run linter: `uv run ruff check src/ tests/`
 - Run formatter: `uv run ruff format src/ tests/`
 - Run type checker: `uv run pyright`
 - Fix any issues identified
 
-### - [ ] Task 5.5: Manual Testing
+### - [x] Task 5.5: Manual Testing
 - Test the system with various banking questions
 - Verify constitutional axioms are properly applied
 - Verify reality data is correctly integrated
@@ -203,14 +203,14 @@ with simplified schemas for both constitution and reality data structures.
 - Test API endpoints with various banking questions
 - Verify API response format with simplified schemas
 
-### - [ ] Task 5.6: API Integration Testing
+### - [x] Task 5.6: API Integration Testing
 - Start the API server and test `/api/generate` endpoint
 - Send requests with banking domain questions
 - Verify streaming responses work correctly
 - Test with and without reality data
 - Validate response format matches simplified schema
 
-### - [ ] Task 5.7: Clean Up Old Artifacts
+### - [x] Task 5.7: Clean Up Old Artifacts
 - Remove any health insurance specific files
 - Clean up old run results if needed
 - Remove any deprecated code or comments

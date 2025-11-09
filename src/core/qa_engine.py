@@ -194,7 +194,7 @@ class QAEngine:
         Stream AI response with real-time citation detection and
         validation.
 
-        Parses [AXIOM-XXX] and [REALITY-XXX] citations from the streamed
+        Parses [A-XXX] and [R-XXX] citations from the streamed
         response, validates them, and yields either TextContent or
         CitationContent chunks. Thread-safe for concurrent requests with
         different reality statements.
