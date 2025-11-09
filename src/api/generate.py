@@ -92,7 +92,8 @@ async def generate(request: GenerateRequest):
     Example Request:
         {
             "question": "How does inflation affect interest rates in
-            Switzerland?", "reality": [
+            Switzerland?",
+            "reality": [
                 {
                     "id": "R-001", "description": "Current inflation rate in
                     Switzerland is 2.1% as of Q3 2024."
@@ -102,10 +103,11 @@ async def generate(request: GenerateRequest):
 
     Example Response (streaming ndjson):
         {"type": "text", "text": "Based on economic principles..."}
-        {"type": "axiom_citation", "id": "A-005",
+        {"type": "axiom_citation",
+        "id": "A-005",
         "description": "Interest rates..."}
-        {"type": "reality_citation", "id": "R-001", "description": "Current
-        inflation..."}
+        {"type": "reality_citation", "id": "R-001",
+        "description": "Current inflation..."}
     """
 
     async def stream():
