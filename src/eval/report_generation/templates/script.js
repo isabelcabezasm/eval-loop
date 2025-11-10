@@ -310,7 +310,7 @@ function renderEvaluation(evaluation) {
 
     return `
         <div class="evaluation-item">
-            <div class="evaluation-header collapsed" onclick="toggleEvaluation(this)">
+            <div class="evaluation-header collapsed" role="button" tabindex="0" aria-expanded="false" onclick="toggleEvaluation(this)">
                 <div class="evaluation-id">Evaluation #${evaluation.input.id}</div>
                 <div class="scores">
                     <div class="score-badge score-accuracy ${accuracyClass}">
@@ -441,6 +441,7 @@ function calculateSummaryStats() {
  * Renders all evaluation items and inserts them into the DOM.
  * Processes each evaluation through renderEvaluation() and concatenates the results.
  * Updates the evaluations container with the complete HTML content.
+ * Attaches keyboard event handlers to evaluation headers for accessibility.
  */
 function renderEvaluations() {
     const container = document.getElementById('evaluations-container');
@@ -449,13 +450,26 @@ function renderEvaluations() {
         .join('');
 
     container.innerHTML = evaluationsHtml;
+
+    // Attach keyboard event handlers for accessibility
+    const headers = container.querySelectorAll('.evaluation-header');
+    headers.forEach(header => {
+        header.addEventListener('keydown', (event) => {
+            // Trigger toggle on Enter or Space key
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault(); // Prevent page scroll on Space
+                toggleEvaluation(header);
+            }
+        });
+    });
 }
 
 /**
  * Toggles the collapsed/expanded state of an evaluation item.
- * Called when the evaluation header is clicked to show/hide detailed content.
- * Manages CSS classes to control visibility and styling of evaluation content.
- * @param {HTMLElement} headerElement - The header element that was clicked
+ * Called when the evaluation header is clicked or activated via keyboard.
+ * Manages CSS classes and ARIA attributes to control visibility and state
+ * for both visual users and screen readers.
+ * @param {HTMLElement} headerElement - The header element that was activated
  */
 function toggleEvaluation(headerElement) {
     const content = headerElement.nextElementSibling;
@@ -464,9 +478,11 @@ function toggleEvaluation(headerElement) {
     if (isCollapsed) {
         headerElement.classList.remove('collapsed');
         content.classList.remove('collapsed');
+        headerElement.setAttribute('aria-expanded', 'true');
     } else {
         headerElement.classList.add('collapsed');
         content.classList.add('collapsed');
+        headerElement.setAttribute('aria-expanded', 'false');
     }
 }
 
