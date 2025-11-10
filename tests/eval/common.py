@@ -85,8 +85,11 @@ def mock_engine(request: pytest.FixtureRequest) -> QAEvalEngine:
     """Create a mock QAEvalEngine with configurable expected result.
 
     Use with indirect parametrization to pass the expected_result.
+    Can accept AccuracyEvaluationResults or EntityExtraction.
     """
-    expected_result: AccuracyEvaluationResults = request.param
+    expected_result: AccuracyEvaluationResults | EntityExtraction = (
+        request.param
+    )
     mock_agent = AsyncMock(spec=ChatAgent)
     mock_response = Mock(spec=AgentRunResponse)
     mock_response.value = expected_result
