@@ -431,10 +431,18 @@ function calculateSummaryStats() {
     const avgCoverage = evaluations.reduce((sum, evaluation) => sum + evaluation.topic_coverage.coverage_score, 0) / totalEvaluations;
     const overallScore = (avgAccuracy + avgCoverage) / 2;
 
-    document.getElementById('total-evaluations').textContent = totalEvaluations;
-    document.getElementById('avg-accuracy').textContent = avgAccuracy.toFixed(2);
-    document.getElementById('avg-coverage').textContent = avgCoverage.toFixed(2);
-    document.getElementById('overall-score').textContent = overallScore.toFixed(2);
+    // Safely update summary statistics elements
+    const totalEl = document.getElementById('total-evaluations');
+    if (totalEl) totalEl.textContent = totalEvaluations;
+
+    const accuracyEl = document.getElementById('avg-accuracy');
+    if (accuracyEl) accuracyEl.textContent = avgAccuracy.toFixed(2);
+
+    const coverageEl = document.getElementById('avg-coverage');
+    if (coverageEl) coverageEl.textContent = avgCoverage.toFixed(2);
+
+    const overallEl = document.getElementById('overall-score');
+    if (overallEl) overallEl.textContent = overallScore.toFixed(2);
 }
 
 /**
@@ -445,6 +453,11 @@ function calculateSummaryStats() {
  */
 function renderEvaluations() {
     const container = document.getElementById('evaluations-container');
+    if (!container) {
+        console.error('Error: evaluations-container element not found');
+        return;
+    }
+
     const evaluationsHtml = evaluationData.evaluation_outputs
         .map(evaluation => renderEvaluation(evaluation))
         .join('');
@@ -526,9 +539,12 @@ fetch('evaluation_data.json')
     })
     .catch(error => {
         console.error('Error loading evaluation data:', error);
-        document.getElementById('evaluations-container').innerHTML =
-            '<div style="padding: 20px; color: red;">' +
-            '<strong>Error loading evaluation data:</strong><br>' +
-            error.message +
-            '<br><br>Please check the console for more details.</div>';
+        const container = document.getElementById('evaluations-container');
+        if (container) {
+            container.innerHTML =
+                '<div style="padding: 20px; color: red;">' +
+                '<strong>Error loading evaluation data:</strong><br>' +
+                error.message +
+                '<br><br>Please check the console for more details.</div>';
+        }
     });
