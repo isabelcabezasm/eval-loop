@@ -303,5 +303,11 @@ async def run_evaluation(
     report: Report = Report(data_path=str(result_path))
     report.generate_report()
 
+    # Determine actual report directory
+    if report.output_dir is None:
+        report_dir = report.data_path.parent / "report"
+    else:
+        report_dir = report.output_dir
+
     print(f"Saved evaluation results to: {result_path}")
-    print(f"Generated evaluation report in: {output_path}")
+    print(f"Generated evaluation report in: {report_dir}")
