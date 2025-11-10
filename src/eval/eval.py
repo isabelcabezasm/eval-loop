@@ -13,6 +13,7 @@ from eval.models import (
     EntityExtraction,
     TopicCoverageEvaluationResults,
 )
+from eval.report_generation.report import Report
 
 
 class EvaluationSampleInput(BaseModel):
@@ -297,3 +298,16 @@ async def run_evaluation(
     # save the results
     result_path = output_path / "evaluation_results.json"
     _ = result_path.write_text(result.model_dump_json(indent=4))
+
+    # generate a report in the same folder with the results
+    report: Report = Report(data_path=str(result_path))
+    report.generate_report()
+
+    # Determine actual report directory
+    if report.output_dir is None:
+        report_dir = report.data_path.parent / "report"
+    else:
+        report_dir = report.output_dir
+
+    print(f"Saved evaluation results to: {result_path}")
+    print(f"Generated evaluation report in: {report_dir}")
