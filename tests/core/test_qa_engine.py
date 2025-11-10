@@ -628,7 +628,7 @@ async def test_invoke_streaming_handles_chunk_scenarios(
         ),
         RealityStatement(
             id=RealityId("R-002"),
-            description="Medical costs are rising.",
+            description="Interest rates are rising.",
         ),
     ]
 

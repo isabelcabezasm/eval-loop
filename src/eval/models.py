@@ -54,7 +54,9 @@ class EntityAccuracy(BaseModel):
     Represents the accuracy evaluation for a specific entity.
     """
 
-    entity: str = Field(description="The entity being evaluated for accuracy.")
+    entity: Entity = Field(
+        description="The entity being evaluated for accuracy."
+    )
     reason: str = Field(
         description="Explanation of why this accuracy score was assigned."
     )
