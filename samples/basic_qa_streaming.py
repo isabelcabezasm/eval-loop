@@ -9,8 +9,13 @@ This example shows how to:
 
 import asyncio
 
+from core.axiom_store import Axiom
 from core.dependencies import qa_engine
-from core.qa_engine import AxiomCitationContent, TextContent
+from core.qa_engine import (
+    AxiomCitationContent,
+    RealityCitationContent,
+    TextContent,
+)
 
 
 async def main():
@@ -20,8 +25,8 @@ async def main():
 
     # Example question
     question = (
-        "What if I start exercising regularly and lose 20 pounds - "
-        "how would that affect my future premium and coverage?"
+        "How would a significant change in the Swiss National Bank's "
+        "interest rate policy affect investment decisions?"
     )
 
     print("Streaming Response Example")
@@ -31,7 +36,7 @@ async def main():
     print("-" * 80)
 
     # Collect citations for reference section
-    axiom_citations = []
+    axiom_citations: list[Axiom] = []
 
     # Stream the response
     async for chunk in engine.invoke_streaming(question):
@@ -41,9 +46,16 @@ async def main():
                 print(chunk.content, end="", flush=True)
             case AxiomCitationContent():
                 # Print axiom citation with cyan color
-                print(f"\033[1;36m[{chunk.item.id}]\033[0m", end="", flush=True)
+                print(
+                    f"\033[1;36m[{chunk.item.id}]\033[0m",
+                    end="",
+                    flush=True,
+                )
                 if chunk.item not in axiom_citations:
                     axiom_citations.append(chunk.item)
+            case RealityCitationContent():
+                # Skip reality citations in this basic example
+                pass
 
     print("\n" + "-" * 80)
 
@@ -52,12 +64,8 @@ async def main():
         print("\n\033[1mAxiom References:\033[0m")
         print("=" * 80)
         for axiom in axiom_citations:
-            print(f"\n\033[1;36m[{axiom.id}]\033[0m \033[1m{axiom.subject}\033[0m")
-            print(f"  Entity: {axiom.entity}")
-            print(f"  Trigger: {axiom.trigger}")
-            print(f"  Conditions: {axiom.conditions}")
-            print(f"  Description: {axiom.description}")
-            print(f"  \033[2mCategory: {axiom.category}\033[0m")
+            print(f"\n\033[1;36m[{axiom.id}]\033[0m")
+            print(f"  {axiom.description}")
         print("=" * 80)
 
 

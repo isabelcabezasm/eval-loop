@@ -5,8 +5,7 @@ Generated entities: {generated_entities}
 Your task is to:
 
 1. Check the entities of both list, consider synonyms or equivalent terms (e.g.,
-"spinning" is equivalent to "indoor cycling", or "smoke" is equivalent to "tobacco
-consumption"). Add those considerations in the reason property. 
+"interest rate" is equivalent to "policy rate", or "inflation" is equivalent to "price increases"). Add those considerations in the reason property. 
 
 2. Provide a reason
 explaining which entities matched exactly, which matched approximately (e.g. inaccurate

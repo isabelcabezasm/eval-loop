@@ -23,24 +23,7 @@
                 "redhat.vscode-yaml",
                 "streetsidesoftware.code-spell-checker",
                 "ms-vscode.vscode-json"
-            ],
-            "settings": {
-                "python.defaultInterpreterPath": "/usr/local/bin/python",
-                "python.linting.enabled": true,
-                "python.linting.ruffEnabled": true,
-                "python.formatting.provider": "black",
-                "python.analysis.typeCheckingMode": "basic",
-                "python.analysis.autoImportCompletions": true,
-                "files.associations": {
-                    "*.toml": "toml"
-                },
-                "editor.formatOnSave": true,
-                "editor.codeActionsOnSave": {
-                    "source.organizeImports": "explicit",
-                    "source.fixAll.ruff": "explicit"
-                },
-                "terminal.integrated.defaultProfile.linux": "bash"
-            }
+            ]
         }
     },
     "forwardPorts": [],

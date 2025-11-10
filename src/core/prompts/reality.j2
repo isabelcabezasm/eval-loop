@@ -1,11 +1,6 @@
 {%- for statement in reality -%}
 ## {{ statement.id }}
  
-entity: {{ statement.entity }}
-attribute: {{ statement.attribute }}
-value: {{ statement.value }}
-number: {{ statement.number }}
-description: {{ statement.description }}{% if not loop.last %}
+{{ statement.description }}
  
-{% endif %}
-{%- endfor %}
+{% endfor %}
