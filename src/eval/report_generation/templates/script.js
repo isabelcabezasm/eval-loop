@@ -488,14 +488,35 @@ function toggleEvaluation(headerElement) {
 
 /**
  * Main initialization function that loads evaluation data and sets up the page.
- * Fetches JSON data, makes it globally available, and initializes all page components.
+ * Fetches JSON data, validates structure, makes it globally available, and
+ * initializes all page components.
  * Handles errors gracefully by displaying error messages to the user.
  */
 // Load evaluation data and initialize the page
 fetch('evaluation_data.json')
     .then(response => response.json())
     .then(evaluationData => {
-        // Make evaluationData available globally
+        // Validate that evaluationData exists
+        if (!evaluationData) {
+            throw new Error('Evaluation data is null or undefined');
+        }
+
+        // Validate that evaluation_outputs exists and is an array
+        if (!evaluationData.evaluation_outputs) {
+            throw new Error('Missing required field: evaluation_outputs');
+        }
+
+        if (!Array.isArray(evaluationData.evaluation_outputs)) {
+            throw new Error('evaluation_outputs must be an array, got: ' +
+                typeof evaluationData.evaluation_outputs);
+        }
+
+        // Validate that evaluation_outputs is non-empty
+        if (evaluationData.evaluation_outputs.length === 0) {
+            throw new Error('evaluation_outputs array is empty - no evaluations to display');
+        }
+
+        // All validations passed - make evaluationData available globally
         window.evaluationData = evaluationData;
 
         // Initialize the page
@@ -506,5 +527,8 @@ fetch('evaluation_data.json')
     .catch(error => {
         console.error('Error loading evaluation data:', error);
         document.getElementById('evaluations-container').innerHTML =
-            '<div style="padding: 20px; color: red;">Error loading evaluation data. Please check the console.</div>';
+            '<div style="padding: 20px; color: red;">' +
+            '<strong>Error loading evaluation data:</strong><br>' +
+            error.message +
+            '<br><br>Please check the console for more details.</div>';
     });
