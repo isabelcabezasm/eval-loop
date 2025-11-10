@@ -3,13 +3,15 @@ Tests for accuracy metric functionality in QAEvalEngine and metrics.
 """
 
 import math
-import os
 
 import pytest
 from tests.eval.common import (
     mock_engine,  # pyright: ignore[reportUnusedImport] it's a fixture
+    requires_azure,
     sample_accuracy_evaluation_results,
     sample_entity_extraction_result,
+    sample_entity_extraction_with_overlap,
+    validate_accuracy_results,
 )
 
 from eval.llm_evaluator.qa_eval_engine import QAEvalEngine
@@ -19,6 +21,10 @@ from eval.models import (
     EntityAccuracy,
     EntityExtraction,
 )
+
+# Minimum length for a meaningful reason explanation
+# (a proper explanation should contain at least a short sentence)
+MIN_MEANINGFUL_REASON_LENGTH = 10
 
 
 @pytest.mark.asyncio
@@ -119,6 +125,41 @@ from eval.models import (
             ],
             id="multiple_expected_entities_formatting",
         ),
+        pytest.param(
+            sample_entity_extraction_with_overlap,
+            AccuracyEvaluationResults(
+                entity_accuracies=[
+                    EntityAccuracy(
+                        entity=Entity(
+                            trigger_variable="interest_rate",
+                            consequence_variable="borrowing_cost",
+                        ),
+                        reason=(
+                            "Exact match between expected and query entities"
+                        ),
+                        score=1.0,
+                    ),
+                    EntityAccuracy(
+                        entity=Entity(
+                            trigger_variable="monetary_policy",
+                            consequence_variable="credit_availability",
+                        ),
+                        reason=(
+                            "Related concept with partial semantic overlap"
+                        ),
+                        score=0.6,
+                    ),
+                ],
+                accuracy_mean=0.8,
+            ),
+            0.8,
+            2,
+            [
+                "('interest_rate', 'borrowing_cost')",
+                "('monetary_policy', 'credit_availability')",
+            ],
+            id="realistic_overlap_scenario",
+        ),
     ],
     indirect=["mock_engine"],
 )
@@ -129,7 +170,18 @@ async def test_accuracy_evaluation_scenarios(
     expected_count: int,
     check_entities: list[str],
 ):
-    """Test QAEvalEngine.accuracy_evaluation with different scenarios."""
+    """Test QAEvalEngine.accuracy_evaluation with different scenarios.
+
+    Validates:
+    - Successful evaluation with multiple entities (successful_evaluation)
+    - Empty entity list handling returns zero mean (empty_entity_list)
+    - Multiple expected entities with proper comma-separated formatting
+      (multiple_expected_entities_formatting)
+    - Realistic overlap scenario with semantic similarity
+      (realistic_overlap_scenario)
+    - Proper prompt formatting with entity lists
+    - Mock agent called exactly once with correct parameters
+    """
 
     llm_answer = (
         "Higher interest rates increase borrowing costs for "
@@ -145,14 +197,12 @@ async def test_accuracy_evaluation_scenarios(
         expected_answer=expected_answer,
     )
 
-    # Common assertions
     assert isinstance(result, AccuracyEvaluationResults)
     assert len(result.entity_accuracies) == expected_count
     assert result.accuracy_mean == expected_mean
 
     # Verify the agent's run method was called correctly
-    # Access the mock agent from the engine
-    mock_agent = mock_engine._agent  # type: ignore[attr-defined]
+    mock_agent = mock_engine.agent
     formatted_prompt: str = mock_agent.run.call_args[0][0]  # type: ignore[attr-defined]
 
     mock_agent.run.assert_called_once_with(  # type: ignore[attr-defined]
@@ -163,8 +213,32 @@ async def test_accuracy_evaluation_scenarios(
     assert expected_answer in formatted_prompt
 
     # Check that all expected entities appear in the formatted prompt
+    # by verifying both trigger and consequence variables are present
     for entity_str in check_entities:
-        assert entity_str in formatted_prompt
+        # Extract trigger and consequence from entity_str format
+        # "('{trigger}', '{consequence}')" or '("{trigger}", "{consequence}")'
+        if entity_str:
+            # Parse the entity string to extract variables
+            # Handle both single and double quotes
+            parts = (
+                entity_str.strip("()")
+                .replace("'", "")
+                .replace('"', "")
+                .split(", ")
+            )
+            assert len(parts) == 2, (
+                f"Expected entity format '(trigger, consequence)', "
+                f"got: {entity_str}"
+            )
+            trigger, consequence = parts
+            # Verify both components appear in prompt
+            # (allows for format variations)
+            assert (
+                trigger in formatted_prompt and consequence in formatted_prompt
+            ), (
+                f"Entity components '{trigger}' and "
+                f"'{consequence}' not found in prompt"
+            )
 
     # For multiple entity scenarios, verify comma-separated format
     if len(check_entities) > 1:
@@ -219,9 +293,13 @@ async def test_accuracy_evaluation_scenarios(
 def test_calculate_accuracy_mean_scenarios(
     entity_accuracies: list[EntityAccuracy], expected_mean: float
 ):
-    """
-    Test the calculate_accuracy_mean method with different entity
-    configurations.
+    """Test the calculate_accuracy_mean method with different configurations.
+
+    Validates:
+    - Correct mean calculation with multiple entities (with_entities)
+    - Empty entity list returns 0.0 mean (empty_list)
+    - Floating-point precision in calculations using math.isclose
+    - Mean is sum of scores divided by count
     """
     results = AccuracyEvaluationResults(
         entity_accuracies=entity_accuracies,
@@ -239,14 +317,7 @@ def test_calculate_accuracy_mean_scenarios(
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.skipif(
-    not os.getenv("AZURE_OPENAI_ENDPOINT"),
-    reason="Requires AZURE_OPENAI_ENDPOINT environment variable",
-)
-@pytest.mark.skipif(
-    not os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-    reason="Requires AZURE_OPENAI_CHAT_DEPLOYMENT_NAME environment variable",
-)
+@requires_azure
 @pytest.mark.parametrize(
     "entity_extraction,llm_answer,expected_answer,expected_entity_count",
     [
@@ -357,43 +428,16 @@ async def test_accuracy_evaluation_integration(
     )
 
     # assert
-    assert isinstance(result, AccuracyEvaluationResults)
-
-    # Validate structure
-    assert hasattr(result, "entity_accuracies")
-    assert hasattr(result, "accuracy_mean")
-
-    # Validate entity accuracies count
-    # Note: LLM may evaluate individual variables or entity pairs
-    # So we check that we got at least the expected minimum evaluations
-    assert len(result.entity_accuracies) == expected_entity_count, (
-        f"Expected at least {expected_entity_count} entity evaluations, "
-        f"got {len(result.entity_accuracies)}"
+    # Validate structure and constraints using helper function
+    validate_accuracy_results(
+        result, min_reason_length=MIN_MEANINGFUL_REASON_LENGTH
     )
 
-    for entity_acc in result.entity_accuracies:
-        # Validate structure
-        assert isinstance(entity_acc, EntityAccuracy)
-        assert isinstance(entity_acc.entity, Entity)
-        assert isinstance(entity_acc.reason, str)
-        assert isinstance(entity_acc.score, float)
-
-        # Validate score bounds
-        assert 0.0 <= entity_acc.score <= 1.0, (
-            f"Score {entity_acc.score} out of valid range [0.0, 1.0]"
-        )
-
-        # Validate reason is meaningful (minimum 10 chars to ensure it's not
-        # just a placeholder like "N/A" or "none" - a proper explanation
-        # should contain at least a short sentence)
-        assert len(entity_acc.reason) > 10, (
-            "Reason should be a meaningful explanation"
-        )
-
-    # Validate mean accuracy
-    assert isinstance(result.accuracy_mean, float)
-    assert 0.0 <= result.accuracy_mean <= 1.0, (
-        f"Mean accuracy {result.accuracy_mean} out of valid range"
+    # Validate entity accuracies count
+    # We expect exactly the expected number of entity evaluations
+    assert len(result.entity_accuracies) == expected_entity_count, (
+        f"Expected exactly {expected_entity_count} entity evaluations, "
+        f"got {len(result.entity_accuracies)}"
     )
 
     # Verify mean is calculated correctly

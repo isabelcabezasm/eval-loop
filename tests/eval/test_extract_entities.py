@@ -2,17 +2,24 @@
 Tests for entity extraction functionality in QAEvalEngine and metrics.
 """
 
-import os
-
 import pytest
 from tests.eval.common import (
     mock_engine,  # pyright: ignore[reportUnusedImport] it's a fixture
+    requires_azure,
     sample_entity_extraction,  # pyright: ignore[reportUnusedImport] it's a fixture
+    sample_entity_extraction_overlap,  # pyright: ignore[reportUnusedImport] it's a fixture
     sample_entity_extraction_result,
+    sample_entity_extraction_with_overlap,
+    validate_entity_extraction_structure,
+    validate_entity_structure,
 )
 
 from eval.llm_evaluator.qa_eval_engine import QAEvalEngine
-from eval.models import Entity, EntityExtraction
+from eval.models import EntityExtraction
+
+# Minimum length for meaningful entity variables
+# (at least 2 characters to avoid single letter placeholders)
+MIN_ENTITY_VARIABLE_LENGTH = 2
 
 
 @pytest.mark.asyncio
@@ -29,7 +36,15 @@ async def test_qa_eval_engine_entity_extraction(
     mock_engine: QAEvalEngine,
     sample_entity_extraction: EntityExtraction,
 ):
-    """Test entity_extraction method."""
+    """Test entity_extraction method with basic scenario.
+
+    Validates:
+    - Entities are correctly extracted from user query, LLM answer, and
+      expected answer
+    - Mock engine returns expected EntityExtraction result
+    - Prompt is formatted correctly with all three inputs
+    - Agent is called exactly once with proper response format
+    """
 
     result = await mock_engine.entity_extraction(
         user_query="What are the health benefits of exercise?",
@@ -44,8 +59,7 @@ async def test_qa_eval_engine_entity_extraction(
     assert result == sample_entity_extraction
 
     # Verify the agent's run method was called correctly
-    # Access the mock agent from the engine
-    mock_agent = mock_engine._agent  # type: ignore[attr-defined]
+    mock_agent = mock_engine.agent
     formatted_prompt: str = mock_agent.run.call_args[0][0]  # type: ignore[attr-defined]
 
     # Check that the prompt was formatted correctly
@@ -64,16 +78,63 @@ async def test_qa_eval_engine_entity_extraction(
     )
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "mock_engine",
+    [
+        pytest.param(
+            sample_entity_extraction_with_overlap,
+            id="entity_extraction_with_realistic_overlap",
+        )
+    ],
+    indirect=["mock_engine"],
+)
+async def test_entity_extraction_with_overlap(
+    mock_engine: QAEvalEngine,
+    sample_entity_extraction_overlap: EntityExtraction,
+):
+    """Test entity_extraction with realistic overlap patterns.
+
+    This test validates the extraction with a more realistic scenario where:
+    - User query and expected answer share the same core entity
+    - LLM answer contains semantically similar but not identical entities
+    - Expected answer includes additional context beyond the user query
+    """
+    result = await mock_engine.entity_extraction(
+        user_query="How do interest rates affect borrowing?",
+        llm_answer=(
+            "Interest rates directly impact loan costs and influence "
+            "lending decisions by financial institutions."
+        ),
+        expected_answer=(
+            "Changes in interest rates affect borrowing costs for consumers, "
+            "while monetary policy influences overall credit availability."
+        ),
+    )
+
+    assert result == sample_entity_extraction_overlap
+
+    # Verify the core entity appears in both query and expected answer
+    assert any(
+        e.trigger_variable == "interest_rate"
+        for e in result.user_query_entities
+    )
+    assert any(
+        e.trigger_variable == "interest_rate"
+        for e in result.expected_answer_entities
+    )
+
+    # Verify LLM answer has semantically related but different entities
+    assert len(result.llm_answer_entities) > 0
+
+    # Verify the agent was called correctly
+    mock_agent = mock_engine.agent
+    mock_agent.run.assert_called_once()  # type: ignore[attr-defined]
+
+
 @pytest.mark.integration
 @pytest.mark.asyncio
-@pytest.mark.skipif(
-    not os.getenv("AZURE_OPENAI_ENDPOINT"),
-    reason="Requires AZURE_OPENAI_ENDPOINT environment variable",
-)
-@pytest.mark.skipif(
-    not os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
-    reason="Requires AZURE_OPENAI_CHAT_DEPLOYMENT_NAME environment variable",
-)
+@requires_azure
 @pytest.mark.parametrize(
     "user_query,llm_answer,expected_answer,min_entity_count",
     [
@@ -133,17 +194,8 @@ async def test_entity_extraction_integration(
     )
 
     # assert
-    assert isinstance(result, EntityExtraction)
-
-    # Validate structure
-    assert hasattr(result, "user_query_entities")
-    assert hasattr(result, "llm_answer_entities")
-    assert hasattr(result, "expected_answer_entities")
-
-    # Validate that entities were extracted
-    assert isinstance(result.user_query_entities, list)
-    assert isinstance(result.llm_answer_entities, list)
-    assert isinstance(result.expected_answer_entities, list)
+    # Validate structure using helper function
+    validate_entity_extraction_structure(result)
 
     # Check minimum entity count across all categories
     total_entities = (
@@ -156,7 +208,7 @@ async def test_entity_extraction_integration(
         f"got {total_entities}"
     )
 
-    # Validate entity structure for all extracted entities
+    # Validate entity structure for all extracted entities using helper
     all_entities = (
         result.user_query_entities
         + result.llm_answer_entities
@@ -164,26 +216,6 @@ async def test_entity_extraction_integration(
     )
 
     for entity in all_entities:
-        # Validate structure
-        assert isinstance(entity, Entity)
-        assert hasattr(entity, "trigger_variable")
-        assert hasattr(entity, "consequence_variable")
-
-        # Validate that variables are non-empty strings
-        assert isinstance(entity.trigger_variable, str)
-        assert isinstance(entity.consequence_variable, str)
-        assert len(entity.trigger_variable) > 0, (
-            "Trigger variable should not be empty"
-        )
-        assert len(entity.consequence_variable) > 0, (
-            "Consequence variable should not be empty"
-        )
-
-        # Validate that variables are meaningful
-        # (at least 2 characters to avoid single letter placeholders)
-        assert len(entity.trigger_variable) >= 2, (
-            f"Trigger variable '{entity.trigger_variable}' too short"
-        )
-        assert len(entity.consequence_variable) >= 2, (
-            f"Consequence variable '{entity.consequence_variable}' too short"
+        validate_entity_structure(
+            entity, min_length=MIN_ENTITY_VARIABLE_LENGTH
         )
