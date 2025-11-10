@@ -7,14 +7,12 @@ from typing import Protocol
 from pydantic import BaseModel
 
 from core.paths import root
-from eval.metrics.accuracy import get_accuracy
-from eval.metrics.extract_entities import get_entities
-from eval.metrics.models import (
+from eval.dependencies import qa_eval_engine
+from eval.models import (
     AccuracyEvaluationResults,
     EntityExtraction,
     TopicCoverageEvaluationResults,
 )
-from eval.metrics.topic_coverage import get_topic_coverage
 
 
 class EvaluationSampleInput(BaseModel):
@@ -188,19 +186,21 @@ async def evaluate_answer(
     including accuracy and topic coverage, and extracting relevant entities.
     """
 
-    entities = await get_entities(
-        user_prompt=sample_input.query,
+    entities = await qa_eval_engine().entity_extraction(
+        user_query=sample_input.query,
         llm_answer=llm_answer,
         expected_answer=sample_input.expected_answer,
     )
 
-    accuracy = await get_accuracy(
+    accuracy = await qa_eval_engine().accuracy_evaluation(
         entity_list=entities,
         llm_answer=llm_answer,
         expected_answer=sample_input.expected_answer,
     )
 
-    topic_coverage = await get_topic_coverage(entity_list=entities)
+    topic_coverage = await qa_eval_engine().topic_coverage_evaluation(
+        entity_list=entities
+    )
 
     return EvaluationSampleOutput(
         input=sample_input,

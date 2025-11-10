@@ -4,7 +4,7 @@ from agent_framework import ChatAgent
 from anyio import Path
 from pydantic import BaseModel
 
-from eval.metrics.models import (
+from eval.models import (
     AccuracyEvaluationResults,
     EntityExtraction,
     TopicCoverageEvaluationResults,
@@ -69,7 +69,7 @@ class QAEvalEngine:
         return response.value
 
     async def entity_extraction(
-        self, user_query: str, llm_answer: str, expected_answer: str
+        self, /, *, user_query: str, llm_answer: str, expected_answer: str
     ) -> EntityExtraction:
         """
         Extract and compare entities between the LLM-generated answer and
@@ -87,6 +87,8 @@ class QAEvalEngine:
 
     async def accuracy_evaluation(
         self,
+        /,
+        *,
         entity_list: EntityExtraction,
         llm_answer: str,
         expected_answer: str,
@@ -125,7 +127,7 @@ class QAEvalEngine:
         )
 
     async def topic_coverage_evaluation(
-        self, entity_list: EntityExtraction
+        self, /, *, entity_list: EntityExtraction
     ) -> TopicCoverageEvaluationResults:
         """
         Evaluate the topic coverage of the LLM-generated answer against the
