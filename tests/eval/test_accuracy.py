@@ -225,7 +225,7 @@ def test_calculate_accuracy_mean_scenarios(
     """
     results = AccuracyEvaluationResults(
         entity_accuracies=entity_accuracies,
-        # accuracy_mean Will be recalculated with "calculate_accuracy_mean"
+        # accuracy_mean will be recalculated with "calculate_accuracy_mean"
         accuracy_mean=0.0,
     )
 
