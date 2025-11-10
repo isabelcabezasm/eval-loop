@@ -4,6 +4,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Protocol
 
+from pydantic import BaseModel
+
 from core.paths import root
 from eval.dependencies import qa_eval_engine
 from eval.models import (
@@ -11,6 +13,7 @@ from eval.models import (
     EntityExtraction,
     TopicCoverageEvaluationResults,
 )
+from eval.report_generation.report import Report
 
 
 class EvaluationSampleInput(BaseModel):
@@ -297,7 +300,7 @@ async def run_evaluation(
     _ = result_path.write_text(result.model_dump_json(indent=4))
 
     # generate a report in the same folder with the results
-    report = Report(data_path=str(result_path))
+    report: Report = Report(data_path=str(result_path))
     report.generate_report()
 
     print(f"Saved evaluation results to: {result_path}")
