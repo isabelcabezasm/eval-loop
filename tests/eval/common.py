@@ -1,3 +1,9 @@
+from unittest.mock import AsyncMock, Mock
+
+import pytest
+from agent_framework import AgentRunResponse, ChatAgent
+
+from eval.llm_evaluator.qa_eval_engine import QAEvalEngine
 from eval.models import (
     AccuracyEvaluationResults,
     Entity,
@@ -66,3 +72,26 @@ sample_accuracy_evaluation_results = AccuracyEvaluationResults(
     ],
     accuracy_mean=0.85,
 )
+
+
+@pytest.fixture
+def sample_entity_extraction():
+    """Create a sample EntityExtraction object for testing."""
+    return sample_entity_extraction_result
+
+
+@pytest.fixture
+def mock_engine(request: pytest.FixtureRequest) -> QAEvalEngine:
+    """Create a mock QAEvalEngine with configurable expected result.
+
+    Use with indirect parametrization to pass the expected_result.
+    """
+    expected_result: AccuracyEvaluationResults = request.param
+    mock_agent = AsyncMock(spec=ChatAgent)
+    mock_response = Mock(spec=AgentRunResponse)
+    mock_response.value = expected_result
+    mock_agent.run.return_value = mock_response
+    engine: QAEvalEngine = QAEvalEngine(agent=mock_agent)
+    # Store mock agent for test assertions
+    engine._agent = mock_agent  # type: ignore[attr-defined]
+    return engine

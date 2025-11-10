@@ -4,11 +4,10 @@ Tests for accuracy metric functionality in QAEvalEngine and metrics.
 
 import math
 import os
-from unittest.mock import AsyncMock, Mock
 
 import pytest
-from agent_framework import AgentRunResponse, ChatAgent
 from tests.eval.common import (
+    mock_engine,  # pyright: ignore[reportUnusedImport] it's a fixture
     sample_accuracy_evaluation_results,
     sample_entity_extraction_result,
 )
@@ -24,7 +23,7 @@ from eval.models import (
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "entity_extraction,expected_result,expected_mean,expected_count,check_entities",
+    "entity_extraction,mock_engine,expected_mean,expected_count,check_entities",
     [
         pytest.param(
             sample_entity_extraction_result,
@@ -121,22 +120,16 @@ from eval.models import (
             id="multiple_expected_entities_formatting",
         ),
     ],
+    indirect=["mock_engine"],
 )
 async def test_accuracy_evaluation_scenarios(
     entity_extraction: EntityExtraction,
-    expected_result: AccuracyEvaluationResults,
+    mock_engine: QAEvalEngine,
     expected_mean: float,
     expected_count: int,
     check_entities: list[str],
 ):
     """Test QAEvalEngine.accuracy_evaluation with different scenarios."""
-
-    mock_agent = AsyncMock(spec=ChatAgent)
-    mock_response = Mock(spec=AgentRunResponse)
-    mock_response.value = expected_result
-    mock_agent.run.return_value = mock_response
-
-    engine: QAEvalEngine = QAEvalEngine(agent=mock_agent)
 
     llm_answer = (
         "Higher interest rates increase borrowing costs for "
@@ -146,22 +139,23 @@ async def test_accuracy_evaluation_scenarios(
         "Monetary policy changes affect lending rates and "
         "impact economic activity levels."
     )
-    result = await engine.accuracy_evaluation(
+    result = await mock_engine.accuracy_evaluation(
         entity_list=entity_extraction,
         llm_answer=llm_answer,
         expected_answer=expected_answer,
     )
 
     # Common assertions
-    assert result == expected_result
     assert isinstance(result, AccuracyEvaluationResults)
     assert len(result.entity_accuracies) == expected_count
     assert result.accuracy_mean == expected_mean
 
     # Verify the agent's run method was called correctly
-    formatted_prompt = mock_agent.run.call_args[0][0]
+    # Access the mock agent from the engine
+    mock_agent = mock_engine._agent  # type: ignore[attr-defined]
+    formatted_prompt: str = mock_agent.run.call_args[0][0]  # type: ignore[attr-defined]
 
-    mock_agent.run.assert_called_once_with(
+    mock_agent.run.assert_called_once_with(  # type: ignore[attr-defined]
         formatted_prompt, response_format=AccuracyEvaluationResults
     )
     assert isinstance(formatted_prompt, str)
@@ -292,8 +286,12 @@ def test_entity_accuracy_validation():
 @pytest.mark.integration
 @pytest.mark.asyncio
 @pytest.mark.skipif(
-    not os.getenv("OPENAI_API_KEY"),
-    reason="Requires OPENAI_API_KEY environment variable",
+    not os.getenv("AZURE_OPENAI_ENDPOINT"),
+    reason="Requires AZURE_OPENAI_ENDPOINT environment variable",
+)
+@pytest.mark.skipif(
+    not os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"),
+    reason="Requires AZURE_OPENAI_CHAT_DEPLOYMENT_NAME environment variable",
 )
 @pytest.mark.parametrize(
     "entity_extraction,llm_answer,expected_answer,expected_entity_count",
