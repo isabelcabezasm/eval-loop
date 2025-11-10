@@ -1,26 +1,20 @@
 {
     "python.defaultInterpreterPath": ".venv/bin/python",
     "python.terminal.activateEnvironment": true,
-    "python.analysis.typeCheckingMode": "strict",
     "python.analysis.autoImportCompletions": true,
-    "python.linting.enabled": true,
-    "python.linting.ruffEnabled": true,
-    "python.formatting.provider": "none",
-    "editor.wordWrap": "on",
-    "editor.wordWrapColumn": 88,
-    "editor.rulers": [
-        88
-    ],
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff",
-        "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
             "source.organizeImports": "explicit",
             "source.fixAll.ruff": "explicit"
-        },
-        "editor.wordWrap": "wordWrapColumn",
-        "editor.wordWrapColumn": 88
+        }
     },
+    "editor.formatOnSave": true,
+    "editor.wordWrap": "on",
+    "editor.wordWrapColumn": 79,
+    "editor.rulers": [
+        79
+    ],
     "files.exclude": {
         "**/__pycache__": true,
         "**/.pytest_cache": true,
@@ -30,5 +24,9 @@
         "tests"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "files.associations": {
+        "*.toml": "toml"
+    },
+    "terminal.integrated.defaultProfile.linux": "bash"
 }

@@ -1,236 +1,82 @@
 [
     {
-        "id": "AXIOM-001",
-        "subject": "Physical Activity",
-        "entity": "sport",
-        "trigger": "Regular exercise habits detected",
-        "conditions": "Activity meets or exceeds recommended guidelines",
-        "description": "Higher physical activity reduces long-term health risk and claim frequency.",
-        "category": "Preventive Health"
+        "id": "A-001",
+        "description": "Political instability often disrupts markets and investor confidence, leading to economic downturns."
     },
     {
-        "id": "AXIOM-002",
-        "subject": "Preventive Check-ups",
-        "entity": "medical",
-        "trigger": "Annual health screening completed",
-        "conditions": "Screening results within normal range",
-        "description": "Regular preventive check-ups lower the probability of high-cost claims.",
-        "category": "Risk Mitigation"
+        "id": "A-002",
+        "description": "Central bank interest rate changes directly influence borrowing costs, consumer spending, and investment decisions."
     },
     {
-        "id": "AXIOM-003",
-        "subject": "Nutrition",
-        "entity": "habits",
-        "trigger": "Dietary assessment performed",
-        "conditions": "Balanced diet confirmed",
-        "description": "Balanced nutrition decreases chronic disease incidence and associated costs.",
-        "category": "Lifestyle Risk"
+        "id": "A-003",
+        "description": "High inflation erodes purchasing power and can trigger central bank interventions to stabilize prices."
     },
     {
-        "id": "AXIOM-004",
-        "subject": "Tobacco Use",
-        "entity": "habits",
-        "trigger": "Smoking status reported",
-        "conditions": "Active smoker",
-        "description": "Tobacco use significantly increases mortality risk and premium adjustment necessity.",
-        "category": "High-Risk Behavior"
+        "id": "A-004",
+        "description": "Unemployment rates reflect economic health and influence consumer confidence and spending patterns."
     },
     {
-        "id": "AXIOM-005",
-        "subject": "Alcohol Intake",
-        "entity": "habits",
-        "trigger": "Consumption exceeds safe limits",
-        "conditions": "Verified through self-report or medical test",
-        "description": "Excessive alcohol intake correlates with higher accident and liver disease claims.",
-        "category": "High-Risk Behavior"
+        "id": "A-005",
+        "description": "Currency exchange rate fluctuations impact international trade competitiveness and investment returns."
     },
     {
-        "id": "AXIOM-006",
-        "subject": "Stress Levels",
-        "entity": "wellness",
-        "trigger": "Chronic stress indicators detected",
-        "conditions": "Stress persists for >3 months",
-        "description": "Chronic stress elevates risk for cardiovascular and mental health disorders.",
-        "category": "Mental Health"
+        "id": "A-006",
+        "description": "Government fiscal policy, including taxation and spending, shapes economic growth and market conditions."
     },
     {
-        "id": "AXIOM-007",
-        "subject": "Body Mass Index",
-        "entity": "health_metrics",
-        "trigger": "BMI outside healthy range",
-        "conditions": "BMI >30 or <18.5",
-        "description": "Body Mass Index outside healthy range predicts higher long-term healthcare costs.",
-        "category": "Physical Health"
+        "id": "A-007",
+        "description": "Market diversification reduces portfolio risk by spreading investments across different asset classes and sectors."
     },
     {
-        "id": "AXIOM-008",
-        "subject": "Sleep Patterns",
-        "entity": "wellness",
-        "trigger": "Poor sleep quality reported",
-        "conditions": "<6 hours average sleep for >1 month",
-        "description": "Poor sleep patterns increase risk for metabolic and mental health conditions.",
-        "category": "Lifestyle Risk"
+        "id": "A-008",
+        "description": "Financial market liquidity ensures efficient price discovery and enables investors to enter and exit positions."
     },
     {
-        "id": "AXIOM-009",
-        "subject": "Socioeconomic Status",
-        "entity": "demographics",
-        "trigger": "Income and education level assessed",
-        "conditions": "Below median income or low education level",
-        "description": "Lower socioeconomic status correlates with higher health risk and claim variability.",
-        "category": "Demographic Risk"
+        "id": "A-009",
+        "description": "Credit rating changes for governments or corporations significantly affect borrowing costs and investor sentiment."
     },
     {
-        "id": "AXIOM-010",
-        "subject": "Health Tracking Devices",
-        "entity": "technology",
-        "trigger": "Device usage detected",
-        "conditions": "Consistent data sharing for >3 months",
-        "description": "Use of health tracking devices improves risk predictability and incentivizes healthy behavior.",
-        "category": "Digital Health"
+        "id": "A-010",
+        "description": "Banking sector capital adequacy requirements ensure financial stability and protect depositors."
     },
     {
-        "id": "AXIOM-011",
-        "subject": "Premium Calculation",
-        "entity": "pricing",
-        "trigger": "Policy issuance",
-        "conditions": "Expected claims > collected premiums",
-        "description": "Premiums must cover expected claims plus administrative costs and profit margin.",
-        "category": "Pricing"
+        "id": "A-011",
+        "description": "Monetary policy transmission affects the economy through credit availability, asset prices, and exchange rates."
     },
     {
-        "id": "AXIOM-012",
-        "subject": "Risk Pool",
-        "entity": "portfolio",
-        "trigger": "Addition of new members",
-        "conditions": "Pool size increases",
-        "description": "Larger risk pools reduce volatility and improve predictability of claims.",
-        "category": "Risk Management"
+        "id": "A-012",
+        "description": "Systemic risk in the banking sector can trigger cascading failures across the financial system."
     },
     {
-        "id": "AXIOM-013",
-        "subject": "Enrollment Behavior",
-        "entity": "behavior",
-        "trigger": "High-risk individuals disproportionately enroll",
-        "conditions": "Risk profile exceeds average",
-        "description": "Adverse selection increases overall claim costs and requires pricing adjustments.",
-        "category": "Underwriting"
+        "id": "A-013",
+        "description": "Consumer debt levels influence economic resilience and vulnerability to economic shocks."
     },
     {
-        "id": "AXIOM-014",
-        "subject": "Claim Behavior",
-        "entity": "behavior",
-        "trigger": "Insurance coverage reduces perceived cost of care",
-        "conditions": "Increased utilization post-coverage",
-        "description": "Moral hazard leads to higher claims and must be mitigated through co-payments and deductibles.",
-        "category": "Behavioral Economics"
+        "id": "A-014",
+        "description": "Trade balance affects currency values and can indicate underlying economic competitiveness."
     },
     {
-        "id": "AXIOM-015",
-        "subject": "Medical Cost Inflation",
-        "entity": "pricing",
-        "trigger": "Annual cost trend exceeds baseline",
-        "conditions": "Inflation > expected rate",
-        "description": "Premiums must adjust to reflect rising healthcare costs due to inflation.",
-        "category": "Economic Adjustment"
+        "id": "A-015",
+        "description": "Asset price bubbles form when valuations exceed fundamental values, creating systemic risk."
     },
     {
-        "id": "AXIOM-016",
-        "subject": "Reserve Calculation",
-        "entity": "financial",
-        "trigger": "Future liabilities estimation",
-        "conditions": "Discount rate changes",
-        "description": "Present value of future claims depends on accurate discount rate assumptions.",
-        "category": "Actuarial Valuation"
+        "id": "A-016",
+        "description": "Banking regulation and supervision maintain financial system stability and protect consumers."
     },
     {
-        "id": "AXIOM-017",
-        "subject": "Loss Ratio",
-        "entity": "portfolio",
-        "trigger": "Ratio exceeds target threshold",
-        "conditions": "Claims > premiums",
-        "description": "Loss ratio must remain within acceptable range to ensure profitability.",
-        "category": "Performance Metric"
+        "id": "A-017",
+        "description": "Economic growth expectations drive investment decisions and market valuations."
     },
     {
-        "id": "AXIOM-018",
-        "subject": "Catastrophic Risk",
-        "entity": "risk_management",
-        "trigger": "Exposure exceeds retention limit",
-        "conditions": "High-cost claims probability rises",
-        "description": "Reinsurance is required to protect against catastrophic losses.",
-        "category": "Risk Transfer"
+        "id": "A-018",
+        "description": "Interest rate spreads between different maturities reflect market expectations and economic conditions."
     },
     {
-        "id": "AXIOM-019",
-        "subject": "Customer Profitability",
-        "entity": "business",
-        "trigger": "Long-term retention analysis",
-        "conditions": "Expected claims vs premium over time",
-        "description": "Customer lifetime value must exceed acquisition and servicing costs.",
-        "category": "Financial Sustainability"
+        "id": "A-019",
+        "description": "Financial market transparency and disclosure requirements protect investors and ensure fair markets."
     },
     {
-        "id": "AXIOM-020",
-        "subject": "Solvency Requirements",
-        "entity": "financial",
-        "trigger": "Capital adequacy review",
-        "conditions": "Reserves below statutory minimum",
-        "description": "Insurer must maintain required capital to meet solvency regulations.",
-        "category": "Compliance"
-    },
-    {
-        "id": "AXIOM-021",
-        "subject": "BMI Accuracy for Athletes",
-        "entity": "health_metrics",
-        "trigger": "High BMI detected in physically active individual",
-        "conditions": "BMI >25 but high muscle mass and regular exercise",
-        "description": "BMI may incorrectly classify muscular, fit individuals as overweight, leading to inappropriate risk assessment.",
-        "category": "Physical Health"
-    },
-    {
-        "id": "AXIOM-022",
-        "subject": "Mental Health Stigma",
-        "entity": "wellness",
-        "trigger": "Mental health treatment history reported",
-        "conditions": "Previous therapy or medication for mental health",
-        "description": "Mental health treatment history might indicate proactive health management rather than increased risk.",
-        "category": "Mental Health"
-    },
-    {
-        "id": "AXIOM-023",
-        "subject": "Age Discrimination",
-        "entity": "demographics",
-        "trigger": "Older age group enrollment",
-        "conditions": "Age >65 with active lifestyle",
-        "description": "Chronological age may not accurately reflect health status for active, well-maintained older adults.",
-        "category": "Demographic Risk"
-    },
-    {
-        "id": "AXIOM-024",
-        "subject": "Genetic Predisposition Paradox",
-        "entity": "medical",
-        "trigger": "Genetic testing reveals disease predisposition",
-        "conditions": "High genetic risk but preventive lifestyle adopted",
-        "description": "Genetic predisposition awareness may lead to better preventive care, potentially reducing actual risk.",
-        "category": "Risk Mitigation"
-    },
-    {
-        "id": "AXIOM-025",
-        "subject": "Alternative Medicine Efficacy",
-        "entity": "medical",
-        "trigger": "Use of non-conventional treatments",
-        "conditions": "Preference for alternative over traditional medicine",
-        "description": "Alternative medicine usage might indicate health consciousness but could delay necessary conventional treatment.",
-        "category": "Risk Mitigation"
-    },
-    {
-        "id": "AXIOM-026",
-        "subject": "Overmedication Risk",
-        "entity": "medical",
-        "trigger": "Multiple prescription medications",
-        "conditions": "Taking >5 medications simultaneously",
-        "description": "High medication usage might indicate either severe health issues or over-prescribing by healthcare providers.",
-        "category": "Risk Mitigation"
+        "id": "A-020",
+        "description": "International capital flows can destabilize emerging markets and affect global financial conditions."
     }
 ]
