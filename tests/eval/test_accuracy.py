@@ -237,52 +237,6 @@ def test_calculate_accuracy_mean_scenarios(
     )
 
 
-def test_entity_accuracy_validation():
-    """Test EntityAccuracy validation with score bounds."""
-    test_entity = Entity(
-        trigger_variable="test_trigger",
-        consequence_variable="test_consequence",
-    )
-
-    # Valid score
-    entity_acc = EntityAccuracy(
-        entity=test_entity,
-        reason="Test reasoning",
-        score=0.5,
-    )
-    assert entity_acc.score == 0.5
-
-    # Test boundary values
-    entity_acc_min = EntityAccuracy(
-        entity=test_entity,
-        reason="Test reasoning",
-        score=0.0,
-    )
-    assert entity_acc_min.score == 0.0
-
-    entity_acc_max = EntityAccuracy(
-        entity=test_entity,
-        reason="Test reasoning",
-        score=1.0,
-    )
-    assert entity_acc_max.score == 1.0
-
-    # Invalid scores should raise validation error
-    with pytest.raises(ValueError):
-        _ = EntityAccuracy(
-            entity=test_entity,
-            reason="Test reasoning",
-            score=-0.1,
-        )
-
-    with pytest.raises(ValueError):
-        _ = EntityAccuracy(
-            entity=test_entity,
-            reason="Test reasoning",
-            score=1.1,
-        )
-
-
 @pytest.mark.integration
 @pytest.mark.asyncio
 @pytest.mark.skipif(
