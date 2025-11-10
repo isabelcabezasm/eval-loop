@@ -185,8 +185,9 @@ async def evaluate_answer(
     This function assesses an LLM-generated answer by analyzing various metrics
     including accuracy and topic coverage, and extracting relevant entities.
     """
+    engine = qa_eval_engine()
 
-    entities = await qa_eval_engine().entity_extraction(
+    entities = await engine.entity_extraction(
         user_query=sample_input.query,
         llm_answer=llm_answer,
         expected_answer=sample_input.expected_answer,
