@@ -1,4 +1,5 @@
 import os
+import re
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -10,6 +11,7 @@ from eval.models import (
     Entity,
     EntityAccuracy,
     EntityExtraction,
+    TopicCoverageEvaluationResults,
 )
 
 # Environment variable names for Azure OpenAI integration tests
@@ -146,11 +148,27 @@ def mock_engine(request: pytest.FixtureRequest) -> QAEvalEngine:
     """Create a mock QAEvalEngine with configurable expected result.
 
     Use with indirect parametrization to pass the expected_result.
-    Can accept AccuracyEvaluationResults or EntityExtraction.
+    Can accept AccuracyEvaluationResults, EntityExtraction, or
+    TopicCoverageEvaluationResults.
+
+    Raises:
+        TypeError: If expected_result is not one of the supported types.
     """
-    expected_result: AccuracyEvaluationResults | EntityExtraction = (
-        request.param
+    expected_result = request.param
+
+    # Runtime type validation
+    valid_types = (
+        AccuracyEvaluationResults,
+        EntityExtraction,
+        TopicCoverageEvaluationResults,
     )
+    if not isinstance(expected_result, valid_types):
+        msg = (
+            f"mock_engine fixture requires one of {valid_types}, "
+            f"got {type(expected_result)}"
+        )
+        raise TypeError(msg)
+
     mock_agent = AsyncMock(spec=ChatAgent)
     mock_response = Mock(spec=AgentRunResponse)
     mock_response.value = expected_result
@@ -196,14 +214,63 @@ def validate_entity_structure(entity: Entity, min_length: int = 2) -> None:
     )
 
 
+sample_topic_coverage_results = TopicCoverageEvaluationResults(
+    reason=(
+        "The generated answer covers 1 out of 2 expected topics. "
+        "The topic ('exercise', 'health') is well represented through "
+        "('physical_activity', 'wellness') which are semantically equivalent. "
+        "However, the topic ('smoking', 'mortality') is missing from the "
+        "generated entities, though 'lung_disease' is mentioned instead of "
+        "'mortality'."
+    ),
+    coverage_score=0.5,
+)
+
+
+@pytest.fixture
+def sample_topic_coverage():
+    """Create a sample TopicCoverageEvaluationResults for testing."""
+    return sample_topic_coverage_results
+
+
+def validate_topic_coverage_results(
+    result: TopicCoverageEvaluationResults, min_length: int = 10
+) -> None:
+    """Validate TopicCoverageEvaluationResults structure and constraints.
+
+    Args:
+        result: The topic coverage evaluation results to validate.
+        min_length: Minimum length for reason explanations.
+
+    Raises:
+        AssertionError: If results structure is invalid or values are out of
+            bounds.
+    """
+    assert isinstance(result, TopicCoverageEvaluationResults)
+    assert hasattr(result, "reason")
+    assert hasattr(result, "coverage_score")
+
+    # Validate coverage score bounds
+    assert isinstance(result.coverage_score, float)
+    assert 0.0 <= result.coverage_score <= 1.0, (
+        f"Coverage score {result.coverage_score} out of valid range [0.0, 1.0]"
+    )
+
+    # Validate reason is meaningful
+    assert isinstance(result.reason, str)
+    assert len(result.reason) > min_length, (
+        "Reason should be a meaningful explanation"
+    )
+
+
 def validate_accuracy_results(
-    result: AccuracyEvaluationResults, min_reason_length: int = 10
+    result: AccuracyEvaluationResults, min_length: int = 10
 ) -> None:
     """Validate AccuracyEvaluationResults structure and constraints.
 
     Args:
         result: The accuracy evaluation results to validate.
-        min_reason_length: Minimum length for reason explanations.
+        min_length: Minimum length for reason explanations.
 
     Raises:
         AssertionError: If results structure is invalid or values are out of
@@ -232,7 +299,7 @@ def validate_accuracy_results(
         )
 
         # Validate reason is meaningful
-        assert len(entity_acc.reason) > min_reason_length, (
+        assert len(entity_acc.reason) > min_length, (
             "Reason should be a meaningful explanation"
         )
 
@@ -257,3 +324,105 @@ def validate_entity_extraction_structure(
     assert isinstance(result.user_query_entities, list)
     assert isinstance(result.llm_answer_entities, list)
     assert isinstance(result.expected_answer_entities, list)
+
+
+def parse_entity_string(entity_str: str) -> tuple[str, str]:
+    """Parse entity string into trigger and consequence components.
+
+    Parses entity strings in format "('trigger', 'consequence')" or
+    '("trigger", "consequence")' into their component parts using regex.
+
+    Args:
+        entity_str: Entity string in format "('trigger', 'consequence')".
+
+    Returns:
+        Tuple of (trigger_variable, consequence_variable).
+
+    Raises:
+        ValueError: If entity string format is invalid.
+
+    Example:
+        >>> trigger, consequence = parse_entity_string(
+        ...     "('interest_rate', 'borrowing_cost')"
+        ... )
+        >>> assert trigger == "interest_rate"
+        >>> assert consequence == "borrowing_cost"
+    """
+    # Match parenthesized pair with matching quotes using backreferences
+    # Group 1: opening quote for trigger, Group 2: trigger value
+    # Group 3: opening quote for consequence, Group 4: consequence value
+    pattern = r"\(\s*(['\"])([^'\"]+)\1\s*,\s*(['\"])([^'\"]+)\3\s*\)"
+    match = re.match(pattern, entity_str)
+
+    if not match:
+        msg = (
+            f"Expected entity format '(trigger, consequence)', "
+            f"got: {entity_str}"
+        )
+        raise ValueError(msg)
+
+    return match.group(2), match.group(4)
+
+
+def assert_mock_agent_called_correctly(
+    engine: QAEvalEngine,
+    expected_response_type: type,
+    expected_content: list[str] | None = None,
+) -> str:
+    """Verify mock agent was called correctly and return formatted prompt.
+
+    This helper reduces duplication in tests that verify mock agent calls.
+    It checks that the agent's run method was called exactly once with the
+    correct response format and optionally verifies expected content in the
+    prompt.
+
+    Args:
+        engine: The mock QAEvalEngine to verify.
+        expected_response_type: Expected response format type (e.g.,
+            AccuracyEvaluationResults, EntityExtraction).
+        expected_content: Optional list of strings that should appear in the
+            formatted prompt.
+
+    Returns:
+        The formatted prompt string that was passed to the agent.
+
+    Raises:
+        AssertionError: If agent wasn't called correctly or expected content
+            is missing from the prompt.
+
+    Example:
+        >>> prompt = assert_mock_agent_called_correctly(
+        ...     mock_engine,
+        ...     AccuracyEvaluationResults,
+        ...     expected_content=[llm_answer, expected_answer]
+        ... )
+        >>> # Now use prompt for additional assertions if needed
+    """
+    mock_agent = engine.agent
+    mock_agent.run.assert_called_once()  # type: ignore[attr-defined]
+
+    call_args = mock_agent.run.call_args  # type: ignore[attr-defined]
+    formatted_prompt: str = call_args[0][0]  # type: ignore[index, assignment]
+
+    # Ensure we have a string (should always be true for our usage)
+    assert isinstance(formatted_prompt, str), "Expected prompt to be string"
+
+    # Verify response format
+    actual_response_format = call_args[1].get("response_format")  # type: ignore[index, call-arg]
+    assert actual_response_format == expected_response_type, (
+        f"Expected response_format={expected_response_type.__name__}, "
+        f"got {actual_response_format}"
+    )
+
+    # Verify expected content appears in prompt
+    if expected_content:
+        for content in expected_content:
+            # Truncate long content for better error messages
+            content_preview = (
+                content[:50] + "..." if len(content) > 50 else content
+            )
+            assert content in formatted_prompt, (
+                f"Expected content '{content_preview}' not found in prompt"
+            )
+
+    return formatted_prompt

@@ -4,6 +4,7 @@ Tests for entity extraction functionality in QAEvalEngine and metrics.
 
 import pytest
 from tests.eval.common import (
+    assert_mock_agent_called_correctly,
     mock_engine,  # pyright: ignore[reportUnusedImport] it's a fixture
     requires_azure,
     sample_entity_extraction,  # pyright: ignore[reportUnusedImport] it's a fixture
@@ -59,22 +60,14 @@ async def test_qa_eval_engine_entity_extraction(
     assert result == sample_entity_extraction
 
     # Verify the agent's run method was called correctly
-    mock_agent = mock_engine.agent
-    formatted_prompt: str = mock_agent.run.call_args[0][0]  # type: ignore[attr-defined]
-
-    # Check that the prompt was formatted correctly
-    assert "What are the health benefits of exercise?" in formatted_prompt
-    assert (
-        "Exercise improves cardiovascular health and reduces mortality."
-        in formatted_prompt
-    )
-    assert (
-        "Regular physical activity enhances overall health and longevity."
-        in formatted_prompt
-    )
-
-    mock_agent.run.assert_called_once_with(  # type: ignore[attr-defined]
-        formatted_prompt, response_format=EntityExtraction
+    _ = assert_mock_agent_called_correctly(
+        mock_engine,
+        EntityExtraction,
+        expected_content=[
+            "What are the health benefits of exercise?",
+            "Exercise improves cardiovascular health and reduces mortality.",
+            "Regular physical activity enhances overall health and longevity.",
+        ],
     )
 
 
@@ -128,8 +121,22 @@ async def test_entity_extraction_with_overlap(
     assert len(result.llm_answer_entities) > 0
 
     # Verify the agent was called correctly
-    mock_agent = mock_engine.agent
-    mock_agent.run.assert_called_once()  # type: ignore[attr-defined]
+    _ = assert_mock_agent_called_correctly(
+        mock_engine,
+        EntityExtraction,
+        expected_content=[
+            "How do interest rates affect borrowing?",
+            (
+                "Interest rates directly impact loan costs and influence "
+                "lending decisions by financial institutions."
+            ),
+            (
+                "Changes in interest rates affect borrowing costs for "
+                "consumers, while monetary policy influences overall credit "
+                "availability."
+            ),
+        ],
+    )
 
 
 @pytest.mark.integration

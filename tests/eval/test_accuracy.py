@@ -6,7 +6,9 @@ import math
 
 import pytest
 from tests.eval.common import (
+    assert_mock_agent_called_correctly,
     mock_engine,  # pyright: ignore[reportUnusedImport] it's a fixture
+    parse_entity_string,
     requires_azure,
     sample_accuracy_evaluation_results,
     sample_entity_extraction_result,
@@ -202,15 +204,11 @@ async def test_accuracy_evaluation_scenarios(
     assert result.accuracy_mean == expected_mean
 
     # Verify the agent's run method was called correctly
-    mock_agent = mock_engine.agent
-    formatted_prompt: str = mock_agent.run.call_args[0][0]  # type: ignore[attr-defined]
-
-    mock_agent.run.assert_called_once_with(  # type: ignore[attr-defined]
-        formatted_prompt, response_format=AccuracyEvaluationResults
+    formatted_prompt = assert_mock_agent_called_correctly(
+        mock_engine,
+        AccuracyEvaluationResults,
+        expected_content=[llm_answer, expected_answer],
     )
-    assert isinstance(formatted_prompt, str)
-    assert llm_answer in formatted_prompt
-    assert expected_answer in formatted_prompt
 
     # Check that all expected entities appear in the formatted prompt
     # by verifying both trigger and consequence variables are present
@@ -219,18 +217,7 @@ async def test_accuracy_evaluation_scenarios(
         # "('{trigger}', '{consequence}')" or '("{trigger}", "{consequence}")'
         if entity_str:
             # Parse the entity string to extract variables
-            # Handle both single and double quotes
-            parts = (
-                entity_str.strip("()")
-                .replace("'", "")
-                .replace('"', "")
-                .split(", ")
-            )
-            assert len(parts) == 2, (
-                f"Expected entity format '(trigger, consequence)', "
-                f"got: {entity_str}"
-            )
-            trigger, consequence = parts
+            trigger, consequence = parse_entity_string(entity_str)
             # Verify both components appear in prompt
             # (allows for format variations)
             assert (
@@ -429,9 +416,7 @@ async def test_accuracy_evaluation_integration(
 
     # assert
     # Validate structure and constraints using helper function
-    validate_accuracy_results(
-        result, min_reason_length=MIN_MEANINGFUL_REASON_LENGTH
-    )
+    validate_accuracy_results(result, min_length=MIN_MEANINGFUL_REASON_LENGTH)
 
     # Validate entity accuracies count
     # We expect exactly the expected number of entity evaluations
