@@ -80,7 +80,7 @@ class Report:
         destination = output_path / filename
         _ = shutil.copy2(source, destination)
 
-    def generate_report(self):
+    def generate_report(self) -> None:
         """Generate evaluation report from data.
 
         Raises:
