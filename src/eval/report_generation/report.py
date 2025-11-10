@@ -127,7 +127,7 @@ class Report:
     @classmethod
     def create_and_generate(
         cls, data_path: str, output_dir: str | None = None
-    ):
+    ) -> None:
         """Create a Report instance and generate the report.
 
         This is a convenience class method that creates an instance and
