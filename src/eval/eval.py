@@ -193,13 +193,13 @@ async def evaluate_answer(
         expected_answer=sample_input.expected_answer,
     )
 
-    accuracy = await qa_eval_engine().accuracy_evaluation(
+    accuracy = await engine.accuracy_evaluation(
         entity_list=entities,
         llm_answer=llm_answer,
         expected_answer=sample_input.expected_answer,
     )
 
-    topic_coverage = await qa_eval_engine().topic_coverage_evaluation(
+    topic_coverage = await engine.topic_coverage_evaluation(
         entity_list=entities
     )
 
