@@ -18,34 +18,43 @@ def sample_evaluation_data() -> dict[str, Any]:
             {
                 "input": {
                     "id": 1,
-                    "query": "What is the capital of France?",
-                    "context": "Test context",
-                    "expected_answer": "Paris",
-                    "reasoning": ["Test reasoning"],
+                    "query": (
+                        "What is the minimum balance required for a "
+                        "premium savings account?"
+                    ),
+                    "context": "Banking products context",
+                    "expected_answer": (
+                        "The minimum balance for a premium savings "
+                        "account is $10,000"
+                    ),
+                    "reasoning": ["Premium account requirements"],
                     "axioms_used": ["AXIOM-001"],
                 },
-                "llm_response": "The capital of France is Paris.",
+                "llm_response": (
+                    "The minimum balance required for a premium savings "
+                    "account is $10,000."
+                ),
                 "entities": {
                     "user_query_entities": [
                         {
-                            "trigger_variable": "France",
-                            "consequence_variable": "capital",
+                            "trigger_variable": "premium savings account",
+                            "consequence_variable": "minimum balance",
                         }
                     ],
                     "llm_answer_entities": [
                         {
-                            "trigger_variable": "France",
-                            "consequence_variable": "capital",
+                            "trigger_variable": "premium savings account",
+                            "consequence_variable": "minimum balance",
                         },
                         {
-                            "trigger_variable": "capital city",
-                            "consequence_variable": "Paris",
+                            "trigger_variable": "minimum balance",
+                            "consequence_variable": "$10,000",
                         },
                     ],
                     "expected_answer_entities": [
                         {
-                            "trigger_variable": "France",
-                            "consequence_variable": "Paris",
+                            "trigger_variable": "premium savings account",
+                            "consequence_variable": "$10,000",
                         }
                     ],
                 },
@@ -53,8 +62,8 @@ def sample_evaluation_data() -> dict[str, Any]:
                     "entity_accuracies": [
                         {
                             "entity": {
-                                "trigger_variable": "France",
-                                "consequence_variable": "capital",
+                                "trigger_variable": "premium savings account",
+                                "consequence_variable": "minimum balance",
                             },
                             "reason": "Correctly identified relationship",
                             "score": 0.95,
@@ -70,30 +79,39 @@ def sample_evaluation_data() -> dict[str, Any]:
             {
                 "input": {
                     "id": 2,
-                    "query": "What is 2+2?",
-                    "context": "Math question",
-                    "expected_answer": "4",
-                    "reasoning": ["Basic addition"],
+                    "query": (
+                        "What is the interest rate for a fixed deposit "
+                        "of 12 months?"
+                    ),
+                    "context": "Interest rate policy",
+                    "expected_answer": (
+                        "The interest rate for a 12-month fixed deposit "
+                        "is 4.5% per annum"
+                    ),
+                    "reasoning": ["Standard fixed deposit rates"],
                     "axioms_used": [],
                 },
-                "llm_response": "2+2 equals 4.",
+                "llm_response": (
+                    "The interest rate for a 12-month fixed deposit is "
+                    "4.5% per annum."
+                ),
                 "entities": {
                     "user_query_entities": [
                         {
-                            "trigger_variable": "addition",
-                            "consequence_variable": "result",
+                            "trigger_variable": "12-month fixed deposit",
+                            "consequence_variable": "interest rate",
                         }
                     ],
                     "llm_answer_entities": [
                         {
-                            "trigger_variable": "2+2",
-                            "consequence_variable": "4",
+                            "trigger_variable": "12-month fixed deposit",
+                            "consequence_variable": "4.5% per annum",
                         }
                     ],
                     "expected_answer_entities": [
                         {
-                            "trigger_variable": "calculation",
-                            "consequence_variable": "4",
+                            "trigger_variable": "fixed deposit",
+                            "consequence_variable": "4.5% per annum",
                         }
                     ],
                 },
@@ -101,8 +119,8 @@ def sample_evaluation_data() -> dict[str, Any]:
                     "entity_accuracies": [
                         {
                             "entity": {
-                                "trigger_variable": "addition",
-                                "consequence_variable": "result",
+                                "trigger_variable": "12-month fixed deposit",
+                                "consequence_variable": "interest rate",
                             },
                             "reason": "Perfect match",
                             "score": 1.0,
