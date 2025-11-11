@@ -10,10 +10,8 @@ from tests.eval.common import (
     mock_engine,  # pyright: ignore[reportUnusedImport] it's a fixture
     parse_entity_string,
     requires_azure,
-    sample_accuracy_evaluation_results,
     sample_entity_extraction_result,
     sample_entity_extraction_with_overlap,
-    validate_accuracy_results,
 )
 
 from eval.llm_evaluator.qa_eval_engine import QAEvalEngine
@@ -27,6 +25,36 @@ from eval.models import (
 # Minimum length for a meaningful reason explanation
 # (a proper explanation should contain at least a short sentence)
 MIN_MEANINGFUL_REASON_LENGTH = 10
+
+
+sample_accuracy_evaluation_results = AccuracyEvaluationResults(
+    entity_accuracies=[
+        EntityAccuracy(
+            entity=Entity(
+                trigger_variable="interest_rate",
+                consequence_variable="borrowing_cost",
+            ),
+            reason=(
+                "The entity interest_rate->borrowing_cost is accurately "
+                "represented in both answers with similar semantic meaning."
+            ),
+            score=1.0,
+        ),
+        EntityAccuracy(
+            entity=Entity(
+                trigger_variable="unemployment",
+                consequence_variable="purchasing_power",
+            ),
+            reason=(
+                "The entity unemployment->purchasing_power is partially "
+                "represented; LLM mentions economic impact but not "
+                "purchasing power specifically."
+            ),
+            score=0.7,
+        ),
+    ],
+    accuracy_mean=0.85,
+)
 
 
 @pytest.mark.asyncio
@@ -203,7 +231,10 @@ async def test_accuracy_evaluation_scenarios(
     assert len(result.entity_accuracies) == expected_count
     assert result.accuracy_mean == expected_mean
 
-    # Verify the agent's run method was called correctly
+    # Verify the mock agent was called exactly once with:
+    # - Correct response_format (EntityExtraction)
+    # - All input texts (user_query, llm_answer, expected_answer) in the
+    #   formatted prompt
     formatted_prompt = assert_mock_agent_called_correctly(
         mock_engine,
         AccuracyEvaluationResults,
@@ -414,9 +445,42 @@ async def test_accuracy_evaluation_integration(
         expected_answer=expected_answer,
     )
 
+    def _validate_accuracy_results(
+        result: AccuracyEvaluationResults, min_length: int = 10
+    ) -> None:
+        """Validate AccuracyEvaluationResults structure and constraints.
+
+        Args:
+            result: The accuracy evaluation results to validate.
+            min_length: Minimum length for reason explanations.
+
+        Raises:
+            AssertionError: If results structure is invalid or values are out of
+                bounds.
+        """
+
+        _ = AccuracyEvaluationResults.model_validate(result)
+
+        # Validate mean accuracy bounds
+        assert 0.0 <= result.accuracy_mean <= 1.0, (
+            f"Mean accuracy {result.accuracy_mean} out of valid range [0.0, 1.0]"
+        )
+
+        # Validate each entity accuracy
+        for entity_acc in result.entity_accuracies:
+            # Validate score bounds
+            assert 0.0 <= entity_acc.score <= 1.0, (
+                f"Score {entity_acc.score} out of valid range [0.0, 1.0]"
+            )
+
+            # Validate reason is meaningful
+            assert len(entity_acc.reason) > min_length, (
+                "Reason should be a meaningful explanation"
+            )
+
     # assert
     # Validate structure and constraints using helper function
-    validate_accuracy_results(result, min_length=MIN_MEANINGFUL_REASON_LENGTH)
+    _validate_accuracy_results(result, min_length=MIN_MEANINGFUL_REASON_LENGTH)
 
     # Validate entity accuracies count
     # We expect exactly the expected number of entity evaluations

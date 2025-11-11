@@ -12,9 +12,6 @@ from tests.eval.common import (
     requires_azure,
     sample_entity_extraction_result,
     sample_entity_extraction_with_overlap,
-    sample_topic_coverage_results,
-    validate_entity_extraction_structure,
-    validate_topic_coverage_results,
 )
 
 from eval.llm_evaluator.qa_eval_engine import QAEvalEngine
@@ -26,6 +23,18 @@ from eval.models import (
 
 # Minimum length for a meaningful reason explanation
 MIN_MEANINGFUL_REASON_LENGTH = 10
+
+sample_topic_coverage_results = TopicCoverageEvaluationResults(
+    reason=(
+        "The generated answer covers 1 out of 2 expected topics. "
+        "The topic ('exercise', 'health') is well represented through "
+        "('physical_activity', 'wellness') which are semantically equivalent. "
+        "However, the topic ('smoking', 'mortality') is missing from the "
+        "generated entities, though 'lung_disease' is mentioned instead of "
+        "'mortality'."
+    ),
+    coverage_score=0.5,
+)
 
 
 @pytest.mark.asyncio
@@ -159,7 +168,10 @@ async def test_topic_coverage_evaluation_scenarios(
         result.coverage_score, expected_score, rel_tol=1e-2, abs_tol=1e-2
     )
 
-    # Verify the agent's run method was called correctly
+    # Verify the mock agent was called exactly once with:
+    # - Correct response_format (EntityExtraction)
+    # - All input texts (user_query, llm_answer, expected_answer) in the
+    #   formatted prompt
     formatted_prompt = assert_mock_agent_called_correctly(
         mock_engine,
         TopicCoverageEvaluationResults,
@@ -291,13 +303,25 @@ async def test_topic_coverage_evaluation_integration(
     )
 
     # assert
-    # Validate structure and constraints using helper function
-    validate_topic_coverage_results(
-        result, min_length=MIN_MEANINGFUL_REASON_LENGTH
+
+    # result: The topic coverage evaluation results to validate.
+    _ = TopicCoverageEvaluationResults.model_validate(result)
+
+    # Validate coverage score bounds
+    assert isinstance(result.coverage_score, float)
+    assert 0.0 <= result.coverage_score <= 1.0, (
+        f"Coverage score {result.coverage_score} out of valid range [0.0, 1.0]"
+    )
+
+    # Validate reason is meaningful
+    assert isinstance(result.reason, str)
+    # assume meaningful if longer than x characters
+    assert len(result.reason) > MIN_MEANINGFUL_REASON_LENGTH, (
+        "Reason should be a meaningful explanation"
     )
 
     # Validate entity extraction structure
-    validate_entity_extraction_structure(entity_extraction)
+    _ = EntityExtraction.model_validate(entity_extraction)
 
     # Verify coverage score is calculated correctly
     # (within valid bounds and is a reasonable value)
@@ -307,6 +331,9 @@ async def test_topic_coverage_evaluation_integration(
 
     # For empty entity lists, expect perfect coverage (1.0)
     if expected_entity_count == 0:
+        if result.coverage_score != 1.0:
+            # if it's going to fail, get the reason for debugging
+            print(result.reason)
         assert result.coverage_score == 1.0, (
             "Empty expected entities should return perfect coverage (1.0)"
         )

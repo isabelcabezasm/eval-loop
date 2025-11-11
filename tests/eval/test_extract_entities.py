@@ -9,140 +9,39 @@ from tests.eval.common import (
     requires_azure,
     sample_entity_extraction_result,
     sample_entity_extraction_with_overlap,
-    validate_entity_extraction_structure,
-    validate_entity_structure,
 )
 
+from eval.dependencies import qa_eval_engine
 from eval.llm_evaluator.qa_eval_engine import QAEvalEngine
-from eval.models import EntityExtraction
+from eval.models import Entity, EntityExtraction
 
 # Minimum length for meaningful entity variables
 # (at least 2 characters to avoid single letter placeholders)
 MIN_ENTITY_VARIABLE_LENGTH = 2
 
 
-@pytest.fixture
-def sample_entity_extraction():
-    """Create a sample EntityExtraction object for testing."""
-    return sample_entity_extraction_result
-
-
-@pytest.fixture
-def sample_entity_extraction_overlap():
-    """Create a sample EntityExtraction with realistic overlap patterns.
-
-    This fixture represents a more realistic scenario where:
-    - User query contains the core entity being asked about
-    - LLM answer includes semantically similar entities (e.g., loan_cost
-      vs borrowing_cost)
-    - Expected answer shares the exact entity from user query plus additional
-      context
-    """
-    return sample_entity_extraction_with_overlap
-
-
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "mock_engine",
+    ("mock_engine,user_query,llm_answer,expected_answer,expected_result"),
     [
         pytest.param(
-            sample_entity_extraction_result, id="entity_extraction_test"
-        )
-    ],
-    indirect=["mock_engine"],
-)
-async def test_qa_eval_engine_entity_extraction(
-    mock_engine: QAEvalEngine,
-    sample_entity_extraction: EntityExtraction,
-):
-    """Test entity_extraction method with basic scenario.
-
-    Validates:
-    - Entities are correctly extracted from user query, LLM answer, and
-      expected answer
-    - Mock engine returns expected EntityExtraction result
-    - Prompt is formatted correctly with all three inputs
-    - Agent is called exactly once with proper response format
-    """
-
-    result = await mock_engine.entity_extraction(
-        user_query="What are the health benefits of exercise?",
-        llm_answer=(
-            "Exercise improves cardiovascular health and reduces mortality."
+            # this is the parameter for mock_engine fixture
+            sample_entity_extraction_result,
+            "How does credit score affect loan approval?",
+            (
+                "A higher credit score increases loan approval chances "
+                "and may result in lower interest rates."
+            ),
+            (
+                "Credit scores directly influence lending decisions, "
+                "with better scores leading to more favorable loan terms."
+            ),
+            sample_entity_extraction_result,
+            id="basic_entity_extraction",
         ),
-        expected_answer=(
-            "Regular physical activity enhances overall health and longevity."
-        ),
-    )
-
-    assert result == sample_entity_extraction
-
-    # Verify the agent's run method was called correctly
-    _ = assert_mock_agent_called_correctly(
-        mock_engine,
-        EntityExtraction,
-        expected_content=[
-            "What are the health benefits of exercise?",
-            "Exercise improves cardiovascular health and reduces mortality.",
-            "Regular physical activity enhances overall health and longevity.",
-        ],
-    )
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "mock_engine",
-    [
         pytest.param(
+            # this is the parameter for mock_engine fixture
             sample_entity_extraction_with_overlap,
-            id="entity_extraction_with_realistic_overlap",
-        )
-    ],
-    indirect=["mock_engine"],
-)
-async def test_entity_extraction_with_overlap(
-    mock_engine: QAEvalEngine,
-    sample_entity_extraction_overlap: EntityExtraction,
-):
-    """Test entity_extraction with realistic overlap patterns.
-
-    This test validates the extraction with a more realistic scenario where:
-    - User query and expected answer share the same core entity
-    - LLM answer contains semantically similar but not identical entities
-    - Expected answer includes additional context beyond the user query
-    """
-    result = await mock_engine.entity_extraction(
-        user_query="How do interest rates affect borrowing?",
-        llm_answer=(
-            "Interest rates directly impact loan costs and influence "
-            "lending decisions by financial institutions."
-        ),
-        expected_answer=(
-            "Changes in interest rates affect borrowing costs for consumers, "
-            "while monetary policy influences overall credit availability."
-        ),
-    )
-
-    assert result == sample_entity_extraction_overlap
-
-    # Verify the core entity appears in both query and expected answer
-    assert any(
-        e.trigger_variable == "interest_rate"
-        for e in result.user_query_entities
-    )
-    assert any(
-        e.trigger_variable == "interest_rate"
-        for e in result.expected_answer_entities
-    )
-
-    # Verify LLM answer has semantically related but different entities
-    assert len(result.llm_answer_entities) > 0
-
-    # Verify the agent was called correctly
-    _ = assert_mock_agent_called_correctly(
-        mock_engine,
-        EntityExtraction,
-        expected_content=[
             "How do interest rates affect borrowing?",
             (
                 "Interest rates directly impact loan costs and influence "
@@ -153,7 +52,49 @@ async def test_entity_extraction_with_overlap(
                 "consumers, while monetary policy influences overall credit "
                 "availability."
             ),
-        ],
+            sample_entity_extraction_with_overlap,
+            id="entity_extraction_with_overlap",
+        ),
+    ],
+    indirect=["mock_engine"],
+)
+async def test_qa_eval_engine_entity_extraction(
+    mock_engine: QAEvalEngine,
+    user_query: str,
+    llm_answer: str,
+    expected_answer: str,
+    expected_result: EntityExtraction,
+):
+    """Test entity_extraction method with various scenarios.
+
+    Validates:
+    - Entities are correctly extracted from user query, LLM answer, and
+      expected answer
+    - Mock engine returns expected EntityExtraction result
+    - Prompt is formatted correctly with all three inputs
+    - Agent is called exactly once with proper response format
+    - Optional: Validates realistic overlap patterns where user query and
+      expected answer share core entities
+    """
+
+    result = await mock_engine.entity_extraction(
+        user_query=user_query,
+        llm_answer=llm_answer,
+        expected_answer=expected_answer,
+    )
+
+    # maybe this is a redundant check but let's keep it just in case
+    # we change the implementation in the future
+    assert result == expected_result
+
+    # Verify the mock agent was called exactly once with:
+    # - Correct response_format (EntityExtraction)
+    # - All input texts (user_query, llm_answer, expected_answer) in the
+    #   formatted prompt
+    _ = assert_mock_agent_called_correctly(
+        mock_engine,
+        EntityExtraction,
+        expected_content=[user_query, llm_answer, expected_answer],
     )
 
 
@@ -207,8 +148,6 @@ async def test_entity_extraction_integration(
     - Minimum expected entities are extracted
     """
     # arrange
-    from eval.dependencies import qa_eval_engine
-
     engine = qa_eval_engine()
 
     # act
@@ -219,8 +158,17 @@ async def test_entity_extraction_integration(
     )
 
     # assert
-    # Validate structure using helper function
-    validate_entity_extraction_structure(result)
+    _ = EntityExtraction.model_validate(result)
+    # Validate that each entity list has at least one item
+    assert len(result.user_query_entities) >= 1, (
+        "user_query_entities should contain at least one entity"
+    )
+    assert len(result.llm_answer_entities) >= 1, (
+        "llm_answer_entities should contain at least one entity"
+    )
+    assert len(result.expected_answer_entities) >= 1, (
+        "expected_answer_entities should contain at least one entity"
+    )
 
     # Check minimum entity count across all categories
     total_entities = (
@@ -240,7 +188,38 @@ async def test_entity_extraction_integration(
         + result.expected_answer_entities
     )
 
+    def _validate_entity_structure(
+        entity: Entity, min_length: int = 2
+    ) -> None:
+        """Validate that an entity has proper structure and non-empty variables.
+
+        Args:
+            entity: The entity to validate.
+            min_length: Minimum length for trigger and consequence variables.
+
+        Raises:
+            AssertionError: If entity structure is invalid or variables are too
+                short.
+        """
+        _ = Entity.model_validate(entity)
+
+        # Validate that variables are non-empty strings
+        assert len(entity.trigger_variable) > 0, (
+            "Trigger variable should not be empty"
+        )
+        assert len(entity.consequence_variable) > 0, (
+            "Consequence variable should not be empty"
+        )
+
+        # Validate that variables are meaningful (meet minimum length)
+        assert len(entity.trigger_variable) >= min_length, (
+            f"Trigger variable '{entity.trigger_variable}' too short"
+        )
+        assert len(entity.consequence_variable) >= min_length, (
+            f"Consequence variable '{entity.consequence_variable}' too short"
+        )
+
     for entity in all_entities:
-        validate_entity_structure(
+        _validate_entity_structure(
             entity, min_length=MIN_ENTITY_VARIABLE_LENGTH
         )
