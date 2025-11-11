@@ -232,7 +232,7 @@ async def test_accuracy_evaluation_scenarios(
     assert result.accuracy_mean == expected_mean
 
     # Verify the mock agent was called exactly once with:
-    # - Correct response_format (EntityExtraction)
+    # - Correct response_format (AccuracyEvaluationResults)
     # - All input texts (user_query, llm_answer, expected_answer) in the
     #   formatted prompt
     formatted_prompt = assert_mock_agent_called_correctly(
