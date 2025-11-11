@@ -7,7 +7,6 @@ from tests.eval.common import (
     assert_mock_agent_called_correctly,
     mock_engine,  # pyright: ignore[reportUnusedImport] it's a fixture
     requires_azure,
-    sample_entity_extraction_overlap,  # pyright: ignore[reportUnusedImport] it's a fixture
     sample_entity_extraction_result,
     sample_entity_extraction_with_overlap,
     validate_entity_extraction_structure,
@@ -26,6 +25,20 @@ MIN_ENTITY_VARIABLE_LENGTH = 2
 def sample_entity_extraction():
     """Create a sample EntityExtraction object for testing."""
     return sample_entity_extraction_result
+
+
+@pytest.fixture
+def sample_entity_extraction_overlap():
+    """Create a sample EntityExtraction with realistic overlap patterns.
+
+    This fixture represents a more realistic scenario where:
+    - User query contains the core entity being asked about
+    - LLM answer includes semantically similar entities (e.g., loan_cost
+      vs borrowing_cost)
+    - Expected answer shares the exact entity from user query plus additional
+      context
+    """
+    return sample_entity_extraction_with_overlap
 
 
 @pytest.mark.asyncio

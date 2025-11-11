@@ -124,20 +124,6 @@ sample_entity_extraction_with_overlap = EntityExtraction(
 
 
 @pytest.fixture
-def sample_entity_extraction_overlap():
-    """Create a sample EntityExtraction with realistic overlap patterns.
-
-    This fixture represents a more realistic scenario where:
-    - User query contains the core entity being asked about
-    - LLM answer includes semantically similar entities (e.g., loan_cost
-      vs borrowing_cost)
-    - Expected answer shares the exact entity from user query plus additional
-      context
-    """
-    return sample_entity_extraction_with_overlap
-
-
-@pytest.fixture
 def mock_engine(request: pytest.FixtureRequest) -> QAEvalEngine:
     """Create a mock QAEvalEngine with configurable expected result.
 
