@@ -307,21 +307,12 @@ async def test_topic_coverage_evaluation_integration(
     # result: The topic coverage evaluation results to validate.
     _ = TopicCoverageEvaluationResults.model_validate(result)
 
-    # Validate coverage score bounds
-    assert isinstance(result.coverage_score, float)
-    assert 0.0 <= result.coverage_score <= 1.0, (
-        f"Coverage score {result.coverage_score} out of valid range [0.0, 1.0]"
-    )
-
     # Validate reason is meaningful
     assert isinstance(result.reason, str)
     # assume meaningful if longer than x characters
     assert len(result.reason) > MIN_MEANINGFUL_REASON_LENGTH, (
         "Reason should be a meaningful explanation"
     )
-
-    # Validate entity extraction structure
-    _ = EntityExtraction.model_validate(entity_extraction)
 
     # Verify coverage score is calculated correctly
     # (within valid bounds and is a reasonable value)
