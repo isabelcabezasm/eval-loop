@@ -12,7 +12,7 @@ Important:
 - Extract entities as simple strings (not objects or relationships).
 
 Input sentences:
-User queryUser query: {user_query}
+User query: {user_query}
 LLM answer: {llm_answer}
 Expected answer: {expected_answer}
 
