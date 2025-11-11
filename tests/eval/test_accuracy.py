@@ -451,8 +451,8 @@ async def test_accuracy_evaluation_integration(
         """Validate AccuracyEvaluationResults structure and constraints.
 
         Args:
-            result: The accuracy evaluation results to validate. min_length:
-            Minimum length for reason explanations.
+            result: The accuracy evaluation results to validate.
+            min_length: Minimum length for reason explanations.
 
         Raises:
             AssertionError: If results structure is invalid or values are out
