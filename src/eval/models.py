@@ -7,17 +7,17 @@ class Entity(BaseModel):
 
     This class models an entity that captures the relationship between a
     trigger (cause) and its consequence (effect). It's typically used to
-    represent cause-and-effect relationships in behavioral analysis, habit
-    tracking, or outcome measurement scenarios.
+    represent cause-and-effect relationships in financial analysis, banking
+    operations, or risk assessment scenarios.
 
     Attributes:
         trigger_variable (str): The name of the variable that acts as a trigger
-            or cause, typically related to habits, activities, or input
-            factors.
+            or cause, typically related to financial behaviors, transactions,
+            or banking activities.
         consequence_variable (str): The name of the variable that represents
-            the outcome or effect, typically related to results, effects, or
-            output measures.
-    Example: Tobacco use significantly increases mortality risk.
+            the outcome or effect, typically related to financial outcomes,
+            risk metrics, or performance indicators.
+    Example: High credit utilization significantly increases default risk.
     """
 
     trigger_variable: str = Field(
