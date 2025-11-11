@@ -169,9 +169,8 @@ async def test_topic_coverage_evaluation_scenarios(
     )
 
     # Verify the mock agent was called exactly once with:
-    # - Correct response_format (EntityExtraction)
-    # - All input texts (user_query, llm_answer, expected_answer) in the
-    #   formatted prompt
+    # - Correct response_format (TopicCoverageEvaluationResults)
+    # - All input texts in the formatted prompt
     formatted_prompt = assert_mock_agent_called_correctly(
         mock_engine,
         TopicCoverageEvaluationResults,
