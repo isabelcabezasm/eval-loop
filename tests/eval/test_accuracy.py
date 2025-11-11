@@ -451,19 +451,20 @@ async def test_accuracy_evaluation_integration(
         """Validate AccuracyEvaluationResults structure and constraints.
 
         Args:
-            result: The accuracy evaluation results to validate.
-            min_length: Minimum length for reason explanations.
+            result: The accuracy evaluation results to validate. min_length:
+            Minimum length for reason explanations.
 
         Raises:
-            AssertionError: If results structure is invalid or values are out of
-                bounds.
+            AssertionError: If results structure is invalid or values are out
+            of bounds.
         """
 
         _ = AccuracyEvaluationResults.model_validate(result)
 
         # Validate mean accuracy bounds
         assert 0.0 <= result.accuracy_mean <= 1.0, (
-            f"Mean accuracy {result.accuracy_mean} out of valid range [0.0, 1.0]"
+            f"Mean accuracy {result.accuracy_mean} "
+            f"out of valid range [0.0, 1.0]"
         )
 
         # Validate each entity accuracy

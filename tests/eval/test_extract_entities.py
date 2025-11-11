@@ -191,7 +191,8 @@ async def test_entity_extraction_integration(
     def _validate_entity_structure(
         entity: Entity, min_length: int = 2
     ) -> None:
-        """Validate that an entity has proper structure and non-empty variables.
+        """Validate that an entity has proper structure and non-empty
+        variables.
 
         Args:
             entity: The entity to validate.
