@@ -9,7 +9,6 @@ from eval.llm_evaluator.qa_eval_engine import QAEvalEngine
 from eval.models import (
     AccuracyEvaluationResults,
     Entity,
-    EntityAccuracy,
     EntityExtraction,
     TopicCoverageEvaluationResults,
 )
