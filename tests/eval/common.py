@@ -124,12 +124,6 @@ sample_entity_extraction_with_overlap = EntityExtraction(
 
 
 @pytest.fixture
-def sample_entity_extraction():
-    """Create a sample EntityExtraction object for testing."""
-    return sample_entity_extraction_result
-
-
-@pytest.fixture
 def sample_entity_extraction_overlap():
     """Create a sample EntityExtraction with realistic overlap patterns.
 

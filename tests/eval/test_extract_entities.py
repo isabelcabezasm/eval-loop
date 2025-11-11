@@ -7,7 +7,6 @@ from tests.eval.common import (
     assert_mock_agent_called_correctly,
     mock_engine,  # pyright: ignore[reportUnusedImport] it's a fixture
     requires_azure,
-    sample_entity_extraction,  # pyright: ignore[reportUnusedImport] it's a fixture
     sample_entity_extraction_overlap,  # pyright: ignore[reportUnusedImport] it's a fixture
     sample_entity_extraction_result,
     sample_entity_extraction_with_overlap,
@@ -21,6 +20,12 @@ from eval.models import EntityExtraction
 # Minimum length for meaningful entity variables
 # (at least 2 characters to avoid single letter placeholders)
 MIN_ENTITY_VARIABLE_LENGTH = 2
+
+
+@pytest.fixture
+def sample_entity_extraction():
+    """Create a sample EntityExtraction object for testing."""
+    return sample_entity_extraction_result
 
 
 @pytest.mark.asyncio
