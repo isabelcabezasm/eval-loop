@@ -6,6 +6,7 @@ import math
 
 import pytest
 from tests.eval.common import (
+    MIN_MEANINGFUL_REASON_LENGTH,
     assert_mock_agent_called_correctly,
     mock_engine,  # pyright: ignore[reportUnusedImport] it's a fixture
     parse_entity_string,
@@ -20,9 +21,6 @@ from eval.models import (
     EntityExtraction,
     TopicCoverageEvaluationResults,
 )
-
-# Minimum length for a meaningful reason explanation
-MIN_MEANINGFUL_REASON_LENGTH = 10
 
 sample_topic_coverage_results = TopicCoverageEvaluationResults(
     reason=(

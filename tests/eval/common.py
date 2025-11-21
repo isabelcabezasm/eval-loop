@@ -17,6 +17,10 @@ from eval.models import (
 AZURE_ENDPOINT_VAR = "AZURE_OPENAI_ENDPOINT"
 AZURE_DEPLOYMENT_VAR = "AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"
 
+# Minimum length for a meaningful reason explanation
+# (a proper explanation should contain at least a short sentence)
+MIN_MEANINGFUL_REASON_LENGTH = 10
+
 # Composite marker for Azure integration tests
 requires_azure = pytest.mark.skipif(
     not (os.getenv(AZURE_ENDPOINT_VAR) and os.getenv(AZURE_DEPLOYMENT_VAR)),

@@ -6,6 +6,7 @@ import math
 
 import pytest
 from tests.eval.common import (
+    MIN_MEANINGFUL_REASON_LENGTH,
     assert_mock_agent_called_correctly,
     mock_engine,  # pyright: ignore[reportUnusedImport] it's a fixture
     parse_entity_string,
@@ -21,11 +22,6 @@ from eval.models import (
     EntityAccuracy,
     EntityExtraction,
 )
-
-# Minimum length for a meaningful reason explanation
-# (a proper explanation should contain at least a short sentence)
-MIN_MEANINGFUL_REASON_LENGTH = 10
-
 
 sample_accuracy_evaluation_results = AccuracyEvaluationResults(
     entity_accuracies=[
