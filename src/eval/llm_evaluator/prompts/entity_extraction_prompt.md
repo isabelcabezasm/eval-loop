@@ -17,7 +17,7 @@ Rules:
    Example: "How do interest rates affect borrowing costs?"
    → trigger_variable: "interest rates", consequence_variable: "borrowing costs".
 
-3. If only one term is found, leave the other empty (e.g., trigger_variable: "inflation", consequence_variable: "").
+3. If only one term is found, use "N/A" for the missing variable (e.g., trigger_variable: "inflation", consequence_variable: "N/A").
 4. Include both exact matches and conceptually related terms.
 5. Output format:
 
