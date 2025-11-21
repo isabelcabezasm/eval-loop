@@ -394,7 +394,7 @@ function initializeEntityColors() {
     // Pre-process all entities to assign consistent colors
     const allEntities = new Set();
 
-    evaluationData.evaluation_outputs.forEach(evaluation => {
+    window.evaluationData.evaluation_outputs.forEach(evaluation => {
         const entities = evaluation.entities;
 
         // Collect all unique entities from the structure
