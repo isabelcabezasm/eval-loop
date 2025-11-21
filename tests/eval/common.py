@@ -159,12 +159,10 @@ def parse_entity_string(entity_str: str) -> tuple[str, str]:
     # Match parenthesized pair with matching quotes using backreferences.
     # Group 1: opening quote for trigger (single or double quote)
     # Group 2: trigger value (the string inside the quotes)
-    # Group 3: opening quote for consequence (single or double quote)
-    # Group 4: consequence value (the string inside the quotes)
-    # The backreferences \1 and \3 ensure that the
-    # closing quote for the trigger matches its opening quote (group 1), and
-    # the closing quote for the consequence matches its opening quote
-    # (group 3), respectively.
+    # The backreference \1 ensures that the closing quote for the trigger
+    # matches its opening quote (group 1).
+    # Group 3: consequence value (the string inside the quotes)
+    # The backreference \1 ensures all quotes are the same type.
     # Matches ("trigger", "consequence") or ('trigger', 'consequence').
 
     pattern = r"\(\s*(['\"])([^'\"]+)\1\s*,\s*\1([^'\"]+)\1\s*\)"
@@ -178,7 +176,7 @@ def parse_entity_string(entity_str: str) -> tuple[str, str]:
         )
         raise ValueError(msg)
 
-    return match.group(2), match.group(4)
+    return match.group(2), match.group(3)
 
 
 def assert_mock_agent_called_correctly(
