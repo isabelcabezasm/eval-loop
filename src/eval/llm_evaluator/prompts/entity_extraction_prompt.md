@@ -21,7 +21,7 @@ Rules:
 4. Include both exact matches and conceptually related terms.
 5. Output format:
 
-```
+```json
 "trigger_variable": "inflation", "consequence_variable": "economic growth"
 "trigger_variable": "credit utilization", "consequence_variable": "default risk"  
 ```
