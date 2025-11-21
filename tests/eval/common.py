@@ -161,9 +161,12 @@ def parse_entity_string(entity_str: str) -> tuple[str, str]:
     # Group 2: trigger value (the string inside the quotes)
     # Group 3: opening quote for consequence (single or double quote)
     # Group 4: consequence value (the string inside the quotes)
-    # The backreferences \1 and \3 ensure that the closing quote for the trigger matches its opening quote (group 1),
-    # and the closing quote for the consequence matches its opening quote (group 3), respectively.
+    # The backreferences \1 and \3 ensure that the
+    # closing quote for the trigger matches its opening quote (group 1), and
+    # the closing quote for the consequence matches its opening quote
+    # (group 3), respectively.
     # Matches ("trigger", "consequence") or ('trigger', 'consequence').
+
     pattern = r"\(\s*(['\"])([^'\"]+)\1\s*,\s*(['\"])([^'\"]+)\3\s*\)"
     match = re.match(pattern, entity_str)
 
