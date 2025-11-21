@@ -155,6 +155,7 @@ def parse_entity_string(entity_str: str) -> tuple[str, str]:
     # Match parenthesized pair with matching quotes using backreferences
     # Group 1: opening quote for trigger, Group 2: trigger value
     # Group 3: opening quote for consequence, Group 4: consequence value
+    # Matches ("trigger", "consequence") or ('trigger', 'consequence') with backreferences \1 and \3 ensuring matching quotes
     pattern = r"\(\s*(['\"])([^'\"]+)\1\s*,\s*(['\"])([^'\"]+)\3\s*\)"
     match = re.match(pattern, entity_str)
 
