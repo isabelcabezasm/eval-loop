@@ -24,6 +24,7 @@ class Report:
             data_path: Path to the evaluation data JSON file
             output_dir: Output directory for generated files (optional)
         """
+        super().__init__()
         self.data_path = Path(data_path).resolve()
         self.output_dir = Path(output_dir).resolve() if output_dir else None
         self.evaluation_data: dict[str, Any] = {}
