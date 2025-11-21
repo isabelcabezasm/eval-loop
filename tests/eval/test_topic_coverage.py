@@ -319,9 +319,7 @@ async def test_topic_coverage_evaluation_integration(
 
     # For empty entity lists, expect perfect coverage (1.0)
     if expected_entity_count == 0:
-        if result.coverage_score != 1.0:
-            # if it's going to fail, get the reason for debugging
-            print(result.reason)
         assert result.coverage_score == 1.0, (
-            "Empty expected entities should return perfect coverage (1.0)"
+            f"Empty expected entities should return perfect coverage (1.0). "
+            f"Got {result.coverage_score}. Reason: {result.reason}"
         )
