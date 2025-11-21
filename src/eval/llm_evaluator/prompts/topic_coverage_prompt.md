@@ -4,15 +4,19 @@ Generated entities: {generated_entities}
 
 Your task is to:
 
-1. Check the entities of both list, consider synonyms or equivalent terms (e.g.,
-"interest rate" is equivalent to "policy rate", or "inflation" is equivalent to "price increases"). Add those considerations in the reason property. 
+1. If either list is empty:
+   - State clearly which list is empty.
+   - Set coverage score to 1 if both lists are empty (since there’s nothing expected and nothing generated).
+   - Set coverage score to 0 if expected_entities is not empty and generated_entities is empty.
+   - Set coverage score to 0 if expected_entities is empty and generated_entities is not empty.
+   - Provide a reason explaining the situation (e.g., "No entities were expected" or "No entities were generated").
+   - Do NOT attempt synonym matching in this case.
 
-2. Provide a reason
-explaining which entities matched exactly, which matched approximately (e.g. inaccurate
-synonyms) and which were missing. 
-
-3. Based on the reasoning above, calculate the coverage
-score: the percentage of expected entities that are present in the generated entities.
-The score should be a float between 0 and 1 (e.g. 1 if it matches, or if the synonym is
-accurate, 0.5 if the synonym is inaccurate, and 0 if doesn't match at all)
- 
+2. Otherwise:
+   - Check entities in both lists, considering synonyms or equivalent terms (e.g., "interest rate" ≈ "policy rate").
+   - In the reason, explain which entities matched exactly, which matched approximately, and which were missing.
+   - Calculate coverage score:
+       * 1 for exact or accurate synonym matches
+       * 0.5 for inaccurate synonyms
+       * 0 for missing
+   - Coverage score = (sum of match scores) / (number of expected entities).

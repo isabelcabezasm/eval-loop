@@ -186,6 +186,7 @@ async def evaluate_answer(
     including accuracy and topic coverage, and extracting relevant entities.
     """
     engine = qa_eval_engine()
+
     entities = await engine.entity_extraction(
         user_query=sample_input.query,
         llm_answer=llm_answer,
