@@ -4,6 +4,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Protocol
 
+from pydantic import BaseModel
+
 from core.paths import root
 from eval.dependencies import qa_eval_engine
 from eval.models import (
@@ -11,6 +13,7 @@ from eval.models import (
     EntityExtraction,
     TopicCoverageEvaluationResults,
 )
+from eval.report_generation.report import Report
 
 
 class EvaluationSampleInput(BaseModel):

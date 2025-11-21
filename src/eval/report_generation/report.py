@@ -9,7 +9,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from eval.metrics.models import EvaluationResult
+from eval.models import EvaluationResult
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +24,7 @@ class Report:
             data_path: Path to the evaluation data JSON file
             output_dir: Output directory for generated files (optional)
         """
+        super().__init__()
         self.data_path = data_path
         self.output_dir = output_dir
         self.evaluation_data: dict[str, Any] = {}
@@ -52,11 +53,15 @@ class Report:
                     len(self.evaluation_data["evaluation_outputs"]),
                 )
             except ValidationError as e:
-                logger.error("JSON data does not match EvaluationResult schema: %s", e)
-                raise ValueError(
-                    f"Invalid evaluation data structure: {e.error_count()} "
-                    f"validation error(s). See logs for details."
-                ) from e
+                logger.error(
+                    "JSON data does not match EvaluationResult schema: %s", e
+                )
+                error_msg = (
+                    f"Invalid evaluation data structure: "
+                    f"{e.error_count()} validation error(s). "
+                    f"See logs for details."
+                )
+                raise ValueError(error_msg) from e
 
             return self.evaluation_data
 
@@ -72,7 +77,7 @@ class Report:
         """
         source = template_dir / filename
         destination = output_path / filename
-        shutil.copy2(source, destination)
+        _ = shutil.copy2(source, destination)
 
     def generate_report(self):
         """Generate evaluation report from data.
@@ -80,10 +85,11 @@ class Report:
         Raises:
             FileNotFoundError: If the input JSON file doesn't exist.
             ValueError: If the evaluation data is invalid or empty.
-            PermissionError: If unable to create output directory due to permissions.
+            PermissionError: If unable to create output directory due to
+                permissions.
         """
         # Load evaluation data
-        self.load_json_data()
+        _ = self.load_json_data()
 
         # Determine output directory
         data_path = Path(self.data_path)
@@ -114,10 +120,14 @@ class Report:
 
         html_file_path = output_path / "index.html"
         logger.info("Report generation complete!")
-        logger.info("Open %s in your web browser to view the report.", html_file_path)
+        logger.info(
+            "Open %s in your web browser to view the report.", html_file_path
+        )
 
     @classmethod
-    def create_and_generate(cls, data_path: str, output_dir: str | None = None):
+    def create_and_generate(
+        cls, data_path: str, output_dir: str | None = None
+    ):
         """Create a Report instance and generate the report.
 
         This is a convenience class method that creates an instance and
@@ -130,13 +140,17 @@ class Report:
 def main():
     """Main entry point for report generation."""
     # Configure logging
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    logging.basicConfig(
+        level=logging.INFO, format="%(levelname)s: %(message)s"
+    )
 
     parser = argparse.ArgumentParser(description="Generate evaluation reports")
-    parser.add_argument(
-        "--data_path", required=True, help="Path to the evaluation data JSON file"
+    _ = parser.add_argument(
+        "--data_path",
+        required=True,
+        help="Path to the evaluation data JSON file",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--output_dir",
         help=(
             "Output directory for generated files "
