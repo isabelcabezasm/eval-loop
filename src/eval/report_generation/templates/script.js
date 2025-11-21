@@ -424,7 +424,7 @@ function initializeEntityColors() {
  * Updates the summary statistics section at the top of the report.
  */
 function calculateSummaryStats() {
-    const evaluations = evaluationData.evaluation_outputs;
+    const evaluations = window.evaluationData.evaluation_outputs;
     const totalEvaluations = evaluations.length;
 
     const avgAccuracy = evaluations.reduce((sum, evaluation) => sum + evaluation.accuracy.accuracy_mean, 0) / totalEvaluations;
@@ -458,7 +458,7 @@ function renderEvaluations() {
         return;
     }
 
-    const evaluationsHtml = evaluationData.evaluation_outputs
+    const evaluationsHtml = window.evaluationData.evaluation_outputs
         .map(evaluation => renderEvaluation(evaluation))
         .join('');
 
