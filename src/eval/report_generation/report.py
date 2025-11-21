@@ -25,8 +25,8 @@ class Report:
             output_dir: Output directory for generated files (optional)
         """
         super().__init__()
-        self.data_path = data_path
-        self.output_dir = output_dir
+        self.data_path = Path(data_path).resolve()
+        self.output_dir = Path(output_dir).resolve() if output_dir else None
         self.evaluation_data: dict[str, Any] = {}
 
     def load_json_data(self) -> dict[str, Any]:
