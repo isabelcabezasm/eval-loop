@@ -57,13 +57,8 @@ async def test_invoke_stream_calls_agent_correctly():
     axiom_store = AxiomStore(
         [
             Axiom(
-                id=AxiomId("AXIOM-001"),
-                subject="subject",
-                entity="entity",
-                trigger="trigger",
-                conditions="conditions",
+                id=AxiomId("A-001"),
                 description="description",
-                category="category",
             )
         ]
     )
@@ -91,7 +86,8 @@ async def act_invoke_stream(qa_engine: QAEngine) -> str:
     async for chunk in qa_engine.invoke_streaming(question="Test question"):
         if isinstance(chunk, TextContent):
             result += chunk.content
-        else:  # the chunk only can be AxiomCitationContent or RealityCitationContent
+        else:
+            # chunk is AxiomCitationContent or RealityCitationContent
             result += chunk.content
     return result
 
@@ -112,7 +108,10 @@ async def act_invoke(qa_engine: QAEngine) -> str:
 async def test_invoke_returns_correct_message(
     act: Callable[[QAEngine], Awaitable[str]],
 ):
-    """Test that both streaming and non-streaming invoke return the correct message."""
+    """
+    Test that both streaming and non-streaming invoke return the
+    correct message.
+    """
     # Arrange
     mock_agent = MagicMock(spec=ChatAgent)
 
@@ -150,13 +149,8 @@ async def test_formatted_prompt_includes_constitution():
 
     axioms = [
         Axiom(
-            id=AxiomId("AXIOM-001"),
-            subject="Test Subject",
-            entity="Test Entity",
-            trigger="Test Trigger",
-            conditions="Test Conditions",
+            id=AxiomId("A-001"),
             description="Test Description",
-            category="Test Category",
         )
     ]
 
@@ -169,11 +163,7 @@ async def test_formatted_prompt_includes_constitution():
 
     # Assert that the prompt includes constitution data
     assert captured_prompt is not None
-    assert "AXIOM-001" in captured_prompt
-    assert "Test Subject" in captured_prompt
-    assert "Test Entity" in captured_prompt
-    assert "Test Trigger" in captured_prompt
-    assert "Test Conditions" in captured_prompt
+    assert "A-001" in captured_prompt
     assert "Test Description" in captured_prompt
     assert "Test question?" in captured_prompt
 
@@ -183,18 +173,13 @@ async def test_formatted_prompt_includes_constitution():
     "chunks_from_agent, expected_output",
     [
         pytest.param(
-            ["Hello [AXIOM-001] world"],
+            ["Hello [A-001] world"],
             [
                 TextContent(content="Hello "),
                 AxiomCitationContent(
                     item=Axiom(
-                        id=AxiomId("AXIOM-001"),
-                        subject="subject",
-                        entity="entity",
-                        trigger="trigger",
-                        conditions="conditions",
+                        id=AxiomId("A-001"),
                         description="description",
-                        category="category",
                     )
                 ),
                 TextContent(content=" world"),
@@ -202,10 +187,10 @@ async def test_formatted_prompt_includes_constitution():
             id="valid axiom citation found in store",
         ),
         pytest.param(
-            ["Hello [AXIOM-999] world"],
+            ["Hello [A-999] world"],
             [
                 TextContent(content="Hello "),
-                TextContent(content="[AXIOM-999]"),
+                TextContent(content="[A-999]"),
                 TextContent(content=" world"),
             ],
             id="axiom citation not found in store - returns original text",
@@ -218,22 +203,17 @@ async def test_formatted_prompt_includes_constitution():
             id="no citations - passthrough chunk content",
         ),
         pytest.param(
-            ["Multiple [AXIOM-001] citations [AXIOM-002] here"],
+            ["Multiple [A-001] citations [A-002] here"],
             [
                 TextContent(content="Multiple "),
                 AxiomCitationContent(
                     item=Axiom(
-                        id=AxiomId("AXIOM-001"),
-                        subject="subject",
-                        entity="entity",
-                        trigger="trigger",
-                        conditions="conditions",
+                        id=AxiomId("A-001"),
                         description="description",
-                        category="category",
                     )
                 ),
                 TextContent(content=" citations "),
-                TextContent(content="[AXIOM-002]"),  # AXIOM-002 not in store
+                TextContent(content="[A-002]"),  # A-002 not in store
                 TextContent(content=" here"),
             ],
             id="mix of valid and invalid axiom citations",
@@ -259,13 +239,8 @@ async def test_invoke_streaming_citation_handling(
     axiom_store = AxiomStore(
         [
             Axiom(
-                id=AxiomId("AXIOM-001"),
-                subject="subject",
-                entity="entity",
-                trigger="trigger",
-                conditions="conditions",
+                id=AxiomId("A-001"),
                 description="description",
-                category="category",
             )
         ]
     )
@@ -282,23 +257,21 @@ async def test_invoke_streaming_citation_handling(
 
 
 def test_citation_content_property():
-    """Test that AxiomCitationContent.content property returns formatted axiom ID."""
+    """
+    Test that AxiomCitationContent.content property returns formatted
+    axiom ID.
+    """
     # Arrange
     axiom = Axiom(
-        id=AxiomId("AXIOM-001"),
-        subject="subject",
-        entity="entity",
-        trigger="trigger",
-        conditions="conditions",
+        id=AxiomId("A-001"),
         description="description",
-        category="category",
     )
 
     # Act
     citation = AxiomCitationContent(item=axiom)
 
     # Assert
-    assert citation.content == "[AXIOM-001]"
+    assert citation.content == "[A-001]"
     assert isinstance(citation.content, str)
 
 
@@ -328,7 +301,7 @@ async def test_invoke_streaming_multiple_citations_in_sequence():
     mock_agent = MagicMock(spec=ChatAgent)
 
     async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
-        yield MockStreamChunk("[AXIOM-001][AXIOM-002]")
+        yield MockStreamChunk("[A-001][A-002]")
 
     mock_agent.run_stream = mock_run_stream
 
@@ -336,22 +309,12 @@ async def test_invoke_streaming_multiple_citations_in_sequence():
     axiom_store = AxiomStore(
         [
             Axiom(
-                id=AxiomId("AXIOM-001"),
-                subject="subject1",
-                entity="entity1",
-                trigger="trigger1",
-                conditions="conditions1",
+                id=AxiomId("A-001"),
                 description="description1",
-                category="category1",
             ),
             Axiom(
-                id=AxiomId("AXIOM-002"),
-                subject="subject2",
-                entity="entity2",
-                trigger="trigger2",
-                conditions="conditions2",
+                id=AxiomId("A-002"),
                 description="description2",
-                category="category2",
             ),
         ]
     )
@@ -367,10 +330,12 @@ async def test_invoke_streaming_multiple_citations_in_sequence():
     # Should have: empty text, citation 1, empty text, citation 2
     # (Empty texts result from the regex processing)
     assert len(result) == 4
-    citation_chunks = [c for c in result if isinstance(c, AxiomCitationContent)]
+    citation_chunks = [
+        c for c in result if isinstance(c, AxiomCitationContent)
+    ]
     assert len(citation_chunks) == 2
-    assert citation_chunks[0].item.id == AxiomId("AXIOM-001")
-    assert citation_chunks[1].item.id == AxiomId("AXIOM-002")
+    assert citation_chunks[0].item.id == AxiomId("A-001")
+    assert citation_chunks[1].item.id == AxiomId("A-002")
 
 
 @pytest.mark.asyncio
@@ -380,7 +345,7 @@ async def test_invoke_collects_all_streaming_chunks():
     mock_agent = MagicMock(spec=ChatAgent)
 
     async def mock_run_stream(_prompt: str) -> AsyncIterator[MockStreamChunk]:
-        chunks = ["This ", "is ", "a ", "test ", "[AXIOM-001]"]
+        chunks = ["This ", "is ", "a ", "test ", "[A-001]"]
         for chunk in chunks:
             yield MockStreamChunk(chunk)
 
@@ -389,13 +354,8 @@ async def test_invoke_collects_all_streaming_chunks():
     axiom_store = AxiomStore(
         [
             Axiom(
-                id=AxiomId("AXIOM-001"),
-                subject="subject",
-                entity="entity",
-                trigger="trigger",
-                conditions="conditions",
+                id=AxiomId("A-001"),
                 description="description",
-                category="category",
             )
         ]
     )
@@ -406,7 +366,7 @@ async def test_invoke_collects_all_streaming_chunks():
     result = await qa_engine.invoke(question="Test question")
 
     # Assert
-    assert result == "This is a test [AXIOM-001]"
+    assert result == "This is a test [A-001]"
 
 
 def test_message_model():
@@ -439,22 +399,12 @@ def test_axiom_store_integration():
 
     axioms = [
         Axiom(
-            id=AxiomId("AXIOM-001"),
-            subject="subject1",
-            entity="entity1",
-            trigger="trigger1",
-            conditions="conditions1",
+            id=AxiomId("A-001"),
             description="description1",
-            category="category1",
         ),
         Axiom(
-            id=AxiomId("AXIOM-002"),
-            subject="subject2",
-            entity="entity2",
-            trigger="trigger2",
-            conditions="conditions2",
+            id=AxiomId("A-002"),
             description="description2",
-            category="category2",
         ),
     ]
 
@@ -463,12 +413,11 @@ def test_axiom_store_integration():
 
     # Act
     assert qa_engine.axiom_store is not None
-    retrieved_axiom = qa_engine.axiom_store.get(AxiomId("AXIOM-001"))
+    retrieved_axiom = qa_engine.axiom_store.get(AxiomId("A-001"))
 
     # Assert
     assert retrieved_axiom is not None
-    assert retrieved_axiom.id == AxiomId("AXIOM-001")
-    assert retrieved_axiom.subject == "subject1"
+    assert retrieved_axiom.id == AxiomId("A-001")
 
 
 @pytest.mark.asyncio
@@ -528,20 +477,20 @@ def test_axiom_store_integration():
             id="empty brackets",
         ),
         pytest.param(
-            ["foo [AXIOM", "-001]"],
-            "foo [AXIOM-001]",
+            ["foo [A", "-001]"],
+            "foo [A-001]",
             1,
             0,
-            ["AXIOM-001"],
+            ["A-001"],
             [],
             id="parsed citation split across chunks",
         ),
         pytest.param(
-            ["foo [AXIOM-12]", ""],
-            "foo [AXIOM-12]",
+            ["foo [A-12]", ""],
+            "foo [A-12]",
             1,
             0,
-            ["AXIOM-12"],
+            ["A-12"],
             [],
             id="parsed citation with two digits (single chunk)",
         ),
@@ -564,75 +513,75 @@ def test_axiom_store_integration():
             id="omit empty chunks",
         ),
         pytest.param(
-            ["Text before [AX", "IOM-", "001] text after"],
-            "Text before [AXIOM-001] text after",
+            ["Text before [A", "-", "001] text after"],
+            "Text before [A-001] text after",
             1,
             0,
-            ["AXIOM-001"],
+            ["A-001"],
             [],
             id="citation split across 3 chunks with surrounding text",
         ),
         pytest.param(
-            ["Text with [random brackets] and [AXIOM-001]."],
-            "Text with [random brackets] and [AXIOM-001].",
+            ["Text with [random brackets] and [A-001]."],
+            "Text with [random brackets] and [A-001].",
             1,
             0,
-            ["AXIOM-001"],
+            ["A-001"],
             [],
             id="valid citation mixed with non-citation brackets",
         ),
         pytest.param(
-            ["Valid [AXIOM-001] and incomplete [AX"],
-            "Valid [AXIOM-001] and incomplete [AX",
+            ["Valid [A-001] and incomplete [AX"],
+            "Valid [A-001] and incomplete [AX",
             1,
             0,
-            ["AXIOM-001"],
+            ["A-001"],
             [],
             id="valid citation with incomplete citation at end",
         ),
         pytest.param(
-            ["", "Text ", "", "[AXIOM-001]", ""],
-            "Text [AXIOM-001]",
+            ["", "Text ", "", "[A-001]", ""],
+            "Text [A-001]",
             1,
             0,
-            ["AXIOM-001"],
+            ["A-001"],
             [],
             id="empty chunks interspersed with content and citations",
         ),
         pytest.param(
-            ["Based on [REALITY-001]."],
-            "Based on [REALITY-001].",
+            ["Based on [R-001]."],
+            "Based on [R-001].",
             0,
             1,
             [],
-            ["REALITY-001"],
+            ["R-001"],
             id="single reality citation",
         ),
         pytest.param(
-            ["Check [REALITY-", "001] for details"],
-            "Check [REALITY-001] for details",
+            ["Check [R-", "001] for details"],
+            "Check [R-001] for details",
             0,
             1,
             [],
-            ["REALITY-001"],
+            ["R-001"],
             id="reality citation split across chunks",
         ),
         pytest.param(
-            ["Mix [AXIOM-001] and [REALITY-001]"],
-            "Mix [AXIOM-001] and [REALITY-001]",
+            ["Mix [A-001] and [R-001]"],
+            "Mix [A-001] and [R-001]",
             1,
             1,
-            ["AXIOM-001"],
-            ["REALITY-001"],
+            ["A-001"],
+            ["R-001"],
             id="mixed axiom and reality citations",
         ),
         pytest.param(
-            ["Considering [REALITY-001] and [REALITY-002]."],
-            "Considering [REALITY-001] and [REALITY-002].",
+            ["Considering [R-001] and [R-002]."],
+            "Considering [R-001] and [R-002].",
             0,
             2,
             [],
-            ["REALITY-001", "REALITY-002"],
+            ["R-001", "R-002"],
             id="multiple reality citations in sequence",
         ),
     ],
@@ -659,22 +608,12 @@ async def test_invoke_streaming_handles_chunk_scenarios(
     axiom_store = AxiomStore(
         [
             Axiom(
-                id=AxiomId("AXIOM-001"),
-                subject="subject",
-                entity="entity",
-                trigger="trigger",
-                conditions="conditions",
+                id=AxiomId("A-001"),
                 description="description",
-                category="category",
             ),
             Axiom(
-                id=AxiomId("AXIOM-12"),
-                subject="subject",
-                entity="entity",
-                trigger="trigger",
-                conditions="conditions",
+                id=AxiomId("A-12"),
                 description="description",
-                category="category",
             ),
         ]
     )
@@ -684,26 +623,20 @@ async def test_invoke_streaming_handles_chunk_scenarios(
     # Create reality statements for reality citation tests
     reality = [
         RealityStatement(
-            id=RealityId("REALITY-001"),
-            entity="Test",
-            attribute="Test Attr",
-            value="Test Value",
-            number="100",
+            id=RealityId("R-001"),
             description="Test description",
         ),
         RealityStatement(
-            id=RealityId("REALITY-002"),
-            entity="Healthcare",
-            attribute="Medical Costs",
-            value="Rising",
-            number="12%",
-            description="Medical costs are rising.",
+            id=RealityId("R-002"),
+            description="Interest rates are rising.",
         ),
     ]
 
     # Act
     result: list[TextContent | CitationContent] = []
-    async for chunk in qa_engine.invoke_streaming(question="Test", reality=reality):
+    async for chunk in qa_engine.invoke_streaming(
+        question="Test", reality=reality
+    ):
         result.append(chunk)
 
     # Assert
@@ -711,8 +644,12 @@ async def test_invoke_streaming_handles_chunk_scenarios(
     assert full_text == expected_text
 
     # Verify citation counts
-    axiom_citations = [c for c in result if isinstance(c, AxiomCitationContent)]
-    reality_citations = [c for c in result if isinstance(c, RealityCitationContent)]
+    axiom_citations = [
+        c for c in result if isinstance(c, AxiomCitationContent)
+    ]
+    reality_citations = [
+        c for c in result if isinstance(c, RealityCitationContent)
+    ]
 
     assert len(axiom_citations) == num_axiom_citations
     assert len(reality_citations) == num_reality_citations

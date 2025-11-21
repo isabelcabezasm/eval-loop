@@ -18,8 +18,8 @@ async def main():
 
     # Example question
     question = (
-        "What if I quit smoking today - what would be the long-term "
-        "impact on my health insurance costs and claim patterns?"
+        "What would be the economic impact if Switzerland's inflation "
+        "rate were to double from current levels?"
     )
 
     print("Non-Streaming Response Example")

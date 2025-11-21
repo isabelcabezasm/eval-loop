@@ -4,7 +4,7 @@ from agent_framework import ChatAgent
 from anyio import Path
 from pydantic import BaseModel
 
-from eval.metrics.models import (
+from eval.models import (
     AccuracyEvaluationResults,
     EntityExtraction,
     TopicCoverageEvaluationResults,
@@ -13,7 +13,7 @@ from eval.metrics.models import (
 
 class QAEvalEngine:
     """
-    Question-Answering engine for evaluation of health insurance queries.
+    Question-Answering engine for evaluation of banking and economic queries.
 
     This class provides specialized evaluation capabilities for accuracy
     assessment and entity extraction using structured outputs.
@@ -31,7 +31,9 @@ class QAEvalEngine:
         "generated_entities",
     ]
 
-    PromptTypes = Literal["accuracy", "entity_extraction", "system", "topic_coverage"]
+    PromptTypes = Literal[
+        "accuracy", "entity_extraction", "system", "topic_coverage"
+    ]
 
     def __init__(
         self,
@@ -49,14 +51,17 @@ class QAEvalEngine:
     def _get_prompt(self, promptType: PromptTypes) -> str:
         """Load prompts."""
 
-        file_path = Path(__file__).parent / "prompts" / f"{promptType}_prompt.md"
+        file_path = (
+            Path(__file__).parent / "prompts" / f"{promptType}_prompt.md"
+        )
         with open(file_path, encoding="utf-8") as f:
             return f.read()
 
     async def _perform_model_invocation[T: BaseModel](
         self, prompt: str, output_type: type[T]
     ) -> T:
-        """Invoke the model and parse the output into the specified Pydantic model."""
+        """Invoke the model and parse the output into the specified Pydantic
+        model."""
 
         # Use asyncio to run the async agent with structured output
         response = await self.agent.run(prompt, response_format=output_type)
@@ -64,10 +69,11 @@ class QAEvalEngine:
         return response.value
 
     async def entity_extraction(
-        self, user_query: str, llm_answer: str, expected_answer: str
+        self, *, user_query: str, llm_answer: str, expected_answer: str
     ) -> EntityExtraction:
         """
-        Extract and compare entities between the LLM-generated answer and expected
+        Extract and compare entities between the LLM-generated answer and
+        expected
         answer.
         """
         metric_prompt = self._get_prompt("entity_extraction").format(
@@ -75,16 +81,25 @@ class QAEvalEngine:
             llm_answer=llm_answer,
             expected_answer=expected_answer,
         )
-        return await self._perform_model_invocation(metric_prompt, EntityExtraction)
+        return await self._perform_model_invocation(
+            metric_prompt, EntityExtraction
+        )
 
     async def accuracy_evaluation(
-        self, entity_list: EntityExtraction, llm_answer: str, expected_answer: str
+        self,
+        *,
+        entity_list: EntityExtraction,
+        llm_answer: str,
+        expected_answer: str,
     ) -> AccuracyEvaluationResults:
         """
-        Evaluate the accuracy of question-answering responses for specific entities.
+        Evaluate the accuracy of question-answering responses for specific
+        entities.
 
-        This method assesses whether the underlying semantics and behaviors of the
-        predicted entities in the LLM answer match those in the expected answer.
+        This method assesses whether the underlying semantics and behaviors of
+        the
+        predicted entities in the LLM answer match those in the expected
+        answer.
 
         Args:
             entity_list: List of entities to evaluate for accuracy.
@@ -92,7 +107,8 @@ class QAEvalEngine:
             expected_answer: The ground truth answer for comparison.
 
         Returns:
-            AccuracyEvaluation: The accuracy evaluation results for all entities.
+            AccuracyEvaluation: The accuracy evaluation results for all
+            entities.
         """
         # Convert entity list to a formatted string for the prompt
         entity_list_str = ", ".join(
@@ -110,16 +126,16 @@ class QAEvalEngine:
         )
 
     async def topic_coverage_evaluation(
-        self, entity_list: EntityExtraction
+        self, *, entity_list: EntityExtraction
     ) -> TopicCoverageEvaluationResults:
         """
-        Evaluate the topic coverage of the LLM-generated answer against the expected
-        answer.
+        Evaluate the topic coverage of the LLM-generated answer against the
+        expected answer.
 
         This method assesses whether the topics represented by entities in the
-        expected answer are covered in the generated answer. It focuses on recall
-        (coverage) by checking if all expected entities appear in some form in the
-        generated entities.
+        expected answer are covered in the generated answer. It focuses on
+        recall (coverage) by checking if all expected entities appear in some
+        form in the generated entities.
         """
         # Convert expected entities to a formatted string for the prompt
         expected_entities_str = ", ".join(
