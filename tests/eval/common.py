@@ -167,7 +167,8 @@ def parse_entity_string(entity_str: str) -> tuple[str, str]:
     # (group 3), respectively.
     # Matches ("trigger", "consequence") or ('trigger', 'consequence').
 
-    pattern = r"\(\s*(['\"])([^'\"]+)\1\s*,\s*(['\"])([^'\"]+)\3\s*\)"
+    pattern = r"\(\s*(['\"])([^'\"]+)\1\s*,\s*\1([^'\"]+)\1\s*\)"
+
     match = re.match(pattern, entity_str)
 
     if not match:
