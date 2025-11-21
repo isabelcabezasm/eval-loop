@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class Report:
     """Handles generation of HTML evaluation reports from JSON data."""
 
-    def __init__(self, data_path: str, output_dir: str | None = None):
+    def __init__(self, data_path: str, output_dir: str | None = None) -> None:
         """Initialize the Report instance.
 
         Args:
@@ -79,7 +79,7 @@ class Report:
         destination = output_path / filename
         _ = shutil.copy2(source, destination)
 
-    def generate_report(self):
+    def generate_report(self) -> None:
         """Generate evaluation report from data.
 
         Raises:
@@ -91,13 +91,12 @@ class Report:
         # Load evaluation data
         _ = self.load_json_data()
 
-        # Determine output directory
-        data_path = Path(self.data_path)
+        # Determine output directory (paths already resolved in __init__)
         if self.output_dir is None:
             # Use the same directory as the input file
-            output_path = data_path.parent / "report"
+            output_path = self.data_path.parent / "report"
         else:
-            output_path = Path(self.output_dir)
+            output_path = self.output_dir
 
         # Create output directory
         try:
@@ -108,7 +107,7 @@ class Report:
             ) from e
 
         # Copy template files
-        template_dir = Path(__file__).parent / "templates"
+        template_dir = Path(__file__).resolve().parent / "templates"
         self._copy_template_file(template_dir, "styles.css", output_path)
         self._copy_template_file(template_dir, "script.js", output_path)
         self._copy_template_file(template_dir, "index.html", output_path)

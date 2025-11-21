@@ -310,7 +310,7 @@ function renderEvaluation(evaluation) {
 
     return `
         <div class="evaluation-item">
-            <div class="evaluation-header collapsed" onclick="toggleEvaluation(this)">
+            <div class="evaluation-header collapsed" role="button" tabindex="0" aria-expanded="false" onclick="toggleEvaluation(this)">
                 <div class="evaluation-id">Evaluation #${evaluation.input.id}</div>
                 <div class="scores">
                     <div class="score-badge score-accuracy ${accuracyClass}">
@@ -431,31 +431,58 @@ function calculateSummaryStats() {
     const avgCoverage = evaluations.reduce((sum, evaluation) => sum + evaluation.topic_coverage.coverage_score, 0) / totalEvaluations;
     const overallScore = (avgAccuracy + avgCoverage) / 2;
 
-    document.getElementById('total-evaluations').textContent = totalEvaluations;
-    document.getElementById('avg-accuracy').textContent = avgAccuracy.toFixed(2);
-    document.getElementById('avg-coverage').textContent = avgCoverage.toFixed(2);
-    document.getElementById('overall-score').textContent = overallScore.toFixed(2);
+    // Safely update summary statistics elements
+    const totalEl = document.getElementById('total-evaluations');
+    if (totalEl) totalEl.textContent = totalEvaluations;
+
+    const accuracyEl = document.getElementById('avg-accuracy');
+    if (accuracyEl) accuracyEl.textContent = avgAccuracy.toFixed(2);
+
+    const coverageEl = document.getElementById('avg-coverage');
+    if (coverageEl) coverageEl.textContent = avgCoverage.toFixed(2);
+
+    const overallEl = document.getElementById('overall-score');
+    if (overallEl) overallEl.textContent = overallScore.toFixed(2);
 }
 
 /**
  * Renders all evaluation items and inserts them into the DOM.
  * Processes each evaluation through renderEvaluation() and concatenates the results.
  * Updates the evaluations container with the complete HTML content.
+ * Attaches keyboard event handlers to evaluation headers for accessibility.
  */
 function renderEvaluations() {
     const container = document.getElementById('evaluations-container');
+    if (!container) {
+        console.error('Error: evaluations-container element not found');
+        return;
+    }
+
     const evaluationsHtml = evaluationData.evaluation_outputs
         .map(evaluation => renderEvaluation(evaluation))
         .join('');
 
     container.innerHTML = evaluationsHtml;
+
+    // Attach keyboard event handlers for accessibility
+    const headers = container.querySelectorAll('.evaluation-header');
+    headers.forEach(header => {
+        header.addEventListener('keydown', (event) => {
+            // Trigger toggle on Enter or Space key
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault(); // Prevent page scroll on Space
+                toggleEvaluation(header);
+            }
+        });
+    });
 }
 
 /**
  * Toggles the collapsed/expanded state of an evaluation item.
- * Called when the evaluation header is clicked to show/hide detailed content.
- * Manages CSS classes to control visibility and styling of evaluation content.
- * @param {HTMLElement} headerElement - The header element that was clicked
+ * Called when the evaluation header is clicked or activated via keyboard.
+ * Manages CSS classes and ARIA attributes to control visibility and state
+ * for both visual users and screen readers.
+ * @param {HTMLElement} headerElement - The header element that was activated
  */
 function toggleEvaluation(headerElement) {
     const content = headerElement.nextElementSibling;
@@ -464,22 +491,45 @@ function toggleEvaluation(headerElement) {
     if (isCollapsed) {
         headerElement.classList.remove('collapsed');
         content.classList.remove('collapsed');
+        headerElement.setAttribute('aria-expanded', 'true');
     } else {
         headerElement.classList.add('collapsed');
         content.classList.add('collapsed');
+        headerElement.setAttribute('aria-expanded', 'false');
     }
 }
 
 /**
  * Main initialization function that loads evaluation data and sets up the page.
- * Fetches JSON data, makes it globally available, and initializes all page components.
+ * Fetches JSON data, validates structure, makes it globally available, and
+ * initializes all page components.
  * Handles errors gracefully by displaying error messages to the user.
  */
 // Load evaluation data and initialize the page
 fetch('evaluation_data.json')
     .then(response => response.json())
     .then(evaluationData => {
-        // Make evaluationData available globally
+        // Validate that evaluationData exists
+        if (!evaluationData) {
+            throw new Error('Evaluation data is null or undefined');
+        }
+
+        // Validate that evaluation_outputs exists and is an array
+        if (!evaluationData.evaluation_outputs) {
+            throw new Error('Missing required field: evaluation_outputs');
+        }
+
+        if (!Array.isArray(evaluationData.evaluation_outputs)) {
+            throw new Error('evaluation_outputs must be an array, got: ' +
+                typeof evaluationData.evaluation_outputs);
+        }
+
+        // Validate that evaluation_outputs is non-empty
+        if (evaluationData.evaluation_outputs.length === 0) {
+            throw new Error('evaluation_outputs array is empty - no evaluations to display');
+        }
+
+        // All validations passed - make evaluationData available globally
         window.evaluationData = evaluationData;
 
         // Initialize the page
@@ -489,6 +539,12 @@ fetch('evaluation_data.json')
     })
     .catch(error => {
         console.error('Error loading evaluation data:', error);
-        document.getElementById('evaluations-container').innerHTML =
-            '<div style="padding: 20px; color: red;">Error loading evaluation data. Please check the console.</div>';
+        const container = document.getElementById('evaluations-container');
+        if (container) {
+            container.innerHTML =
+                '<div style="padding: 20px; color: red;">' +
+                '<strong>Error loading evaluation data:</strong><br>' +
+                error.message +
+                '<br><br>Please check the console for more details.</div>';
+        }
     });
