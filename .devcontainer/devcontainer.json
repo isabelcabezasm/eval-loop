@@ -15,10 +15,10 @@
                 "github.copilot-chat",
                 "markdown-lint.markdownlinter",
                 "ms-python.python", // Python extension
-                "ms-python.debugpy", // Debugpy extension for Python        
+                "ms-python.debugpy", // Debugpy extension for Python   
+                "ms-python.vscode-pylance", // Pylance extension for Python
                 "ms-toolsai.jupyter",
                 "charliermarsh.ruff",
-                "ms-pyright.pyright",
                 "tamasfe.even-better-toml",
                 "redhat.vscode-yaml",
                 "streetsidesoftware.code-spell-checker",
