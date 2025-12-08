@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+#? Run tests for the backend or frontend
+# Exit immediately if any command fails (-e) and if any command in a pipeline fails (-o pipefail)
+set -eo pipefail
+# Change to the project root directory (parent of the bin directory)
+cd "$(dirname "$0")/.."
+
+# Display usage information
+usage() {  
+    echo "Usage: $0 [-skipIT] ( be | fe )"  
+    exit 1
+}
+
+# Parse command-line options
+while :; do
+    case $1 in
+            -h|--help) usage; exit ;;
+            --skipIT) skipIT=1 ;;  # Flag to skip integration tests
+            *) break ;;    # Break loop when we hit the main argument (be|fe)
+    esac    
+    shift  # Move to the next argument
+done
+
+# Check if a main argument (be or fe) was provided
+if [ -z "$1" ]; then  
+    echo "Error: No argument provided."  
+    usage
+fi
+    
+# Execute tests based on the provided argument
+case "$1" in  
+    be)  # Backend tests
+        if [[ $skipIT ]]; then
+            # Run pytest excluding integration tests (-m 'not integration')
+            # Generate coverage report in XML format and display missing lines in terminal
+            uv run pytest --cov=src/ --cov-report=xml:coverage.xml --cov-report=term-missing -m 'not integration'    
+        else      
+            # Run all pytest tests including integration tests
+            # Generate coverage report in XML format and display missing lines in terminal
+            uv run pytest --cov=src/ --cov-report=xml:coverage.xml --cov-report=term-missing    
+        fi    
+        ;;  
+
+    ### uncomment this when we have frontend and its tests - part of task 9 
+    # fe)    
+        # npm run test    
+        # ;;  
+    # 
+    *)    
+        echo "Error: Invalid argument '$1'."    
+        usage    
+        ;;
+esac

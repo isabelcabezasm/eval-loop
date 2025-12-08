@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#? Serve the backend or frontend for local development
+
+# Exit immediately if any command fails (-e) and if any command in a pipeline fails (-o pipefail)
+set -eo pipefail
+# Change to the project root directory (parent of the bin directory)
+cd "$(dirname "$0")/.."
+
+# Display usage information
+usage() {
+  echo "Usage: $0 ( be | fe )"
+  exit 1
+}
+
+# Check if an argument (be or fe) was provided
+if [ -z "$1" ]; then
+  echo "Error: No argument provided."
+  usage
+fi
+
+# Start the appropriate development server based on the argument
+case "$1" in
+  be)
+    # Start backend server with uvicorn
+    # --host 0.0.0.0: Listen on all network interfaces (accessible from host)
+    # --reload: Auto-reload on code changes
+    # --port 8080: Listen on port 8080
+    uv run uvicorn api.main:app --host 0.0.0.0 --reload --port 8080
+    ;;
+  fe)
+    # Start frontend development server
+    npm run dev
+    ;;
+  *)
+    # Invalid argument provided
+    echo "Error: Invalid argument '$1'."
+    usage
+    ;;
+esac
