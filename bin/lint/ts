@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#? [LINTING] Lints ui files
+
+set -eo pipefail
+cd "$(dirname "$0")/../.."
+
+function usage {
+    cat <<EOF
+Usage: $0 [--fix]
+
+Options:
+  --fix    Automatically fix issues with ESLint and prettier
+EOF
+}
+
+FIX_MODE=false
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --fix)
+            FIX_MODE=true
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+if [ "$FIX_MODE" = true ]; then
+    npm run lint:fix
+else
+    npm run lint
+fi
