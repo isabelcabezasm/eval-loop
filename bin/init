@@ -9,5 +9,4 @@ export UV_LINK_MODE=copy
  
 uv sync
 
-# uncomment this when we have frontend - part of task 9
-# npm install
+npm install
