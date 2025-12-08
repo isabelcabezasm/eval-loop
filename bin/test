@@ -41,10 +41,9 @@ case "$1" in
         fi    
         ;;  
 
-    ### uncomment this when we have frontend and its tests - part of task 9 
-    # fe)    
-        # npm run test    
-        # ;;  
+    fe)    
+        npm run test    
+        ;;  
     # 
     *)    
         echo "Error: Invalid argument '$1'."    
