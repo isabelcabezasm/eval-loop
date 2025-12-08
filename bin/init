@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#? Initialize the repository for development
+ 
+set -eo pipefail
+cd "$(dirname "$0")/.."
+
+# Set UV_LINK_MODE to copy to suppress hardlink warning in dev containers
+export UV_LINK_MODE=copy
+ 
+uv sync
+# uncomment this when we have frontend - part of task 9
+# npm install
