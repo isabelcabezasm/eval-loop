@@ -4,15 +4,23 @@ const ApiTextChunk = z.object({
   type: z.literal("text"),
   text: z.string()
 });
-const ApiAxiomCitationChunk = z.object({
-  type: z.literal("axiom_citation"),
+
+const ApiCitationChunk = z.object({
   id: z.string(),
-  description: z.string()
+  // subject: z.string(),
+  // object: z.string(),
+  // link: z.string(),
+  description: z.string(),
+  // conditions: z.string(),
+  // amendments: z.string()
 });
-const ApiRealityCitationChunk = z.object({
-  type: z.literal("reality_citation"),
-  id: z.string(),
-  description: z.string()
+
+const ApiAxiomCitationChunk = ApiCitationChunk.extend({
+  type: z.literal("axiom_citation")
+});
+
+const ApiRealityCitationChunk = ApiCitationChunk.extend({
+  type: z.literal("reality_citation")
 });
 
 const ApiChunk = z.discriminatedUnion("type", [

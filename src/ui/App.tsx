@@ -64,7 +64,7 @@ function App() {
       if (chunk.type === "text") {
         content = chunk.text;
       }
-      if (chunk.type === "citation") {
+      if (chunk.type === "axiom_citation" || chunk.type === "reality_citation") {
         content = `[${chunk.id}]`;
         // Add to citations store and update chunks
         setCitations((prev) => ({
@@ -236,7 +236,7 @@ function App() {
         <Overlay.Body>
           {selectedCitation && (
             <div>
-              <div className="citation-section">
+              {/* <div className="citation-section">
                 <h4>Subject</h4>
                 <p>{selectedCitation.subject}</p>
               </div>
@@ -251,15 +251,15 @@ function App() {
               <div className="citation-section">
                 <h4>Conditions</h4>
                 <p>{selectedCitation.conditions}</p>
-              </div>
+              </div> */}
               <div className="citation-section">
                 <h4>Description</h4>
                 <p>{selectedCitation.description}</p>
               </div>
-              <div className="citation-section">
+              {/* <div className="citation-section">
                 <h4>Amendments</h4>
                 <p>{selectedCitation.amendments}</p>
-              </div>
+              </div> */}
             </div>
           )}
         </Overlay.Body>
