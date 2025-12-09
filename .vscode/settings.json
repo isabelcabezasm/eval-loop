@@ -3,7 +3,7 @@
     "python.terminal.activateEnvironment": true,
     "python.analysis.autoImportCompletions": true,
     "[python]": {
-        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.defaultFormatter": "ms-python.autopep8",
         "editor.codeActionsOnSave": {
             "source.organizeImports": "explicit",
             "source.fixAll.ruff": "explicit"

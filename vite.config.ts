@@ -55,10 +55,10 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, __dirname);
 
     const apiBaseUrl = isLocal
-        ? `${devUrl?.replace(`${port}`, `${backendPort}`)}/api/`
+        ? (devUrl ? `${devUrl.replace(`${port}`, `${backendPort}`)}/api/` : `http://127.0.0.1:${backendPort}/api/`)
         : env.VITE_API_BASE_URL;
 
-    const assetsBaseUrl = isLocal ? devUrl : env.VITE_ASSETS_BASE_URL
+    const assetsBaseUrl = isLocal ? (devUrl || "/") : env.VITE_ASSETS_BASE_URL
 
     return {
         plugins: [react()],

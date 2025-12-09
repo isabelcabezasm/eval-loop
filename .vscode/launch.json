@@ -63,6 +63,52 @@
             ],
             "smartStep": true,
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug Frontend (Edge)",
+            "type": "msedge",
+            "request": "launch",
+            "url": "http://127.0.0.1:8007",
+            "webRoot": "${workspaceFolder}/src/ui",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "/@/*": "${webRoot}/*"
+            }
+        },
+        {
+            "name": "Debug Backend API",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "api.main:app",
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "8080",
+                "--reload"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "justMyCode": false
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Debug Full Stack",
+            "configurations": [
+                "Debug Backend API",
+                "Debug Frontend (Edge)"
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "fullstack",
+                "order": 1
+            },
+            "stopAll": true
         }
     ]
 }
