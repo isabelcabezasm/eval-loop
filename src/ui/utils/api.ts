@@ -7,12 +7,7 @@ const ApiTextChunk = z.object({
 
 const ApiCitationChunk = z.object({
   id: z.string(),
-  // subject: z.string(),
-  // object: z.string(),
-  // link: z.string(),
   description: z.string(),
-  // conditions: z.string(),
-  // amendments: z.string()
 });
 
 const ApiAxiomCitationChunk = ApiCitationChunk.extend({

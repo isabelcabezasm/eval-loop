@@ -236,30 +236,11 @@ function App() {
         <Overlay.Body>
           {selectedCitation && (
             <div>
-              {/* <div className="citation-section">
-                <h4>Subject</h4>
-                <p>{selectedCitation.subject}</p>
-              </div>
-              <div className="citation-section">
-                <h4>Object</h4>
-                <p>{selectedCitation.object}</p>
-              </div>
-              <div className="citation-section">
-                <h4>Link</h4>
-                <p>{selectedCitation.link}</p>
-              </div>
-              <div className="citation-section">
-                <h4>Conditions</h4>
-                <p>{selectedCitation.conditions}</p>
-              </div> */}
               <div className="citation-section">
                 <h4>Description</h4>
                 <p>{selectedCitation.description}</p>
               </div>
-              {/* <div className="citation-section">
-                <h4>Amendments</h4>
-                <p>{selectedCitation.amendments}</p>
-              </div> */}
+
             </div>
           )}
         </Overlay.Body>
