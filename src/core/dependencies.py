@@ -29,7 +29,10 @@ def chat_agent() -> ChatAgent:
     return azure_chat_openai().create_agent(
         name="Constitutional QA Assistant",
         instructions=system_prompt,
-        description="AI assistant specialized in banking and economic matters with constitutional grounding"
+        description=(
+            "AI assistant specialized in banking and economic matters "
+            "with constitutional grounding"
+        ),
     )
 
 

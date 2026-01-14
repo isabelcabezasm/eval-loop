@@ -27,17 +27,27 @@ app.include_router(health_router, prefix="/api")
 
 if static_directory := os.getenv(STATIC_FILES_DIRECTORY_ENV_VAR):
     static_path = Path(static_directory)
-    
+
     # Mount static assets (JS, CSS, etc.)
-    app.mount("/assets", StaticFiles(directory=static_path / "assets"), name="assets")
-    
+    app.mount(
+        "/assets",
+        StaticFiles(directory=static_path / "assets"),
+        name="assets",
+    )
+
     # Serve index.html for all other routes (SPA fallback)
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
         index_file = static_path / "index.html"
         if index_file.exists():
             return FileResponse(index_file)
-        return {"error": "Frontend not built. Set STATIC_FILES_DIRECTORY to the built frontend."}
+        return {
+            "error": (
+                "Frontend not built. "
+                "Set STATIC_FILES_DIRECTORY to the built frontend."
+            )
+        }
+
 
 if __name__ == "__main__":
     import uvicorn
