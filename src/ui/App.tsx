@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import type { ReactNode } from "react";
 
 import { Button } from "@/components/Button";
 import { ContentBlock } from "@/components/ContentBlock";
@@ -17,6 +18,33 @@ type ChatMessage = {
   content?: string; // Raw text content for API
   chunks?: (TextChunk | Citation)[]; // Chunks for display (only for assistant messages)
 };
+
+// Parse text with **bold** markdown syntax and preserve line breaks
+function parseMarkdownBold(text: string): ReactNode[] {
+  const parts: ReactNode[] = [];
+  const regex = /\*\*([^*]+)\*\*/g;
+  let lastIndex = 0;
+  let match;
+  let key = 0;
+
+  while ((match = regex.exec(text)) !== null) {
+    // Add text before the bold part
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    // Add the bold part
+    const boldText = match[1];
+    parts.push(<strong key={`bold-${key++}`}>{boldText}</strong>);
+    lastIndex = regex.lastIndex;
+  }
+
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : [text];
+}
 function App() {
   const [context, setContext] = useState<string>("");
   const [isContextLocked, setIsContextLocked] = useState<boolean>(false);
@@ -57,7 +85,7 @@ function App() {
     // Add a new response message
     setMessages((msgs: ChatMessage[]) => [
       ...msgs,
-      { role: assistant, content: undefined, chunks: [] }
+      { role: assistant, content: "", chunks: [] }
     ]);
     for await (const chunk of response) {
       let content = "";
@@ -176,20 +204,59 @@ function App() {
                 messages.map((msg: ChatMessage, idx: number) => (
                   <div key={idx} className={`message ${msg.role}`}>
                     <div className={`message-bubble ${msg.role}`}>
-                      {msg.chunks
-                        ? msg.chunks.map((chunk, chunkIdx) =>
-                          chunk.type === "text" ? (
-                            chunk.text
-                          ) : (
-                            <a
-                              key={chunkIdx}
-                              onClick={() => handleShowCitation(chunk.id)}
-                              className="citation-link"
-                            >
-                              [{chunk.id}]
-                            </a>
-                          )
-                        )
+                      {msg.chunks && msg.content
+                        ? (() => {
+                          // Parse the complete content with markdown
+                          const parsedContent = parseMarkdownBold(msg.content);
+
+                          // Replace citation placeholders with actual citation links
+                          const result: ReactNode[] = [];
+
+                          parsedContent.forEach((part, i) => {
+                            if (typeof part === 'string') {
+                              if (part.length === 0) return; // Skip empty strings
+
+                              // Split by citation patterns [id]
+                              const citationRegex = /\[([^\]]+)\]/g;
+                              let lastIdx = 0;
+                              let citMatch;
+                              let hasCitations = false;
+
+                              while ((citMatch = citationRegex.exec(part)) !== null) {
+                                hasCitations = true;
+                                // Add text before citation
+                                if (citMatch.index > lastIdx) {
+                                  const textBefore = part.slice(lastIdx, citMatch.index);
+                                  if (textBefore) result.push(textBefore);
+                                }
+                                // Add citation link
+                                const citId = citMatch[1];
+                                result.push(
+                                  <a
+                                    key={`cit-${i}-${citId}`}
+                                    onClick={() => handleShowCitation(citId)}
+                                    className="citation-link"
+                                  >
+                                    [{citId}]
+                                  </a>
+                                );
+                                lastIdx = citationRegex.lastIndex;
+                              }
+
+                              // Add remaining text or the whole string if no citations
+                              if (hasCitations && lastIdx < part.length) {
+                                const remaining = part.slice(lastIdx);
+                                if (remaining) result.push(remaining);
+                              } else if (!hasCitations) {
+                                result.push(part);
+                              }
+                            } else if (part !== undefined && part !== null) {
+                              result.push(part);
+                            }
+                          });
+
+                          return result.filter(r => r !== undefined && r !== null && r !== '');
+                        })()
                         : msg.content}
                     </div>
                   </div>
@@ -206,8 +273,7 @@ function App() {
             >
               <div className="input-wrapper">
                 <InputText
-                  // value={input}
-                  value="How does political instability affect investor confidence in financial markets?"
+                  value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Type your question..."
                   disabled={streamingBot}
