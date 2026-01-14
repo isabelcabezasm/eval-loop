@@ -8,7 +8,6 @@ import { InputText } from "@/components/InputText";
 import { Overlay } from "@/components/Overlay";
 import { TextArea } from "@/components/TextArea";
 import "@/styles/App.css";
-import "@/styles/App.css";
 import { Citation, TextChunk, useApi } from "@/utils/api";
 
 const assistant = "assistant";
