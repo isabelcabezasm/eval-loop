@@ -211,7 +211,7 @@ function App() {
                           const result: ReactNode[] = [];
 
                           parsedContent.forEach((part, i) => {
-                            if (typeof part === 'string') {
+                            if (typeof part === "string") {
                               if (part.length === 0) return; // Skip empty strings
 
                               // Split by citation patterns [id]
