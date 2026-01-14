@@ -149,8 +149,7 @@ function App() {
           <div>
             <TextArea
               label="Set the context for this conversation:"
-              // value={context}
-              value="Banking and financial markets are sensitive to political conditions and governance stability."
+              value={context}
               onChange={(e) => setContext(e.target.value)}
               placeholder="Describe the context or scenario for this chat..."
               height="120px"
