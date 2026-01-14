@@ -1,17 +1,17 @@
-Below is a set of conditions describing the current macro-economic situation that must be included in your reasoning:
+{% if reality %}
+Below are FACTUAL CONDITIONS describing the current macro-economic situation. You MUST cite these using [R-00X] format when your answer relies on specific data or conditions mentioned:
  
 ```
 {{ reality }}
 ```
+{% endif %}
  
-If the context contradicts the macro-economic situation, you must resolve the contradiction in favor of the context and disregard the macro-economic situation.
- 
-Strictly adhere to the principles outlined in the following axioms that describe the constitution:
+Strictly adhere to the principles outlined in the following axioms that describe the constitution. You MUST cite these using [A-00X] format when your reasoning is based on these principles:
  
 ```
 {{ constitution }}
 ```
  
-You have to answer the user's question based on the constitution and reality statements provided above:
+You have to answer the user's question based on the constitution{% if reality %} and reality statements{% endif %} provided above. Remember to cite axioms [A-00X] and{% if reality %} reality statements [R-00X]{% endif %} in your response.
  
 User: {{ question }}

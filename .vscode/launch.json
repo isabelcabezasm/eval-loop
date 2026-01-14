@@ -65,6 +65,23 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Start Frontend Dev Server",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/src/ui",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "dev"
+            ],
+            "console": "integratedTerminal",
+            "serverReadyAction": {
+                "pattern": "Local:.*http://127.0.0.1:([0-9]+)",
+                "uriFormat": "http://127.0.0.1:%s",
+                "action": "debugWithEdge"
+            }
+        },
+        {
             "name": "Debug Frontend (Edge)",
             "type": "msedge",
             "request": "launch",
@@ -101,7 +118,7 @@
             "name": "Debug Full Stack",
             "configurations": [
                 "Debug Backend API",
-                "Debug Frontend (Edge)"
+                "Start Frontend Dev Server"
             ],
             "presentation": {
                 "hidden": false,
