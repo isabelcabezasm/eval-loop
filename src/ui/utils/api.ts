@@ -7,7 +7,7 @@ const ApiTextChunk = z.object({
 
 const ApiCitationChunk = z.object({
   id: z.string(),
-  description: z.string(),
+  description: z.string()
 });
 
 const ApiAxiomCitationChunk = ApiCitationChunk.extend({
@@ -25,7 +25,9 @@ const ApiChunk = z.discriminatedUnion("type", [
 ]);
 type ApiChunkType = z.infer<typeof ApiChunk>;
 export type TextChunk = z.infer<typeof ApiTextChunk>;
-export type Citation = z.infer<typeof ApiAxiomCitationChunk | typeof ApiRealityCitationChunk>;
+export type Citation =
+  | z.infer<typeof ApiAxiomCitationChunk>
+  | z.infer<typeof ApiRealityCitationChunk>;
 export interface Message {
   role: "user" | "assistant";
   content: string;
@@ -80,7 +82,7 @@ export class HttpError extends Error {
     this.body = body;
   }
 }
-export class ApiError extends Error { }
+export class ApiError extends Error {}
 async function readFileAsBase64(file: File): Promise<string> {
   // Note the FileReader API does not exist in node, hence we can't unit test this function.
   return new Promise((resolve, reject) => {
