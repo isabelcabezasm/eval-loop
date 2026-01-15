@@ -8,7 +8,6 @@ import { InputText } from "@/components/InputText";
 import { Overlay } from "@/components/Overlay";
 import { TextArea } from "@/components/TextArea";
 import "@/styles/App.css";
-import "@/styles/App.css";
 import { Citation, TextChunk, useApi } from "@/utils/api";
 
 const assistant = "assistant";
@@ -150,8 +149,7 @@ function App() {
           <div>
             <TextArea
               label="Set the context for this conversation:"
-              // value={context}
-              value="Banking and financial markets are sensitive to political conditions and governance stability."
+              value={context}
               onChange={(e) => setContext(e.target.value)}
               placeholder="Describe the context or scenario for this chat..."
               height="120px"
@@ -213,7 +211,7 @@ function App() {
                           const result: ReactNode[] = [];
 
                           parsedContent.forEach((part, i) => {
-                            if (typeof part === 'string') {
+                            if (typeof part === "string") {
                               if (part.length === 0) return; // Skip empty strings
 
                               // Split by citation patterns [id]
