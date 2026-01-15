@@ -7,7 +7,8 @@ cd "$(dirname "$0")/.."
 
 # Display usage information
 usage() {  
-    echo "Usage: $0 [-skipIT] ( be | fe )"  
+    echo "Usage: $0 [-skipIT] [be | fe]"
+    echo "  If no argument is provided, runs all tests (backend and frontend)"
     exit 1
 }
 
@@ -21,14 +22,11 @@ while :; do
     shift  # Move to the next argument
 done
 
-# Check if a main argument (be or fe) was provided
-if [ -z "$1" ]; then  
-    echo "Error: No argument provided."  
-    usage
-fi
+# Default to "all" if no argument provided
+target="${1:-all}"
     
 # Execute tests based on the provided argument
-case "$1" in  
+case "$target" in  
     be)  # Backend tests
         if [[ $skipIT ]]; then
             # Run pytest excluding integration tests (-m 'not integration')
@@ -43,10 +41,22 @@ case "$1" in
 
     fe)    
         npm run test    
-        ;;  
+        ;;
+
+    all)  # Run all tests
+        echo "Running backend tests..."
+        if [[ $skipIT ]]; then
+            uv run pytest --cov=src/ --cov-report=xml:coverage.xml --cov-report=term-missing -m 'not integration'    
+        else      
+            uv run pytest --cov=src/ --cov-report=xml:coverage.xml --cov-report=term-missing    
+        fi
+        echo ""
+        echo "Running frontend tests..."
+        npm run test
+        ;;
     # 
     *)    
-        echo "Error: Invalid argument '$1'."    
+        echo "Error: Invalid argument '$target'."    
         usage    
         ;;
 esac

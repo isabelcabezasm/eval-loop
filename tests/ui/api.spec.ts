@@ -117,9 +117,11 @@ describe("ApiClient", () => {
     expect(actualUrl).toEqual(new URL("http://localhost:8000/api/generate"));
     expect(actualMethod).toEqual("POST");
     expect(JSON.parse(actualBody)).toEqual({
-      reality: "some reality",
+      context: "some reality",
       question: "some question",
-      history: [{ role: "user", content: "hello" }]
+      history: [{ role: "user", content: "hello" }],
+      reality: null,
+      debugConstitution: null
     });
     expect(actualHeaders).toEqual({ "Content-Type": "application/json" });
   });
