@@ -1,6 +1,6 @@
 // Taken from https://devcloud.ubs.net/ubs/gf/risk/risk-platforms/groupwide-risk-platforms/model-dev-core-platform/risklab-international/AA45436-RISKLAB/risklab-lite/-/blob/main/vite.config.ts?ref_type=heads
 import react from "@vitejs/plugin-react";
-import { readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { defineConfig, loadEnv } from "vite";
 
@@ -33,8 +33,25 @@ if (isDev) {
     }
 }
 
+// Read backend port from API config file
+function getBackendPort(): number {
+    const configFile = path.join(__dirname, '.api-config.json');
+    if (existsSync(configFile)) {
+        try {
+            const config = JSON.parse(readFileSync(configFile, 'utf-8'));
+            if (config.port) {
+                console.log(`Using backend port ${config.port} from .api-config.json`);
+                return config.port;
+            }
+        } catch (error) {
+            console.warn('Failed to read .api-config.json, using default port');
+        }
+    }
+    return 8081; // Default fallback
+}
+
 const port = 8007;
-const backendPort = 8080;
+const backendPort = getBackendPort();
 const devUrl = process.env.VSCODE_PROXY_URI?.replace("{{port}}/", `${port}`);
 
 const hmrConfig = (port: number) => {

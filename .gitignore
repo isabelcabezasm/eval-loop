@@ -56,6 +56,9 @@ ENV/
 env.bak/
 venv.bak/
 
+# API runtime configuration
+.api-config.json
+
 # IDEs
 .idea/
 *.swp

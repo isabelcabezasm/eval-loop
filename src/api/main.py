@@ -1,4 +1,6 @@
+import json
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -10,13 +12,34 @@ from api.generate import router as generate_router
 from api.health import router as health_router
 
 STATIC_FILES_DIRECTORY_ENV_VAR = "STATIC_FILES_DIRECTORY"
+API_PORT_ENV_VAR = "API_PORT"
+DEFAULT_API_PORT = 8080
 
-app = FastAPI(title="Q&A backend", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan event handler for startup and shutdown."""
+    # Startup: Write API configuration to file for frontend to read
+    port = int(os.getenv(API_PORT_ENV_VAR, DEFAULT_API_PORT))
+    config_file = Path(".api-config.json")
+    _ = config_file.write_text(
+        json.dumps({"port": port, "baseUrl": f"http://127.0.0.1:{port}/api/"})
+    )
+    yield
+    # Shutdown: cleanup if needed
+
+
+app = FastAPI(title="Q&A backend", version="0.1.0", lifespan=lifespan)
 
 # Add CORS middleware to allow frontend requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:8007", "http://localhost:8007"],
+    allow_origins=[
+        "http://127.0.0.1:8007",
+        "http://localhost:8007",
+        "http://127.0.0.1:5173",  # Vite default dev port
+        "http://localhost:5173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -24,6 +47,7 @@ app.add_middleware(
 
 app.include_router(generate_router, prefix="/api")
 app.include_router(health_router, prefix="/api")
+
 
 if static_directory := os.getenv(STATIC_FILES_DIRECTORY_ENV_VAR):
     static_path = Path(static_directory)
@@ -52,4 +76,5 @@ if static_directory := os.getenv(STATIC_FILES_DIRECTORY_ENV_VAR):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", port=8080)
+    port = int(os.getenv(API_PORT_ENV_VAR, DEFAULT_API_PORT))
+    uvicorn.run("main:app", port=port)
