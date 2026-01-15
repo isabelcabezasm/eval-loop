@@ -6,9 +6,23 @@ import { defineConfig, loadEnv } from "vite";
 
 const isDev = "VSCODE_PROXY_URI" in process.env;
 
-// Disabling path override for hosting in domino
-// This is dependent on a specific vite version due to the patching.
-// Do not bump the vite version.
+// VS Code dev container proxy path override workaround
+//
+// Background: When running in VS Code dev containers with port forwarding, Vite's default
+// behavior tries to set a base path that conflicts with the proxy setup. This patching
+// disables that behavior to allow the dev server to work correctly.
+//
+// IMPORTANT: This patch is tightly coupled to Vite's internal structure and file paths.
+// The current implementation is tested and working with Vite 4.4.5.
+// DO NOT upgrade Vite without verifying this patch still works, as internal file structure
+// or variable names may change between versions, breaking the regex patterns below.
+//
+// Supported Vite version: ^4.4.5 (current: 4.4.5 in package.json)
+//
+// If upgrading Vite is necessary:
+// 1. Test thoroughly in VS Code dev container environment
+// 2. Verify the patched file paths and regex patterns still match
+// 3. Update this comment with the new supported version range
 
 if (isDev) {
     const VITE_SERVER = path.join(__dirname, "node_modules/vite/dist/node/chunks");
@@ -43,7 +57,7 @@ function getBackendPort(): number {
                 console.log(`Using backend port ${config.port} from .api-config.json`);
                 return config.port;
             }
-        } catch (error) {
+        } catch {
             console.warn('Failed to read .api-config.json, using default port');
         }
     }
