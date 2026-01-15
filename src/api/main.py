@@ -65,8 +65,13 @@ if static_directory := os.getenv(STATIC_FILES_DIRECTORY_ENV_VAR):
     )
 
     # Serve index.html for all other routes (SPA fallback)
+    # Explicitly exclude /api/* and /assets/* paths to prevent conflicts
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
+        # Don't serve SPA for API or asset requests
+        if full_path.startswith("api/") or full_path.startswith("assets/"):
+            return {"error": "Not found"}
+
         index_file = static_path / "index.html"
         if index_file.exists():
             return FileResponse(index_file)
