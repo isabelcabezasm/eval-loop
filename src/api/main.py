@@ -16,11 +16,16 @@ API_PORT_ENV_VAR = "API_PORT"
 DEFAULT_API_PORT = 8080
 
 
+def get_api_port() -> int:
+    """Get the API port from environment variable or use default."""
+    return int(os.getenv(API_PORT_ENV_VAR, DEFAULT_API_PORT))
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan event handler for startup and shutdown."""
     # Startup: Write API configuration to file for frontend to read
-    port = int(os.getenv(API_PORT_ENV_VAR, DEFAULT_API_PORT))
+    port = get_api_port()
     config_file = Path(".api-config.json")
     _ = config_file.write_text(
         json.dumps({"port": port, "baseUrl": f"http://127.0.0.1:{port}/api/"})
@@ -76,5 +81,5 @@ if static_directory := os.getenv(STATIC_FILES_DIRECTORY_ENV_VAR):
 if __name__ == "__main__":
     import uvicorn
 
-    port = int(os.getenv(API_PORT_ENV_VAR, DEFAULT_API_PORT))
+    port = get_api_port()
     uvicorn.run("main:app", port=port)
