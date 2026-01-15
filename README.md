@@ -62,11 +62,15 @@ environment with all dependencies pre-configured.
 
 ### Port Configuration
 
-The API port is configurable to handle port conflicts and VS Code port forwarding automatically. The backend writes its actual running port to a configuration file, which the frontend reads on startup.
+The API port is configurable to handle port conflicts and VS Code port forwarding
+automatically. The backend writes its actual running port to a configuration file, which the
+frontend reads on startup.
 
-1. **Backend startup**: The API reads the `API_PORT` environment variable (defaults to 8080) and writes a `.api-config.json` file with the actual port
+1. **Backend startup**: The API reads the `API_PORT` environment variable (defaults to 8080) and
+   writes a `.api-config.json` file with the actual port
 2. **Frontend startup**: Vite reads `.api-config.json` to determine the correct backend URL
-3. **Port forwarding**: Works automatically even when VS Code forwards ports (e.g., 8080 → 8081)
+3. **Port forwarding**: Works automatically even when VS Code forwards ports (e.g.,
+   8080 → 8081)
 
 #### Configuration
 
@@ -97,12 +101,14 @@ For full-stack debugging:
 
 - **Debug Full Stack** - Starts backend on port 8080 and frontend on port 8007
 
-Both configurations automatically set the `API_PORT` environment variable and write the `.api-config.json` file for the frontend.
+Both configurations automatically set the `API_PORT` environment variable and write the
+`.api-config.json` file for the frontend.
 
 ##### Default Ports
 
 - **Backend API**: 8080 (configurable via `API_PORT`)
-- **Frontend Dev Server**: 8007 (configured in vite.config.ts)
+- **Frontend Dev Server**: 8007 (configured in
+  vite.config.ts)
 
 #### Files
 
