@@ -159,18 +159,20 @@ async def test_entity_extraction_integration(
 
     # assert
     _ = EntityExtraction.model_validate(result)
-    # Validate that we extracted entities from at least two of the three sources
-    # (user_query extraction can be flaky with LLMs, so we don't require it)
+    # Validate that we extracted entities from at least two of the
+    # three sources (user_query extraction can be flaky with LLMs,
+    # so we don't require it)
     total_entities = (
         len(result.user_query_entities)
         + len(result.llm_answer_entities)
         + len(result.expected_answer_entities)
     )
     assert total_entities >= min_entity_count, (
-        f"Expected at least {min_entity_count} total entities across all sources, "
-        f"got {total_entities}"
+        f"Expected at least {min_entity_count} total entities "
+        f"across all sources, got {total_entities}"
     )
-    # At minimum, we should get entities from the LLM answer and expected answer
+    # At minimum, we should get entities from the LLM answer and
+    # expected answer
     assert len(result.llm_answer_entities) >= 1, (
         "llm_answer_entities should contain at least one entity"
     )
