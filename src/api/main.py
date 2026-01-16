@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
     # Startup: Write API configuration to file for frontend to read
     port = get_api_port()
     config_file = Path(".api-config.json")
-    config_file.write_text(
+    _ = config_file.write_text(
         json.dumps({"port": port, "baseUrl": f"http://127.0.0.1:{port}/api/"})
     )
     yield
