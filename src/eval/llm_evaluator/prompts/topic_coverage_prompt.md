@@ -16,7 +16,7 @@ Your task is to:
    - Check entities in both lists, considering synonyms or equivalent terms (e.g., "interest rate" ≈ "policy rate").
    - In the reason, explain which entities matched exactly, which matched approximately, and which were missing.
    - Calculate coverage score:
-       * 1 for exact or accurate synonym matches
-       * 0.5 for inaccurate synonyms
-       * 0 for missing
+       - 1 for exact or accurate synonym matches
+       - 0.5 for inaccurate synonyms
+       - 0 for missing
    - Coverage score = (sum of match scores) / (number of expected entities).

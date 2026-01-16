@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+#? [LINTING] Analyzes markdown files with markdownlint
+
+set -eo pipefail
+cd "$(dirname "$0")/../.."
+
+# Usage documentation
+function usage {
+    cat<<EOF
+Usage: $0 [--fix]
+
+Options:
+  --fix    Automatically fix issues
+EOF
+}
+
+while :; do
+    case $1 in
+        -h|--help) usage; exit ;;
+        --fix) fix=1 ;;
+        *) break ;;
+    esac
+    shift
+done
+
+if [[ $fix ]]; then
+    npx markdownlint --fix '**/*.md' --ignore node_modules --ignore .venv --ignore runs
+else
+    npx markdownlint '**/*.md' --ignore node_modules --ignore .venv --ignore runs
+fi
