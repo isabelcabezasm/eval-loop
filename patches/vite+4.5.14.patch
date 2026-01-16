@@ -1,0 +1,22 @@
+diff --git a/node_modules/vite/dist/node/chunks/dep-827b23df.js b/node_modules/vite/dist/node/chunks/dep-827b23df.js
+index 0cfbf36..cd40680 100644
+--- a/node_modules/vite/dist/node/chunks/dep-827b23df.js
++++ b/node_modules/vite/dist/node/chunks/dep-827b23df.js
+@@ -12494,7 +12494,7 @@ async function resolveServerUrls(server, options, config) {
+     const hostname = await resolveHostname(options.host);
+     const protocol = options.https ? 'https' : 'http';
+     const port = address.port;
+-    const base = config.rawBase === './' || config.rawBase === '' ? '/' : config.rawBase;
++    return next();
+     if (hostname.host !== undefined && !wildcardHosts.has(hostname.host)) {
+         let hostnameName = hostname.name;
+         // ipv6 host
+@@ -42351,7 +42351,7 @@ function clientInjectionsPlugin(config) {
+             let directTarget = hmrConfig?.host || resolvedServerHostname;
+             directTarget += `:${hmrConfig?.port || resolvedServerPort}`;
+             directTarget += devBase;
+-            let hmrBase = devBase;
++            let hmrBase = "";
+             if (hmrConfig?.path) {
+                 hmrBase = path$o.posix.join(hmrBase, hmrConfig.path);
+             }

@@ -1,51 +1,28 @@
 // Taken from https://devcloud.ubs.net/ubs/gf/risk/risk-platforms/groupwide-risk-platforms/model-dev-core-platform/risklab-international/AA45436-RISKLAB/risklab-lite/-/blob/main/vite.config.ts?ref_type=heads
 import react from "@vitejs/plugin-react";
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { defineConfig, loadEnv } from "vite";
 
 const isDev = "VSCODE_PROXY_URI" in process.env;
 
-// VS Code dev container proxy path override workaround
+// VS Code dev container proxy path override
 //
-// Background: When running in VS Code dev containers with port forwarding, Vite's default
-// behavior tries to set a base path that conflicts with the proxy setup. This patching
-// disables that behavior to allow the dev server to work correctly.
+// When running in VS Code dev containers with port forwarding, Vite's default
+// behavior sets a base path that conflicts with the proxy setup.
 //
-// IMPORTANT: This patch is tightly coupled to Vite's internal structure and file paths.
-// The current implementation is tested and working with Vite 4.4.5.
-// DO NOT upgrade Vite without verifying this patch still works, as internal file structure
-// or variable names may change between versions, breaking the regex patterns below.
+// This is fixed via patch-package (see patches/vite+4.5.14.patch), which:
+// - Disables the base path override in resolveServerUrls
+// - Sets hmrBase to empty string for correct HMR websocket paths
 //
-// Supported Vite version: ^4.4.5 (current: 4.4.5 in package.json)
+// The patch is applied automatically on `npm install` via the postinstall script.
 //
-// If upgrading Vite is necessary:
-// 1. Test thoroughly in VS Code dev container environment
-// 2. Verify the patched file paths and regex patterns still match
-// 3. Update this comment with the new supported version range
-
-if (isDev) {
-    const VITE_SERVER = path.join(__dirname, "node_modules/vite/dist/node/chunks");
-    const VITE_BASE_PATTERN = /const base = (?:config\.)rawBase;/;
-    const VITE_HMR_PATTERN = /let hmrBase = devBase;/;
-    const files = readdirSync(VITE_SERVER).map((file) => path.join(VITE_SERVER, file));
-    let viteUpdated = false;
-    files.forEach((file) => {
-        const content = readFileSync(file, "utf-8");
-        if (VITE_BASE_PATTERN.test(content)) {
-            writeFileSync(file, content.replace(VITE_BASE_PATTERN, "return next();"));
-            viteUpdated = true;
-        }
-        if (VITE_HMR_PATTERN.test(content)) {
-            writeFileSync(file, content.replace(VITE_HMR_PATTERN, 'let hmrBase = "";'));
-            viteUpdated = true;
-        }
-    });
-    if (viteUpdated) {
-        console.log("Patched vite sources, please restart frontend");
-        process.exit(0);
-    }
-}
+// Supported Vite version: 4.x (current: 4.5.14)
+// If upgrading Vite, regenerate the patch:
+// 1. Run `npm install` to get clean vite
+// 2. Apply the manual fixes to node_modules/vite/dist/node/chunks/*.js
+// 3. Run `npx patch-package vite` to regenerate the patch
+// 4. Test in VS Code dev container environment
 
 // Read backend port from API config file
 function getBackendPort(): number {
@@ -61,7 +38,8 @@ function getBackendPort(): number {
             console.warn('Failed to read .api-config.json, using default port');
         }
     }
-    return 8081; // Default fallback
+    // Default must match DEFAULT_API_PORT in src/api/main.py
+    return 8080;
 }
 
 const port = 8007;
