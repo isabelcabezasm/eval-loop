@@ -1,5 +1,6 @@
-import path from "node:path";
 import { defineConfig } from "vitest/config";
+
+import { alias } from "./src/ui/alias.config";
 
 export default defineConfig({
   test: {
@@ -7,8 +8,6 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"]
     },
-    alias: {
-      "@": path.resolve(__dirname, "./src/ui/")
-    }
+    alias
   }
 });

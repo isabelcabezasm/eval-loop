@@ -1,4 +1,10 @@
-function Separator({ decorative = true, ...props }) {
+import * as React from "react";
+
+type SeparatorProps = React.ComponentProps<"div"> & {
+  decorative?: boolean;
+};
+
+function Separator({ decorative = true, ...props }: SeparatorProps) {
   return (
     <div
       role={decorative ? "presentation" : "separator"}
@@ -10,3 +16,4 @@ function Separator({ decorative = true, ...props }) {
 }
 
 export { Separator };
+export type { SeparatorProps };

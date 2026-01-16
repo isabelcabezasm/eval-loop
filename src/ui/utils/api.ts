@@ -36,8 +36,8 @@ interface AnswerRequest {
   context: string;
   question: string;
   history: Message[];
-  reality: string | null; // Base64 encoded Excel file
-  debugConstitution: string | null; // Base64 encoded Excel file
+  reality: string | null; // Base64 encoded JSON file
+  debugConstitution: string | null; // Base64 encoded JSON file
 }
 export function useApi(): ApiClient {
   const apiBaseUrl = import.meta.env.API_BASE_URL || "http://127.0.0.1:8080/api/";
