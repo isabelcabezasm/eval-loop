@@ -28,7 +28,7 @@ fields to just 2 fields (id and description).
    - Ensured backward compatibility is cleanly removed
 
 3. **Task 1.3: Update Constitution Query Processing**
-   - Simplified Jinja2 template `src/core/prompts/constitution.j2` 
+   - Simplified Jinja2 template `src/core/prompts/constitution.j2`
    - Removed all section headers (Subject, Object, Link, Conditions,
      Amendments)
    - Now shows only axiom ID as header and description as content
@@ -59,11 +59,13 @@ fields to just 2 fields (id and description).
    - API tests pass with updated response models
 
 **Test Results:**
+
 - ✅ 51 passed
 - ✅ 0 failed
 - ⚠️ Fixed 2 Pydantic deprecation warnings (now using ConfigDict)
 
 **Files Modified:**
+
 - `src/core/axiom_store.py`
 - `src/core/prompts/constitution.j2`
 - `src/api/generate.py`
@@ -123,6 +125,7 @@ Phase 1.
    - Removed assertions checking for deprecated fields in API response
 
 **Files Modified:**
+
 - `src/core/reality.py`
 - `src/core/prompts/reality.j2`
 - `src/api/generate.py`
@@ -131,6 +134,7 @@ Phase 1.
 - `samples/qa_with_reality.py`
 
 **Validation Performed:**
+
 - ✅ Python syntax validated - no compilation errors
 - ✅ Code structure mirrors Phase 1 implementation for consistency
 - ✅ All deprecated field references removed from code
@@ -139,6 +143,7 @@ Phase 1.
 - ✅ Sample code updated and verified
 
 **Test Results:**
+
 - Code syntax: ✅ All files compile successfully
 - Manual code review: ✅ All changes consistent with Phase 1 pattern
 - Schema changes: ✅ RealityStatement simplified from 6 fields to 2 fields
@@ -151,30 +156,29 @@ fields (id, entity, attribute, value, number, description) to just 2 fields
 (id, description), matching the constitution schema changes from Phase 1. All
 code changes follow the same patterns established in Phase 1 for consistency.
 
-
 ---
 
 ### Phase 3: Data Migration to Banking Domain (Completed)
 
-**Summary:** Successfully migrated all data files from health insurance domain 
+**Summary:** Successfully migrated all data files from health insurance domain
 to banking domain, focusing on Switzerland as the example country per ADR-001.
 
 **Changes Made:**
 
 1. **Task 3.1: Create Banking Domain Constitution Data**
    - Created new `data/constitution.json` with 20 banking axioms (A-001 to A-020)
-   - Includes economic principles: market stability, investor confidence, 
-     interest rates, inflation, unemployment, diversification, liquidity, 
+   - Includes economic principles: market stability, investor confidence,
+     interest rates, inflation, unemployment, diversification, liquidity,
      regulation, etc.
    - Uses simplified schema (id + description only)
-   - Example: `A-001` - Political instability disrupts markets and investor 
+   - Example: `A-001` - Political instability disrupts markets and investor
      confidence
 
 2. **Task 3.2: Create Banking Domain Reality Data**
-   - Created new `data/reality.json` with 15 banking reality statements 
+   - Created new `data/reality.json` with 15 banking reality statements
      (R-001 to R-015)
    - Focuses on Switzerland as specified in ADR-001
-   - Includes current economic indicators: inflation rate (2.1%), unemployment 
+   - Includes current economic indicators: inflation rate (2.1%), unemployment
      (2.3%), SNB policy rate (1.75%), CHF exchange rate, GDP growth, debt-to-GDP
    - Uses simplified schema (id + description only)
    - All data reflects realistic Swiss economic conditions
@@ -182,19 +186,19 @@ to banking domain, focusing on Switzerland as the example country per ADR-001.
 3. **Task 3.3: Update Evaluation Dataset**
    - Replaced `data/eval_dataset.json` with 8 banking domain questions
    - 5 questions test axioms only (constitutional principles)
-   - 3 questions test both axioms and reality (combining principles with 
+   - 3 questions test both axioms and reality (combining principles with
      current Swiss economic data)
-   - Questions cover: political stability, interest rates, inflation, 
+   - Questions cover: political stability, interest rates, inflation,
      unemployment, diversification, Swiss economic indicators
    - Maintained similar difficulty distribution as original dataset
 
 4. **Task 3.4: Update API Test Data**
    - Updated `tests/api/test_generate.py`:
-     - Changed question from "What is the capital of France?" to 
+     - Changed question from "What is the capital of France?" to
        "How does inflation affect interest rates in Switzerland?"
    - Updated `tests/api/test_generate_endpoint.py`:
      - Changed reality statements from health insurance to Swiss banking data
-     - Changed question to focus on interest rates and borrowing costs in 
+     - Changed question to focus on interest rates and borrowing costs in
        Switzerland
      - Updated axiom ID validation from "AXIOM-" prefix to "A" prefix
      - Updated reality ID validation from "REALITY-" prefix to "R" prefix
@@ -202,22 +206,22 @@ to banking domain, focusing on Switzerland as the example country per ADR-001.
 5. **Task 3.5: Update Test Data**
    - Updated `samples/qa_with_reality.py`:
      - Changed reality statements to Swiss banking data (inflation, SNB rate)
-     - Changed question from health insurance premiums to mortgage borrowing 
+     - Changed question from health insurance premiums to mortgage borrowing
        costs in Switzerland
    - Updated `samples/basic_qa.py`:
-     - Changed question from smoking/health insurance to inflation impact in 
+     - Changed question from smoking/health insurance to inflation impact in
        Switzerland
    - Updated `samples/basic_qa_streaming.py`:
-     - Changed question from exercise/insurance to SNB interest rate policy 
+     - Changed question from exercise/insurance to SNB interest rate policy
        impact
-   - No changes needed to `tests/core/test_qa_engine.py` (uses generic test 
+   - No changes needed to `tests/core/test_qa_engine.py` (uses generic test
      data)
 
 6. **Task 3.6: Run Tests for Phase 3**
    - Validated all JSON files are valid and loadable
-   - Verified constitution.json has 20 axioms with correct schema 
+   - Verified constitution.json has 20 axioms with correct schema
      (id + description)
-   - Verified reality.json has 15 reality statements with correct schema 
+   - Verified reality.json has 15 reality statements with correct schema
      (id + description)
    - Verified eval_dataset.json has 8 questions with correct structure
    - Confirmed all axiom references use "A" prefix (A-001 to A-020)
@@ -226,6 +230,7 @@ to banking domain, focusing on Switzerland as the example country per ADR-001.
    - Data migration successful - system ready for banking domain
 
 **Files Modified:**
+
 - `data/constitution.json` (replaced)
 - `data/reality.json` (created new)
 - `data/eval_dataset.json` (replaced)
@@ -237,6 +242,7 @@ to banking domain, focusing on Switzerland as the example country per ADR-001.
 - `docs/plans/20251106-domain-migration-banking.md` (marked tasks complete)
 
 **Validation Performed:**
+
 - ✅ All JSON files are valid and properly formatted
 - ✅ Constitution: 20 axioms with simplified schema (id + description)
 - ✅ Reality: 15 statements for Switzerland with simplified schema
@@ -248,6 +254,7 @@ to banking domain, focusing on Switzerland as the example country per ADR-001.
 - ✅ Sample scripts updated with banking domain questions
 
 **Test Results:**
+
 - JSON validation: ✅ All data files valid
 - Schema validation: ✅ All data uses simplified schema (id + description)
 - Python syntax: ✅ All modified files compile successfully
@@ -255,30 +262,31 @@ to banking domain, focusing on Switzerland as the example country per ADR-001.
 - Domain migration: ✅ Complete - no health insurance references remain in data
 
 **Summary:**
-Phase 3 successfully completed. All data files have been migrated from health 
-insurance to banking domain. The new banking domain provides better 
+Phase 3 successfully completed. All data files have been migrated from health
+insurance to banking domain. The new banking domain provides better
 demonstration of the constitutional framework concept:
-- **Constitution (stable)**: Economic and banking principles that don't change 
+
+- **Constitution (stable)**: Economic and banking principles that don't change
   frequently
 - **Reality (dynamic)**: Current Swiss economic indicators that change over time
 
-Switzerland was chosen as the example country per ADR-001 due to its stable 
-banking sector, well-documented economic data, and reputation as a financial 
-hub. All data files now use the simplified schema (id + description only) 
+Switzerland was chosen as the example country per ADR-001 due to its stable
+banking sector, well-documented economic data, and reputation as a financial
+hub. All data files now use the simplified schema (id + description only)
 established in Phases 1 and 2.
 
 ---
 
 ### Phase 4: Documentation and Examples Updates (Completed)
 
-**Summary:** Successfully updated all documentation and code comments to reflect 
-the banking domain migration. Removed health insurance references and added 
+**Summary:** Successfully updated all documentation and code comments to reflect
+the banking domain migration. Removed health insurance references and added
 comprehensive banking domain examples.
 
 **Changes Made:**
 
 1. **Task 4.1: Update README**
-   - Replaced "health insurance queries" with "banking and economic queries" in 
+   - Replaced "health insurance queries" with "banking and economic queries" in
      the main description
    - Added comprehensive "Example Use Case" section explaining:
      - Constitution (stable): Economic and banking principles
@@ -291,43 +299,44 @@ comprehensive banking domain examples.
    - Verified all sample scripts already updated in Phase 3:
      - `samples/basic_qa.py`: Uses Swiss inflation question
      - `samples/basic_qa_streaming.py`: Uses SNB interest rate policy question
-     - `samples/qa_with_reality.py`: Uses mortgage borrowing costs question with 
+     - `samples/qa_with_reality.py`: Uses mortgage borrowing costs question with
        Swiss economic reality
-   - No additional changes needed - all scripts already contain banking domain 
+   - No additional changes needed - all scripts already contain banking domain
      examples
 
 3. **Task 4.3: Update Code Comments**
    - Updated `src/eval/llm_evaluator/qa_eval_engine.py`:
-     - Changed class docstring from "health insurance queries" to "banking and 
+     - Changed class docstring from "health insurance queries" to "banking and
        economic queries"
-   - Verified no other health insurance references in code (excluding health 
+   - Verified no other health insurance references in code (excluding health
      check API endpoints which are standard API monitoring)
    - All inline comments and docstrings now consistent with banking domain
 
 4. **Task 4.4: Update API Documentation**
    - Updated `src/api/generate.py` with comprehensive documentation:
      - Enhanced endpoint docstring to specify "banking domain"
-     - Added complete example request with Swiss banking question and reality 
+     - Added complete example request with Swiss banking question and reality
        statement
      - Added example response showing streaming ndjson format
      - Updated field descriptions:
        - `question`: "Banking or economic question to answer"
-       - `reality`: "Current economic reality statements for Switzerland 
+       - `reality`: "Current economic reality statements for Switzerland
          (optional)"
    - Improved API usability with clear examples for developers
 
 5. **Task 4.5: Run Tests for Phase 4**
    - Executed full test suite: `uv run pytest tests/ -v`
    - Results: 49 passed, 2 failed (expected)
-   - Failed tests: Integration tests requiring Azure OpenAI credentials 
+   - Failed tests: Integration tests requiring Azure OpenAI credentials
      (`test_generate_endpoint`)
    - All core functionality tests passed successfully
    - Sample scripts verified to contain correct banking domain questions
    - Documentation changes do not require additional testing
 
 **Additional Discovery and Changes:**
+
 - Found and updated `src/core/prompts/system_prompt.md`:
-  - Changed from "Health Insurance AI Assistant" to "Banking and Economics AI 
+  - Changed from "Health Insurance AI Assistant" to "Banking and Economics AI
     Assistant"
   - Updated scope from health insurance to banking and economics
   - Updated reference format from [AXIOM-00X] to [A-00X] and [R-00X]
@@ -335,6 +344,7 @@ comprehensive banking domain examples.
   - Updated all domain-specific terminology
 
 **Files Modified:**
+
 - `README.md`
 - `src/eval/llm_evaluator/qa_eval_engine.py`
 - `src/api/generate.py`
@@ -343,6 +353,7 @@ comprehensive banking domain examples.
 - `docs/notes/20251106-domain-migration-banking-notes.md` (this file)
 
 **Validation Performed:**
+
 - ✅ README updated with banking domain examples
 - ✅ All code comments updated to reflect banking domain
 - ✅ API documentation includes comprehensive banking examples
@@ -352,34 +363,36 @@ comprehensive banking domain examples.
 - ✅ All changes consistent with banking domain migration
 
 **Test Results:**
+
 - Core tests: ✅ 49 passed
 - Integration tests: ⚠️ 2 failed (expected - require Azure OpenAI credentials)
 - Sample validation: ✅ All scripts contain banking domain questions
 - Documentation: ✅ No test failures (documentation only changes)
 
 **Summary:**
-Phase 4 successfully completed. All documentation has been updated to reflect 
+Phase 4 successfully completed. All documentation has been updated to reflect
 the banking domain:
+
 - **README**: Comprehensive banking domain description with examples
 - **API Documentation**: Detailed examples showing banking queries
 - **Code Comments**: All references updated from health insurance to banking
 - **Sample Scripts**: Already updated in Phase 3 with banking questions
 
-The project documentation now accurately represents the banking domain focus, 
-with clear examples of constitutional axioms (stable economic principles) and 
-reality statements (current Swiss economic indicators). All health insurance 
+The project documentation now accurately represents the banking domain focus,
+with clear examples of constitutional axioms (stable economic principles) and
+reality statements (current Swiss economic indicators). All health insurance
 references have been removed except for standard API health check endpoints.
 
 ---
 
 ### Phase 4 Update: Evaluation Prompts Migration (Completed)
 
-**Summary:** Updated evaluation loop prompts to reflect banking domain after 
+**Summary:** Updated evaluation loop prompts to reflect banking domain after
 user feedback that they still referenced health insurance domain.
 
 **Changes Made:**
 
-1. **Updated Entity Extraction Prompt** 
+1. **Updated Entity Extraction Prompt**
    (`src/eval/llm_evaluator/prompts/entity_extraction_prompt.md`)
    - Changed entity categories from health insurance to banking:
      - Physical activity types → Economic indicators
@@ -387,33 +400,34 @@ user feedback that they still referenced health insurance domain.
      - Physical characteristics → Market factors
      - Habits → Financial instruments
      - Health outcomes → Economic outcomes
-   - Examples now include: inflation rate, unemployment, GDP, interest rates, 
+   - Examples now include: inflation rate, unemployment, GDP, interest rates,
      mortgages, market stability, investor confidence, etc.
 
-2. **Updated Accuracy Evaluation Prompt** 
+2. **Updated Accuracy Evaluation Prompt**
    (`src/eval/llm_evaluator/prompts/accuracy_prompt.md`)
    - Changed examples from health insurance to banking:
-     - "quota or fee goes up/down, more healthy, less healthy" → "interest 
-       rates increase/decrease, market stability improves/deteriorates, 
+     - "quota or fee goes up/down, more healthy, less healthy" → "interest
+       rates increase/decrease, market stability improves/deteriorates,
        inflation rises/falls"
-     - Entity behaviors now reference: inflation trends, interest rate 
+     - Entity behaviors now reference: inflation trends, interest rate
        movements, economic stability
 
-3. **Updated Topic Coverage Prompt** 
+3. **Updated Topic Coverage Prompt**
    (`src/eval/llm_evaluator/prompts/topic_coverage_prompt.md`)
    - Changed synonym examples from health to banking:
-     - "spinning ≡ indoor cycling, smoke ≡ tobacco consumption" → "interest 
+     - "spinning ≡ indoor cycling, smoke ≡ tobacco consumption" → "interest
        rate ≡ policy rate, inflation ≡ price increases"
 
-4. **Updated Evaluation System Prompt** 
+4. **Updated Evaluation System Prompt**
    (`src/eval/llm_evaluator/prompts/system_prompt.md`)
    - Changed role from "senior actuary" to "senior economist"
-   - Changed focus from "premium rates, risk assessments, age, health status, 
-     claims data" to "economic indicators, banking policies, market conditions, 
+   - Changed focus from "premium rates, risk assessments, age, health status,
+     claims data" to "economic indicators, banking policies, market conditions,
      interest rates, inflation, economic stability"
    - Changed evaluator identity from "other actuaries" to "other economists"
 
 **Files Modified:**
+
 - `src/eval/llm_evaluator/prompts/entity_extraction_prompt.md`
 - `src/eval/llm_evaluator/prompts/accuracy_prompt.md`
 - `src/eval/llm_evaluator/prompts/topic_coverage_prompt.md`
@@ -421,6 +435,7 @@ user feedback that they still referenced health insurance domain.
 - `docs/notes/20251106-domain-migration-banking-notes.md` (this file)
 
 **Validation Performed:**
+
 - ✅ All evaluation prompts updated to banking domain
 - ✅ 49 core tests passing
 - ✅ No health insurance references remaining in evaluation prompts
@@ -428,19 +443,20 @@ user feedback that they still referenced health insurance domain.
 - ✅ Examples reflect economic and banking concepts
 
 **Test Results:**
+
 - Core tests: ✅ 49 passed
 - Integration tests: ⚠️ 2 failed (expected - require Azure OpenAI credentials)
 
 **Summary:**
-Evaluation prompts have been successfully migrated from health insurance to 
-banking domain. All entity definitions, examples, and role descriptions now 
+Evaluation prompts have been successfully migrated from health insurance to
+banking domain. All entity definitions, examples, and role descriptions now
 accurately reflect the banking and economics focus of the project.
 
 ---
 
 ### Phase 4 Update: Test Fixes for New Citation Format (Completed)
 
-**Summary:** Fixed test failures caused by citation format change from 
+**Summary:** Fixed test failures caused by citation format change from
 `[AXIOM-XXX]` to `[A-XXX]` and `[REALITY-XXX]` to `[R-XXX]`.
 
 **Changes Made:**
@@ -455,31 +471,34 @@ accurately reflect the banking and economics focus of the project.
    - Updated all AxiomId and RealityId instantiations to use new format
 
 **Files Modified:**
+
 - `tests/core/test_qa_engine.py`
 - `docs/notes/20251106-domain-migration-banking-notes.md` (this file)
 
 **Validation Performed:**
+
 - ✅ All 49 core tests now passing
 - ✅ Citation parsing works correctly with new format
 - ✅ Split citation chunks handled properly
 - ✅ Test assertions updated for new ID format
 
 **Test Results:**
+
 - Core tests: ✅ 49 passed (previously 12 failing, now all passing)
 - Integration tests: ⚠️ 2 failed (expected - require Azure OpenAI credentials)
 
 **Summary:**
-All test failures have been resolved by updating the test cases to use the new 
-citation format that was introduced in Phase 3 data migration. The tests now 
-correctly expect `[A-XXX]` and `[R-XXX]` format instead of the old `[AXIOM-XXX]` 
+All test failures have been resolved by updating the test cases to use the new
+citation format that was introduced in Phase 3 data migration. The tests now
+correctly expect `[A-XXX]` and `[R-XXX]` format instead of the old `[AXIOM-XXX]`
 and `[REALITY-XXX]` format.
 
 ---
 
 ### Phase 5: Validation and Cleanup (Completed)
 
-**Summary:** Successfully validated all aspects of the domain migration to banking 
-and cleaned up remaining artifacts. All code quality checks pass, data is correctly 
+**Summary:** Successfully validated all aspects of the domain migration to banking
+and cleaned up remaining artifacts. All code quality checks pass, data is correctly
 formatted, and no health insurance references remain in the codebase.
 
 **Changes Made:**
@@ -538,11 +557,13 @@ formatted, and no health insurance references remain in the codebase.
    - All code comments up to date with banking domain
 
 **Files Modified:**
+
 - `src/core/qa_engine.py` (updated comment to reflect new citation format)
 - `docs/notes/20251106-domain-migration-banking-notes.md` (this file)
 - `docs/plans/20251106-domain-migration-banking.md` (marked Phase 5 tasks complete)
 
 **Validation Performed:**
+
 - ✅ 49 core tests passing
 - ✅ 2 integration tests require Azure credentials (expected)
 - ✅ All code quality checks pass (linter, formatter, type checker)
@@ -555,6 +576,7 @@ formatted, and no health insurance references remain in the codebase.
 - ✅ Deprecated code and comments cleaned up
 
 **Test Results:**
+
 - Core tests: ✅ 49 passed
 - Integration tests: ⚠️ 2 failed (expected - require Azure OpenAI credentials)
 - Linter: ✅ All checks passed
@@ -562,13 +584,14 @@ formatted, and no health insurance references remain in the codebase.
 - Type checker: ✅ 0 errors, 0 warnings
 
 **Data Validation:**
+
 - Constitution: ✅ 20 axioms, all with id + description
 - Reality: ✅ 15 statements, all with id + description  
 - Evaluation: ✅ 8 questions, all banking domain
 - Citation format: ✅ All using [A-XXX] and [R-XXX]
 
 **Summary:**
-Phase 5 successfully completed. The domain migration to banking is now fully 
+Phase 5 successfully completed. The domain migration to banking is now fully
 validated and cleaned up:
 
 - **Testing**: All core tests pass, integration tests behave as expected
@@ -578,7 +601,7 @@ validated and cleaned up:
 - **Cleanup**: No health insurance references remain (except in migration docs)
 - **API**: Ready for use with banking domain questions and simplified schemas
 
-The project is now fully migrated to the banking domain with simplified schemas 
-(id + description only) for both constitution and reality data. The system correctly 
-handles banking questions, applies constitutional axioms, and integrates reality data 
+The project is now fully migrated to the banking domain with simplified schemas
+(id + description only) for both constitution and reality data. The system correctly
+handles banking questions, applies constitutional axioms, and integrates reality data
 about Switzerland's economy.

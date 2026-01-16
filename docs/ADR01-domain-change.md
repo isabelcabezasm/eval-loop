@@ -1,22 +1,27 @@
 # ADR-001: Migration from Health Insurance to Banking Domain with Schema Simplification
 
 ## Status
+
 Approved
 
 ## Date
+
 2025-11-06
 
 ## Context
+
 The Constitutional Q&A Agent was originally built for health insurance but needs to
 change domains for better architectural fit:
 
 **Why Change from Health Insurance?**
+
 - Health insurance rules rarely change, making the "constitutional vs. reality"
   distinction unclear
 - The domain doesn't showcase the system's core value of handling both stable rules and
   dynamic data
 
-**Why Banking Works Better**
+### Why Banking Works Better
+
 - Banking was the original intended domain
 - Banking reality changes frequently (rates, inflation, political changes that
   influence the economy)
@@ -24,13 +29,13 @@ change domains for better architectural fit:
 - Better demonstrates the constitutional framework concept
 
 **Why Simplify the Schema?**
+
 - Current schema has too many overlapping fields (subject, entity, trigger, conditions)
 - Simpler structure is easier to understand, maintain and access
 - Reduces complexity for demonstration purposes
 - We start with the bare minimum in both schemas: id and description for the first
   iteration, and will add complexity only if data-driven experiments show it improves
   performance or helps the LLM
-
 
 ## Decision
 
@@ -77,4 +82,3 @@ eg.
   "description": "Unemployment rate in Switzerland is 5%."
 }
 ```
-

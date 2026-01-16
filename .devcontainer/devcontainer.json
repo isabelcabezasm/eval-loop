@@ -16,7 +16,7 @@
             "extensions": [
                 "github.copilot", // GitHub Copilot
                 "github.copilot-chat",
-                "markdown-lint.markdownlinter",
+                "DavidAnson.vscode-markdownlint", // Markdownlint
                 "ms-python.python", // Python extension
                 "ms-python.debugpy", // Debugpy extension for Python   
                 "ms-python.vscode-pylance", // Pylance extension for Python
