@@ -9,7 +9,7 @@ export default tseslint.config(
     },
     js.configs.recommended,
     ...tseslint.configs.recommended,
-    reactHooks.configs["recommended-latest"],
+    reactHooks.configs.recommended,
     reactRefresh.configs.vite,
     {
         languageOptions: {
