@@ -24,7 +24,7 @@ class ToastManager {
     this.listeners.forEach((listener) => listener([...this.toasts]));
   }
 
-  show(message: string, type: ToastType = "error", duration?: number) {
+  show(message: string, type: ToastType, duration?: number) {
     const toast: ToastMessage = {
       id: this.nextId++,
       message,
