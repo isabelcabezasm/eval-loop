@@ -7,8 +7,10 @@ import { ExcelFileUpload } from "@/components/ExcelFileUpload";
 import { InputText } from "@/components/InputText";
 import { Overlay } from "@/components/Overlay";
 import { TextArea } from "@/components/TextArea";
+import { ToastContainer } from "@/components/Toast";
 import "@/styles/App.css";
 import { Citation, TextChunk, useApi } from "@/utils/api";
+import { useToast } from "@/utils/useToast";
 
 const assistant = "assistant";
 const user = "user";
@@ -57,6 +59,7 @@ function App() {
   const [realityFile, setRealityFile] = useState<File | undefined>(undefined);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const apiClient = useApi();
+  const { toasts, removeToast } = useToast();
   const addUserMessage = (text: string) => {
     setMessages((msgs: ChatMessage[]) => [...msgs, { role: user, content: text }]);
   };
@@ -131,6 +134,7 @@ function App() {
   };
   return (
     <div className="app-container">
+      <ToastContainer toasts={toasts} onClose={removeToast} />
       {/* Context Setup Step */}
       <ContentBlock boxed cssModule={{ container: "setup-section" }}>
         <div className="section-header">
