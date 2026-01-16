@@ -1,0 +1,26 @@
+.textarea-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.textarea-label {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.87);
+}
+
+.custom-textarea {
+  padding: 0.6em 1em;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.87);
+  font-family: inherit;
+  font-size: 1em;
+  resize: vertical;
+}
+
+.custom-textarea:focus {
+  outline: none;
+  border-color: #646cff;
+}

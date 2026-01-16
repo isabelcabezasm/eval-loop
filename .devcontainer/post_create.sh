@@ -43,6 +43,10 @@ if [ ! -f ".env" ]; then
     cp .env.template .env
 fi
 
+# Install npm dependencies for the UI
+echo "📦 Installing npm dependencies..."
+npm install
+
 echo "✅ Development environment setup complete!"
 echo ""
 echo "🎯 Next steps:"

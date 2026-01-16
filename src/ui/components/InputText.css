@@ -1,0 +1,19 @@
+.custom-input {
+  padding: 0.6em 1em;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.87);
+  font-family: inherit;
+  font-size: 1em;
+}
+
+.custom-input:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+.custom-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -26,7 +26,14 @@ def azure_chat_openai():
 def chat_agent() -> ChatAgent:
     """Create the ChatAgent with system prompt."""
     system_prompt = (root() / "src/core/prompts/system_prompt.md").read_text()
-    return azure_chat_openai().create_agent(instructions=system_prompt)
+    return azure_chat_openai().create_agent(
+        name="Constitutional QA Assistant",
+        instructions=system_prompt,
+        description=(
+            "AI assistant specialized in banking and economic matters "
+            "with constitutional grounding"
+        ),
+    )
 
 
 @cache

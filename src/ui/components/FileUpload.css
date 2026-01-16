@@ -1,0 +1,75 @@
+.file-upload {
+  margin: 1rem 0;
+}
+
+.file-upload-label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.87);
+}
+
+.file-upload-dropzone {
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.file-upload-dropzone:hover {
+  border-color: #646cff;
+  background-color: rgba(100, 108, 255, 0.05);
+}
+
+.file-upload.compact .file-upload-dropzone {
+  padding: 1rem;
+}
+
+.file-upload-dropzone p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.file-upload-dropzone :global(.browse-link) {
+  color: #646cff;
+  text-decoration: underline;
+}
+
+.file-list {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.file-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.file-name {
+  color: rgba(255, 255, 255, 0.87);
+  font-weight: 500;
+}
+
+.file-size {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9em;
+}
+
+.file-remove {
+  background-color: transparent;
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+  padding: 0.4em 0.8em;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.file-remove:hover {
+  background-color: rgba(255, 107, 107, 0.1);
+}

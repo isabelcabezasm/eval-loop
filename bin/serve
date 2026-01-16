@@ -24,8 +24,10 @@ case "$1" in
     # Start backend server with uvicorn
     # --host 0.0.0.0: Listen on all network interfaces (accessible from host)
     # --reload: Auto-reload on code changes
-    # --port 8080: Listen on port 8080
-    uv run uvicorn api.main:app --host 0.0.0.0 --reload --port 8080
+    # Port can be configured via API_PORT env var (defaults to 8080)
+    API_PORT="${API_PORT:-8080}"
+    echo "Starting backend on port $API_PORT..."
+    uv run uvicorn api.main:app --host 0.0.0.0 --reload --port "$API_PORT"
     ;;
   fe)
     # Start frontend development server

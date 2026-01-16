@@ -47,6 +47,107 @@
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/src"
             }
+        },
+        {
+            "name": "Debug Vitest Tests",
+            "type": "node",
+            "request": "launch",
+            "autoAttachChildProcesses": true,
+            "skipFiles": [
+                "<node_internals>/**",
+                "**/node_modules/**"
+            ],
+            "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
+            "args": [
+                "run"
+            ],
+            "smartStep": true,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Start Frontend Dev Server",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/src/ui",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "dev"
+            ],
+            "console": "integratedTerminal",
+            "serverReadyAction": {
+                "pattern": "Local:.*http://127.0.0.1:([0-9]+)",
+                "uriFormat": "http://127.0.0.1:%s",
+                "action": "debugWithEdge"
+            }
+        },
+        {
+            "name": "Debug Frontend (Edge)",
+            "type": "msedge",
+            "request": "launch",
+            "url": "http://127.0.0.1:8007",
+            "webRoot": "${workspaceFolder}/src/ui",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "/@/*": "${webRoot}/*"
+            }
+        },
+        {
+            "name": "Debug Backend API (Port 8080)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "api.main:app",
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "8080",
+                "--reload"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src",
+                "API_PORT": "8080"
+            },
+            "justMyCode": false
+        },
+        {
+            "name": "Debug Backend API (Port 8081)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "api.main:app",
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "8081",
+                "--reload"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src",
+                "API_PORT": "8081"
+            },
+            "justMyCode": false
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Debug Full Stack",
+            "configurations": [
+                "Debug Backend API (Port 8080)",
+                "Start Frontend Dev Server"
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "fullstack",
+                "order": 1
+            },
+            "stopAll": true
         }
     ]
 }
