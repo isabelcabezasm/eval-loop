@@ -3,6 +3,8 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { defineConfig, loadEnv } from "vite";
 
+import { alias } from "./src/ui/alias.config";
+
 const isDev = "VSCODE_PROXY_URI" in process.env;
 
 // VS Code dev container proxy path override
@@ -86,9 +88,7 @@ export default defineConfig(({ mode }) => {
         base: assetsBaseUrl,
         envPrefix: ["VITE_"],
         resolve: {
-            alias: {
-                "@": path.resolve(__dirname, "./src/ui/")
-            }
+            alias
         }
     };
 });
