@@ -36,8 +36,8 @@ interface AnswerRequest {
   context: string;
   question: string;
   history: Message[];
-  reality: string | null; // Base64 encoded Excel file
-  debugConstitution: string | null; // Base64 encoded Excel file
+  reality: string | null; // Base64 encoded JSON file
+  debugConstitution: string | null; // Base64 encoded JSON file
 }
 export function useApi(): ApiClient {
   const apiBaseUrl = import.meta.env.API_BASE_URL || "http://127.0.0.1:8080/api/";
@@ -82,7 +82,7 @@ export class HttpError extends Error {
     this.body = body;
   }
 }
-export class ApiError extends Error {}
+export class ApiError extends Error { }
 async function readFileAsBase64(file: File): Promise<string> {
   // Note the FileReader API does not exist in node, hence we can't unit test this function.
   return new Promise((resolve, reject) => {
