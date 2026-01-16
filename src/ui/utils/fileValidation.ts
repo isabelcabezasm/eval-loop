@@ -10,6 +10,3 @@ export function validateJsonFile(files: File[]): File | string {
   }
   return file;
 }
-
-// Deprecated: kept for backward compatibility
-export const validateExcelFile = validateJsonFile;
