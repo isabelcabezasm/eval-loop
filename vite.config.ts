@@ -1,4 +1,3 @@
-// Taken from https://devcloud.ubs.net/ubs/gf/risk/risk-platforms/groupwide-risk-platforms/model-dev-core-platform/risklab-international/AA45436-RISKLAB/risklab-lite/-/blob/main/vite.config.ts?ref_type=heads
 import react from "@vitejs/plugin-react";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
