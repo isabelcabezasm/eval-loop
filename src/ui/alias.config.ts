@@ -6,5 +6,5 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Shared alias configuration for Vite and Vitest
 // Single source of truth to prevent inconsistencies
 export const alias = {
-    "@": path.resolve(__dirname, "./")
+  "@": path.resolve(__dirname, "./")
 };
