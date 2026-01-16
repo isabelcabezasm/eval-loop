@@ -5,8 +5,7 @@
     "[python]": {
         "editor.defaultFormatter": "ms-python.autopep8",
         "editor.codeActionsOnSave": {
-            "source.organizeImports": "explicit",
-            "source.fixAll.ruff": "explicit"
+            "source.organizeImports": "explicit"
         }
     },
     "editor.formatOnSave": true,
