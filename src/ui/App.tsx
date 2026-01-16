@@ -73,46 +73,51 @@ function App() {
   };
   const streamAnswer = async (question: string) => {
     setStreamingBot(true);
-    // Convert ChatMessage[] to Message[] for API (raw content only)
-    const response = apiClient.answer(
-      question,
-      context,
-      messages.map((msg) => ({
-        role: msg.role,
-        content: msg.content ?? ""
-      })),
-      debugConstitution,
-      realityFile
-    );
-    // Add a new response message
-    setMessages((msgs: ChatMessage[]) => [...msgs, { role: assistant, content: "", chunks: [] }]);
-    for await (const chunk of response) {
-      let content = "";
-      if (chunk.type === "text") {
-        content = chunk.text;
+    try {
+      // Convert ChatMessage[] to Message[] for API (raw content only)
+      const response = apiClient.answer(
+        question,
+        context,
+        messages.map((msg) => ({
+          role: msg.role,
+          content: msg.content ?? ""
+        })),
+        debugConstitution,
+        realityFile
+      );
+      // Add a new response message
+      setMessages((msgs: ChatMessage[]) => [...msgs, { role: assistant, content: "", chunks: [] }]);
+      for await (const chunk of response) {
+        let content = "";
+        if (chunk.type === "text") {
+          content = chunk.text;
+        }
+        if (chunk.type === "axiom_citation" || chunk.type === "reality_citation") {
+          content = `[${chunk.id}]`;
+          // Add to citations store and update chunks
+          setCitations((prev) => ({
+            ...prev,
+            [chunk.id]: chunk
+          }));
+        }
+        setMessages((msgs: ChatMessage[]) => {
+          const answerMessage = msgs.at(-1);
+          if (!answerMessage) throw new Error("No answer message");
+          return [
+            ...msgs.slice(0, -1),
+            {
+              ...answerMessage,
+              content: answerMessage.content + content,
+              chunks: [...(answerMessage.chunks || []), chunk]
+            }
+          ];
+        });
       }
-      if (chunk.type === "axiom_citation" || chunk.type === "reality_citation") {
-        content = `[${chunk.id}]`;
-        // Add to citations store and update chunks
-        setCitations((prev) => ({
-          ...prev,
-          [chunk.id]: chunk
-        }));
-      }
-      setMessages((msgs: ChatMessage[]) => {
-        const answerMessage = msgs.at(-1);
-        if (!answerMessage) throw new Error("No answer message");
-        return [
-          ...msgs.slice(0, -1),
-          {
-            ...answerMessage,
-            content: answerMessage.content + content,
-            chunks: [...(answerMessage.chunks || []), chunk]
-          }
-        ];
-      });
+    } catch (error) {
+      console.error("Error while streaming answer:", error);
+    } finally {
+      setStreamingBot(false);
     }
-    setStreamingBot(false);
   };
   const handleSend = async () => {
     if (!input.trim() || streamingBot || !isContextLocked) return;
