@@ -1,3 +1,5 @@
+import { toastManager } from "@/utils/toastManager";
+
 export function error(message: string) {
-  alert(message);
+  toastManager.error(message);
 }
