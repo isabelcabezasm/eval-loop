@@ -1,5 +1,5 @@
 diff --git a/node_modules/vite/dist/node/chunks/dep-827b23df.js b/node_modules/vite/dist/node/chunks/dep-827b23df.js
-index 0cfbf36..cd40680 100644
+index 0cfbf36..d33cd0d 100644
 --- a/node_modules/vite/dist/node/chunks/dep-827b23df.js
 +++ b/node_modules/vite/dist/node/chunks/dep-827b23df.js
 @@ -12494,7 +12494,7 @@ async function resolveServerUrls(server, options, config) {
@@ -7,7 +7,7 @@ index 0cfbf36..cd40680 100644
      const protocol = options.https ? 'https' : 'http';
      const port = address.port;
 -    const base = config.rawBase === './' || config.rawBase === '' ? '/' : config.rawBase;
-+    return next();
++    const base = '/';
      if (hostname.host !== undefined && !wildcardHosts.has(hostname.host)) {
          let hostnameName = hostname.name;
          // ipv6 host
