@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { Button } from "@/components/Button";
 import { ContentBlock } from "@/components/ContentBlock";
 import { InputText } from "@/components/InputText";
-import { ExcelFileUpload } from "@/components/JsonFileUpload";
+import { JsonFileUpload } from "@/components/JsonFileUpload";
 import { Overlay } from "@/components/Overlay";
 import { TextArea } from "@/components/TextArea";
 import { ToastContainer } from "@/components/Toast";
@@ -162,7 +162,7 @@ function App() {
               width="100%"
             />
             <div className="reality-upload-section">
-              <ExcelFileUpload
+              <JsonFileUpload
                 label="Reality File"
                 file={realityFile}
                 onFileUpdate={setRealityFile}
@@ -175,7 +175,7 @@ function App() {
                   Upload a debug constitution instead of the default one. This is for testing
                   purposes only and will override the default constitution.
                 </p>
-                <ExcelFileUpload
+                <JsonFileUpload
                   label="Debug Constitution"
                   file={debugConstitution}
                   onFileUpdate={setDebugConstitution}
@@ -210,57 +210,57 @@ function App() {
                     <div className={`message-bubble ${msg.role}`}>
                       {msg.chunks && msg.content
                         ? (() => {
-                            // Parse the complete content with markdown
-                            const parsedContent = parseMarkdownBold(msg.content);
+                          // Parse the complete content with markdown
+                          const parsedContent = parseMarkdownBold(msg.content);
 
-                            // Replace citation placeholders with actual citation links
-                            const result: ReactNode[] = [];
+                          // Replace citation placeholders with actual citation links
+                          const result: ReactNode[] = [];
 
-                            parsedContent.forEach((part, i) => {
-                              if (typeof part === "string") {
-                                if (part.length === 0) return; // Skip empty strings
+                          parsedContent.forEach((part, i) => {
+                            if (typeof part === "string") {
+                              if (part.length === 0) return; // Skip empty strings
 
-                                // Split by citation patterns [id]
-                                const citationRegex = /\[([^\]]+)\]/g;
-                                let lastIdx = 0;
-                                let citMatch;
-                                let hasCitations = false;
+                              // Split by citation patterns [id]
+                              const citationRegex = /\[([^\]]+)\]/g;
+                              let lastIdx = 0;
+                              let citMatch;
+                              let hasCitations = false;
 
-                                while ((citMatch = citationRegex.exec(part)) !== null) {
-                                  hasCitations = true;
-                                  // Add text before citation
-                                  if (citMatch.index > lastIdx) {
-                                    const textBefore = part.slice(lastIdx, citMatch.index);
-                                    if (textBefore) result.push(textBefore);
-                                  }
-                                  // Add citation link
-                                  const citId = citMatch[1];
-                                  result.push(
-                                    <a
-                                      key={`cit-${i}-${citId}`}
-                                      onClick={() => handleShowCitation(citId)}
-                                      className="citation-link"
-                                    >
-                                      [{citId}]
-                                    </a>
-                                  );
-                                  lastIdx = citationRegex.lastIndex;
+                              while ((citMatch = citationRegex.exec(part)) !== null) {
+                                hasCitations = true;
+                                // Add text before citation
+                                if (citMatch.index > lastIdx) {
+                                  const textBefore = part.slice(lastIdx, citMatch.index);
+                                  if (textBefore) result.push(textBefore);
                                 }
+                                // Add citation link
+                                const citId = citMatch[1];
+                                result.push(
+                                  <a
+                                    key={`cit-${i}-${citId}`}
+                                    onClick={() => handleShowCitation(citId)}
+                                    className="citation-link"
+                                  >
+                                    [{citId}]
+                                  </a>
+                                );
+                                lastIdx = citationRegex.lastIndex;
+                              }
 
-                                // Add remaining text or the whole string if no citations
-                                if (hasCitations && lastIdx < part.length) {
-                                  const remaining = part.slice(lastIdx);
-                                  if (remaining) result.push(remaining);
-                                } else if (!hasCitations) {
-                                  result.push(part);
-                                }
-                              } else if (part !== undefined && part !== null) {
+                              // Add remaining text or the whole string if no citations
+                              if (hasCitations && lastIdx < part.length) {
+                                const remaining = part.slice(lastIdx);
+                                if (remaining) result.push(remaining);
+                              } else if (!hasCitations) {
                                 result.push(part);
                               }
-                            });
+                            } else if (part !== undefined && part !== null) {
+                              result.push(part);
+                            }
+                          });
 
-                            return result.filter((r) => r !== undefined && r !== null && r !== "");
-                          })()
+                          return result.filter((r) => r !== undefined && r !== null && r !== "");
+                        })()
                         : msg.content}
                     </div>
                   </div>

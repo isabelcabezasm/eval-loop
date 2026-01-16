@@ -42,6 +42,3 @@ export function JsonFileUpload({
     </>
   );
 }
-
-// Deprecated: kept for backward compatibility
-export const ExcelFileUpload = JsonFileUpload;
