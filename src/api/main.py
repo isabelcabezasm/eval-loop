@@ -3,7 +3,7 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -70,17 +70,18 @@ if static_directory := os.getenv(STATIC_FILES_DIRECTORY_ENV_VAR):
     async def serve_spa(full_path: str):
         # Don't serve SPA for API or asset requests
         if full_path.startswith("api/") or full_path.startswith("assets/"):
-            return {"error": "Not found"}
+            raise HTTPException(status_code=404, detail="Not found")
 
         index_file = static_path / "index.html"
         if index_file.exists():
             return FileResponse(index_file)
-        return {
-            "error": (
+        raise HTTPException(
+            status_code=404,
+            detail=(
                 "Frontend not built. "
                 "Set STATIC_FILES_DIRECTORY to the built frontend."
-            )
-        }
+            ),
+        )
 
 
 if __name__ == "__main__":

@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 
 import { Button } from "@/components/Button";
 import { ContentBlock } from "@/components/ContentBlock";
-import { ExcelFileUpload } from "@/components/ExcelFileUpload";
 import { InputText } from "@/components/InputText";
+import { ExcelFileUpload } from "@/components/JsonFileUpload";
 import { Overlay } from "@/components/Overlay";
 import { TextArea } from "@/components/TextArea";
 import { ToastContainer } from "@/components/Toast";
