@@ -18,6 +18,7 @@ from core.qa_engine import (
     AxiomCitationContent,
     RealityCitationContent,
     TextContent,
+    UserSessionId,
 )
 from core.reality import RealityStatement, load_from_json
 
@@ -55,6 +56,7 @@ class GenerateRequest(BaseModel):
 
     question: str = Field(..., min_length=1, description="Question to answer")
     reality: Reality | None = Field(description="Current reality (optional)")
+    session_id: str = Field(..., min_length=1, description="User session ID")
 
 
 class TextResponse(BaseModel):
@@ -114,7 +116,9 @@ async def generate(request: GenerateRequest):
 
     async def stream():
         async for chunk in qa_engine().invoke_streaming(
-            question=request.question, reality=request.reality or []
+            question=request.question,
+            session_id=UserSessionId(request.session_id),
+            reality=request.reality or [],
         ):
             match chunk:
                 case TextContent():
@@ -135,11 +139,17 @@ async def generate(request: GenerateRequest):
     return StreamingResponse(stream(), media_type="application/x-ndjson")
 
 
-@router.post("/restart")
-async def restart():
-    """Reset the conversation thread.
+class RestartRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
 
-    Clears the conversation history by creating a new thread.
+    session_id: str = Field(..., min_length=1, description="User session ID")
+
+
+@router.post("/restart")
+async def restart(request: RestartRequest):
+    """Reset the conversation thread for a specific session.
+
+    Clears the conversation history by creating a new thread for the session.
     """
-    await qa_engine().reset_thread()
+    await qa_engine().reset_thread(UserSessionId(request.session_id))
     return {"status": "ok"}

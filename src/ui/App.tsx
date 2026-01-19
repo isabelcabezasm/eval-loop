@@ -10,6 +10,7 @@ import { TextArea } from "@/components/TextArea";
 import { ToastContainer } from "@/components/Toast";
 import "@/styles/App.css";
 import { Citation, TextChunk, useApi } from "@/utils/api";
+import { generateSessionId } from "@/utils/session";
 import { useToast } from "@/utils/useToast";
 
 const assistant = "assistant";
@@ -57,6 +58,7 @@ function App() {
   const [citations, setCitations] = useState<Record<string, Citation>>({});
   const [debugConstitution, setDebugConstitution] = useState<File | undefined>(undefined);
   const [realityFile, setRealityFile] = useState<File | undefined>(undefined);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const apiClient = useApi();
   const { toasts, removeToast } = useToast();
@@ -72,6 +74,7 @@ function App() {
     setSelectedCitation(null);
   };
   const streamAnswer = async (question: string) => {
+    if (!sessionId) return;
     setStreamingBot(true);
     try {
       // Convert ChatMessage[] to Message[] for API (raw content only)
@@ -82,6 +85,7 @@ function App() {
           role: msg.role,
           content: msg.content ?? ""
         })),
+        sessionId,
         debugConstitution,
         realityFile
       );
@@ -128,19 +132,23 @@ function App() {
   };
   const handleStartChat = () => {
     if (context.trim()) {
+      setSessionId(generateSessionId());
       setIsContextLocked(true);
     }
   };
   const handleClearAndRestart = async () => {
-    try {
-      await apiClient.restart();
-    } catch (error) {
-      console.error("Error while restarting:", error);
+    if (sessionId) {
+      try {
+        await apiClient.restart(sessionId);
+      } catch (error) {
+        console.error("Error while restarting:", error);
+      }
     }
     setMessages([]);
     setCitations({});
     setIsContextLocked(false);
     setInput("");
+    setSessionId(null);
   };
   return (
     <div className="app-container">

@@ -20,8 +20,12 @@ from core.qa_engine import (
     QAEngine,
     RealityCitationContent,
     TextContent,
+    UserSessionId,
 )
 from core.reality import RealityId, RealityStatement
+
+# Test session ID for use across tests
+TEST_SESSION_ID = UserSessionId("test-session-123")
 
 
 async def async_iter[T](iterable: Iterable[T]) -> AsyncIterator[T]:
@@ -77,7 +81,7 @@ async def test_invoke_stream_calls_agent_correctly():
 
     # Act
     result: list[TextContent | CitationContent] = []
-    async for chunk in subject.invoke_streaming("Test question"):
+    async for chunk in subject.invoke_streaming("Test question", TEST_SESSION_ID):
         result.append(chunk)
 
     # Assert
@@ -93,7 +97,9 @@ async def test_invoke_stream_calls_agent_correctly():
 async def act_invoke_stream(qa_engine: QAEngine) -> str:
     """Helper to collect all text from streaming invoke."""
     result = ""
-    async for chunk in qa_engine.invoke_streaming(question="Test question"):
+    async for chunk in qa_engine.invoke_streaming(
+        question="Test question", session_id=TEST_SESSION_ID
+    ):
         if isinstance(chunk, TextContent):
             result += chunk.content
         else:
@@ -104,7 +110,9 @@ async def act_invoke_stream(qa_engine: QAEngine) -> str:
 
 async def act_invoke(qa_engine: QAEngine) -> str:
     """Helper to test non-streaming invoke."""
-    result = await qa_engine.invoke(question="Test question")
+    result = await qa_engine.invoke(
+        question="Test question", session_id=TEST_SESSION_ID
+    )
     return result
 
 
@@ -173,7 +181,7 @@ async def test_formatted_prompt_includes_constitution():
     qa_engine = QAEngine(mock_agent, axiom_store)
 
     # Act
-    async for _ in qa_engine.invoke_streaming("Test question?"):
+    async for _ in qa_engine.invoke_streaming("Test question?", TEST_SESSION_ID):
         pass
 
     # Assert that the prompt includes constitution data
@@ -266,7 +274,9 @@ async def test_invoke_streaming_citation_handling(
 
     # Act
     result: list[TextContent | CitationContent] = []
-    async for chunk in qa_engine.invoke_streaming(question="Test question"):
+    async for chunk in qa_engine.invoke_streaming(
+        question="Test question", session_id=TEST_SESSION_ID
+    ):
         result.append(chunk)
 
     # Assert
@@ -307,7 +317,9 @@ async def test_invoke_streaming_empty_response():
 
     # Act
     result: list[TextContent | CitationContent] = []
-    async for chunk in qa_engine.invoke_streaming(question="Test question"):
+    async for chunk in qa_engine.invoke_streaming(
+        question="Test question", session_id=TEST_SESSION_ID
+    ):
         result.append(chunk)
 
     # Assert
@@ -345,7 +357,9 @@ async def test_invoke_streaming_multiple_citations_in_sequence():
 
     # Act
     result: list[TextContent | CitationContent] = []
-    async for chunk in qa_engine.invoke_streaming(question="Test question"):
+    async for chunk in qa_engine.invoke_streaming(
+        question="Test question", session_id=TEST_SESSION_ID
+    ):
         result.append(chunk)
 
     # Assert
@@ -387,7 +401,9 @@ async def test_invoke_collects_all_streaming_chunks():
     qa_engine = QAEngine(mock_agent, axiom_store)
 
     # Act
-    result = await qa_engine.invoke(question="Test question")
+    result = await qa_engine.invoke(
+        question="Test question", session_id=TEST_SESSION_ID
+    )
 
     # Assert
     assert result == "This is a test [A-001]"
@@ -661,7 +677,7 @@ async def test_invoke_streaming_handles_chunk_scenarios(
     # Act
     result: list[TextContent | CitationContent] = []
     async for chunk in qa_engine.invoke_streaming(
-        question="Test", reality=reality
+        question="Test", session_id=TEST_SESSION_ID, reality=reality
     ):
         result.append(chunk)
 
@@ -693,8 +709,8 @@ async def test_invoke_streaming_handles_chunk_scenarios(
 # =============================================================================
 
 
-def test_qa_engine_creates_thread_on_init():
-    """Test that QAEngine creates a new thread during initialization."""
+def test_qa_engine_creates_thread_on_first_access():
+    """Test that QAEngine creates a new thread when first accessed for a session."""
     # Arrange
     mock_agent = MagicMock(spec=ChatAgent)
     mock_thread = MagicMock(spec=AgentThread)
@@ -706,14 +722,15 @@ def test_qa_engine_creates_thread_on_init():
 
     # Act
     qa_engine = QAEngine(mock_agent, axiom_store)
+    thread = qa_engine.get_thread(TEST_SESSION_ID)
 
     # Assert
     mock_agent.get_new_thread.assert_called_once()
-    assert qa_engine.thread is mock_thread
+    assert thread is mock_thread
 
 
 def test_qa_engine_thread_is_accessible():
-    """Test that the thread attribute is accessible after initialization."""
+    """Test that the thread is accessible via get_thread after creation."""
     # Arrange
     mock_agent = create_mock_agent_with_thread()
     axiom_store = AxiomStore(
@@ -722,15 +739,16 @@ def test_qa_engine_thread_is_accessible():
 
     # Act
     qa_engine = QAEngine(mock_agent, axiom_store)
+    thread = qa_engine.get_thread(TEST_SESSION_ID)
 
     # Assert
-    assert qa_engine.thread is not None
-    assert isinstance(qa_engine.thread, MagicMock)
+    assert thread is not None
+    assert isinstance(thread, MagicMock)
 
 
 @pytest.mark.asyncio
 async def test_qa_engine_uses_thread_for_streaming():
-    """Test that invoke_streaming uses the thread created during init."""
+    """Test that invoke_streaming uses the thread created for the session."""
     # Arrange
     mock_agent = MagicMock(spec=ChatAgent)
     mock_thread = MagicMock(spec=AgentThread)
@@ -751,7 +769,9 @@ async def test_qa_engine_uses_thread_for_streaming():
     qa_engine = QAEngine(mock_agent, axiom_store)
 
     # Act
-    async for _ in qa_engine.invoke_streaming(question="Test?"):
+    async for _ in qa_engine.invoke_streaming(
+        question="Test?", session_id=TEST_SESSION_ID
+    ):
         pass
 
     # Assert - verify the thread was passed to run_stream
@@ -761,7 +781,7 @@ async def test_qa_engine_uses_thread_for_streaming():
 
 @pytest.mark.asyncio
 async def test_qa_engine_uses_thread_for_invoke():
-    """Test that invoke uses the thread created during init."""
+    """Test that invoke uses the thread created for the session."""
     # Arrange
     mock_agent = MagicMock(spec=ChatAgent)
     mock_thread = MagicMock(spec=AgentThread)
@@ -782,15 +802,15 @@ async def test_qa_engine_uses_thread_for_invoke():
     qa_engine = QAEngine(mock_agent, axiom_store)
 
     # Act
-    _ = await qa_engine.invoke(question="Test?")
+    _ = await qa_engine.invoke(question="Test?", session_id=TEST_SESSION_ID)
 
     # Assert - verify the thread was passed to run_stream
     assert "thread" in captured_kwargs
     assert captured_kwargs["thread"] is mock_thread
 
 
-def test_multiple_qa_engines_get_separate_threads():
-    """Test that each QAEngine instance gets its own thread."""
+def test_different_sessions_get_separate_threads():
+    """Test that different session IDs get separate threads."""
     # Arrange
     mock_agent = MagicMock(spec=ChatAgent)
     mock_thread_1 = MagicMock(spec=AgentThread)
@@ -802,14 +822,38 @@ def test_multiple_qa_engines_get_separate_threads():
     )
 
     # Act
-    qa_engine_1 = QAEngine(mock_agent, axiom_store)
-    qa_engine_2 = QAEngine(mock_agent, axiom_store)
+    qa_engine = QAEngine(mock_agent, axiom_store)
+    session_1 = UserSessionId("session-1")
+    session_2 = UserSessionId("session-2")
+    thread_1 = qa_engine.get_thread(session_1)
+    thread_2 = qa_engine.get_thread(session_2)
 
     # Assert
-    assert qa_engine_1.thread is mock_thread_1
-    assert qa_engine_2.thread is mock_thread_2
-    assert qa_engine_1.thread is not qa_engine_2.thread
+    assert thread_1 is mock_thread_1
+    assert thread_2 is mock_thread_2
+    assert thread_1 is not thread_2
     assert mock_agent.get_new_thread.call_count == 2
+
+
+def test_same_session_gets_same_thread():
+    """Test that the same session ID always returns the same thread."""
+    # Arrange
+    mock_agent = MagicMock(spec=ChatAgent)
+    mock_thread = MagicMock(spec=AgentThread)
+    mock_agent.get_new_thread.return_value = mock_thread
+
+    axiom_store = AxiomStore(
+        [Axiom(id=AxiomId("A-001"), description="description")]
+    )
+
+    # Act
+    qa_engine = QAEngine(mock_agent, axiom_store)
+    thread_1 = qa_engine.get_thread(TEST_SESSION_ID)
+    thread_2 = qa_engine.get_thread(TEST_SESSION_ID)
+
+    # Assert - should be the same thread, only one created
+    assert thread_1 is thread_2
+    mock_agent.get_new_thread.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -841,11 +885,15 @@ async def test_invoke_streaming_twice_passes_same_thread_with_store_true():
     )
     qa_engine = QAEngine(mock_agent, axiom_store)
 
-    # Act - call invoke_streaming twice
-    async for _ in qa_engine.invoke_streaming(question="First question"):
+    # Act - call invoke_streaming twice with same session
+    async for _ in qa_engine.invoke_streaming(
+        question="First question", session_id=TEST_SESSION_ID
+    ):
         pass
 
-    async for _ in qa_engine.invoke_streaming(question="Second question"):
+    async for _ in qa_engine.invoke_streaming(
+        question="Second question", session_id=TEST_SESSION_ID
+    ):
         pass
 
     # Assert
@@ -867,7 +915,7 @@ async def test_invoke_streaming_twice_passes_same_thread_with_store_true():
 
 @pytest.mark.asyncio
 async def test_reset_thread_creates_new_thread():
-    """Test that reset_thread creates a new thread instance."""
+    """Test that reset_thread creates a new thread instance for the session."""
     # Arrange
     mock_agent = MagicMock(spec=ChatAgent)
     mock_thread_1 = MagicMock(spec=AgentThread)
@@ -880,14 +928,16 @@ async def test_reset_thread_creates_new_thread():
     qa_engine = QAEngine(mock_agent, axiom_store)
 
     # Verify initial thread
-    assert qa_engine.thread is mock_thread_1
+    initial_thread = qa_engine.get_thread(TEST_SESSION_ID)
+    assert initial_thread is mock_thread_1
 
     # Act
-    await qa_engine.reset_thread()
+    await qa_engine.reset_thread(TEST_SESSION_ID)
 
     # Assert
-    assert qa_engine.thread is mock_thread_2
-    assert qa_engine.thread is not mock_thread_1
+    new_thread = qa_engine.get_thread(TEST_SESSION_ID)
+    assert new_thread is mock_thread_2
+    assert new_thread is not mock_thread_1
     assert mock_agent.get_new_thread.call_count == 2
 
 
@@ -916,12 +966,16 @@ async def test_reset_thread_clears_conversation_history():
     qa_engine = QAEngine(mock_agent, axiom_store)
 
     # Act - invoke, reset, then invoke again
-    async for _ in qa_engine.invoke_streaming(question="First question"):
+    async for _ in qa_engine.invoke_streaming(
+        question="First question", session_id=TEST_SESSION_ID
+    ):
         pass
 
-    await qa_engine.reset_thread()
+    await qa_engine.reset_thread(TEST_SESSION_ID)
 
-    async for _ in qa_engine.invoke_streaming(question="Second question"):
+    async for _ in qa_engine.invoke_streaming(
+        question="Second question", session_id=TEST_SESSION_ID
+    ):
         pass
 
     # Assert - the two invocations should use different threads
@@ -957,13 +1011,59 @@ async def test_reset_thread_allows_fresh_conversation():
     )
     qa_engine = QAEngine(mock_agent, axiom_store)
 
-    # Act - multiple resets
-    await qa_engine.reset_thread()
-    await qa_engine.reset_thread()
+    # Access thread first, then reset twice
+    _ = qa_engine.get_thread(TEST_SESSION_ID)
 
-    # Assert - should have created 3 threads total (1 init + 2 resets)
+    # Act - multiple resets
+    await qa_engine.reset_thread(TEST_SESSION_ID)
+    await qa_engine.reset_thread(TEST_SESSION_ID)
+
+    # Assert - should have created 3 threads total (1 initial + 2 resets)
     assert len(threads_created) == 3
-    assert qa_engine.thread is threads_created[-1]
+    assert qa_engine.get_thread(TEST_SESSION_ID) is threads_created[-1]
+
+
+@pytest.mark.asyncio
+async def test_reset_thread_only_affects_specified_session():
+    """Test that reset_thread only affects the specified session, not others."""
+    # Arrange
+    mock_agent = MagicMock(spec=ChatAgent)
+    threads_created: list[MagicMock] = []
+
+    def create_mock_thread() -> MagicMock:
+        thread = MagicMock(spec=AgentThread)
+        threads_created.append(thread)
+        return thread
+
+    mock_agent.get_new_thread.side_effect = create_mock_thread
+
+    axiom_store = AxiomStore(
+        [Axiom(id=AxiomId("A-001"), description="description")]
+    )
+    qa_engine = QAEngine(mock_agent, axiom_store)
+
+    session_1 = UserSessionId("session-1")
+    session_2 = UserSessionId("session-2")
+
+    # Create threads for both sessions
+    thread_1_before = qa_engine.get_thread(session_1)
+    thread_2 = qa_engine.get_thread(session_2)
+
+    # Act - reset only session 1
+    await qa_engine.reset_thread(session_1)
+
+    # Assert
+    thread_1_after = qa_engine.get_thread(session_1)
+    thread_2_after = qa_engine.get_thread(session_2)
+
+    # Session 1 should have a new thread
+    assert thread_1_after is not thread_1_before
+    # Session 2 should still have the same thread
+    assert thread_2_after is thread_2
+
+
+@pytest.mark.asyncio
+async def test_invoke_twice_passes_same_thread_with_store_true():
     """Test that calling invoke twice uses the same thread with store=True.
 
     This ensures conversation history is maintained across multiple calls.
@@ -991,9 +1091,13 @@ async def test_reset_thread_allows_fresh_conversation():
     )
     qa_engine = QAEngine(mock_agent, axiom_store)
 
-    # Act - call invoke twice
-    _ = await qa_engine.invoke(question="First question")
-    _ = await qa_engine.invoke(question="Second question")
+    # Act - call invoke twice with same session
+    _ = await qa_engine.invoke(
+        question="First question", session_id=TEST_SESSION_ID
+    )
+    _ = await qa_engine.invoke(
+        question="Second question", session_id=TEST_SESSION_ID
+    )
 
     # Assert
     assert len(captured_calls) == 2

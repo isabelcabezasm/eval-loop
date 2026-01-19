@@ -9,14 +9,17 @@ Agent Framework.
 import re
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, NewType
 
-from agent_framework import ChatAgent
+from agent_framework import AgentThread, ChatAgent
 from pydantic import BaseModel, computed_field
 
 from core.axiom_store import Axiom, AxiomId, AxiomStore
 from core.prompt import build_user_prompt
 from core.reality import RealityId, RealityStatement
+
+# Type-safe session identifier for per-user thread isolation
+UserSessionId = NewType("UserSessionId", str)
 
 
 class Message(BaseModel):
@@ -107,7 +110,21 @@ class QAEngine:
         super().__init__()
         self.agent = agent
         self.axiom_store = axiom_store
-        self.thread = agent.get_new_thread()
+        self._threads: dict[UserSessionId, AgentThread] = {}
+
+    def get_thread(self, session_id: UserSessionId) -> AgentThread:
+        """
+        Get or create a thread for the given session ID.
+
+        Args:
+            session_id: The user session identifier.
+
+        Returns:
+            The AgentThread for this session.
+        """
+        if session_id not in self._threads:
+            self._threads[session_id] = self.agent.get_new_thread()
+        return self._threads[session_id]
 
     async def _process_chunk(
         self,
@@ -165,7 +182,8 @@ class QAEngine:
     async def invoke(
         self,
         question: str,
-        reality: list[RealityStatement] | None = None
+        session_id: UserSessionId,
+        reality: list[RealityStatement] | None = None,
     ) -> str:
         """
         Generate AI response by collecting all streaming chunks into a
@@ -173,6 +191,7 @@ class QAEngine:
 
         Args:
             question: The user's question.
+            session_id: The user session identifier.
             reality: Optional reality statements for additional context.
 
         Returns:
@@ -180,7 +199,7 @@ class QAEngine:
         """
         # Collect all chunks from the streaming response
         result = ""
-        async for chunk in self.invoke_streaming(question, reality):
+        async for chunk in self.invoke_streaming(question, session_id, reality):
             result += chunk.content
 
         return result
@@ -188,6 +207,7 @@ class QAEngine:
     async def invoke_streaming(
         self,
         question: str,
+        session_id: UserSessionId,
         reality: list[RealityStatement] | None = None,
     ) -> AsyncIterator[TextContent | CitationContent]:
         """
@@ -201,6 +221,7 @@ class QAEngine:
 
         Args:
             question: The user's question.
+            session_id: The user session identifier.
             reality: Optional reality statements for additional context.
 
         Returns:
@@ -212,15 +233,13 @@ class QAEngine:
         # Load and format user prompt with constitution, reality, and question
         user_prompt = build_user_prompt(self.axiom_store, question, reality)
 
-        # Just for debugging: print all messages in the thread
-        # if self.thread.message_store:
-        #     for message in self.thread.message_store.messages:
-        #         print(f"[{message.role.value}]: {message.text[-100:]}")
+        # Get the thread for this session
+        thread = self.get_thread(session_id)
 
         # Create async generator for streaming chunks
         async def stream() -> AsyncIterator[str]:
             async for chunk in self.agent.run_stream(
-                user_prompt, thread=self.thread, store=True
+                user_prompt, thread=thread, store=True
             ):
                 if chunk.text:
                     yield chunk.text
@@ -247,11 +266,14 @@ class QAEngine:
                         # If reality not found, yield as plain text
                         yield TextContent(content=candidate.text)
 
-    async def reset_thread(self) -> None:
+    async def reset_thread(self, session_id: UserSessionId) -> None:
         """
-        Reset the chat thread to start a new conversation.
+        Reset the chat thread for a specific session.
 
-        This method creates a new chat thread for the agent,
-        effectively resetting the conversation history.
+        This method creates a new chat thread for the given session,
+        effectively resetting that session's conversation history.
+
+        Args:
+            session_id: The user session identifier to reset.
         """
-        self.thread = self.agent.get_new_thread()
+        self._threads[session_id] = self.agent.get_new_thread()

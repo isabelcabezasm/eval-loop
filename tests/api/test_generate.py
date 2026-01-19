@@ -25,6 +25,7 @@ def reality_base64_json(reality: list[RealityStatement]) -> str:
 class RequestFixture:
     question: str
     reality: str
+    session_id: str = "test-session-123"
 
 
 DEFAULT_REQUEST: Final = RequestFixture(
@@ -49,6 +50,7 @@ DESERIALIZATION_SUCCESS_TEST_DATA: Final = [
                     "How does inflation affect interest rates in Switzerland?"
                 ),
                 reality=REALITY,
+                session_id="test-session-123",
             )
         ),
         id="Full request payload reality",
@@ -65,6 +67,7 @@ DESERIALIZATION_SUCCESS_TEST_DATA: Final = [
                     "How does inflation affect interest rates in Switzerland?"
                 ),
                 reality=REALITY,
+                session_id="test-session-123",
             )
         ),
         id="Full request payload reality as python object",

@@ -38,6 +38,11 @@ interface AnswerRequest {
   history: Message[];
   reality: string | null; // Base64 encoded JSON file
   debugConstitution: string | null; // Base64 encoded JSON file
+  session_id: string;
+}
+
+interface RestartRequest {
+  session_id: string;
 }
 export function useApi(): ApiClient {
   const apiBaseUrl = import.meta.env.API_BASE_URL || "http://127.0.0.1:8080/api/";
@@ -82,7 +87,7 @@ export class HttpError extends Error {
     this.body = body;
   }
 }
-export class ApiError extends Error {}
+export class ApiError extends Error { }
 async function readFileAsBase64(file: File): Promise<string> {
   // Note the FileReader API does not exist in node, hence we can't unit test this function.
   return new Promise((resolve, reject) => {
@@ -108,6 +113,7 @@ export class ApiClient {
     question: string,
     reality: string,
     history: Message[],
+    sessionId: string,
     debugConstitution?: File,
     realityFile?: File
   ): AsyncGenerator<TextChunk | Citation> {
@@ -120,7 +126,8 @@ export class ApiClient {
       question,
       history,
       reality: base64EncodedReality,
-      debugConstitution: base64EncodedConstitution
+      debugConstitution: base64EncodedConstitution,
+      session_id: sessionId
     };
     const response = await fetch(new URL("generate", this.baseUrl), {
       method: "POST",
@@ -138,9 +145,16 @@ export class ApiClient {
     yield* parseChunks(response.body.pipeThrough(new TextDecoderStream()));
   }
 
-  public async restart(): Promise<void> {
+  public async restart(sessionId: string): Promise<void> {
+    const request: RestartRequest = {
+      session_id: sessionId
+    };
     const response = await fetch(new URL("restart", this.baseUrl), {
-      method: "POST"
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(request)
     });
     if (!response.ok) {
       throw new HttpError(response.status, await response.text());
