@@ -38,7 +38,8 @@ def _parse_base64(value: Any) -> bytes | object:
         return value
 
     result = TypeAdapter(  # pyright: ignore [reportUnknownVariableType]
-        Base64Bytes).validate_python(value)
+        Base64Bytes
+    ).validate_python(value)
     return result  # pyright: ignore [reportUnknownVariableType]
 
 

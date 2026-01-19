@@ -81,7 +81,8 @@ async def test_invoke_stream_calls_agent_correctly():
 
     # Act
     result: list[TextContent | CitationContent] = []
-    async for chunk in subject.invoke_streaming("Test question", TEST_SESSION_ID):
+    stream = subject.invoke_streaming("Test question", TEST_SESSION_ID)
+    async for chunk in stream:
         result.append(chunk)
 
     # Assert
@@ -181,7 +182,8 @@ async def test_formatted_prompt_includes_constitution():
     qa_engine = QAEngine(mock_agent, axiom_store)
 
     # Act
-    async for _ in qa_engine.invoke_streaming("Test question?", TEST_SESSION_ID):
+    stream = qa_engine.invoke_streaming("Test question?", TEST_SESSION_ID)
+    async for _ in stream:
         pass
 
     # Assert that the prompt includes constitution data
@@ -710,7 +712,7 @@ async def test_invoke_streaming_handles_chunk_scenarios(
 
 
 def test_qa_engine_creates_thread_on_first_access():
-    """Test that QAEngine creates a new thread when first accessed for a session."""
+    """Test that QAEngine creates a new thread when first accessed."""
     # Arrange
     mock_agent = MagicMock(spec=ChatAgent)
     mock_thread = MagicMock(spec=AgentThread)
@@ -858,7 +860,7 @@ def test_same_session_gets_same_thread():
 
 @pytest.mark.asyncio
 async def test_invoke_streaming_twice_passes_same_thread_with_store_true():
-    """Test that calling invoke_streaming twice uses the same thread with store=True.
+    """Test invoke_streaming twice uses same thread with store=True.
 
     This ensures conversation history is maintained across multiple calls.
     """
@@ -943,7 +945,7 @@ async def test_reset_thread_creates_new_thread():
 
 @pytest.mark.asyncio
 async def test_reset_thread_clears_conversation_history():
-    """Test that reset_thread effectively clears conversation by using new thread."""
+    """Test that reset_thread clears conversation by using new thread."""
     # Arrange
     mock_agent = MagicMock(spec=ChatAgent)
     mock_thread_1 = MagicMock(spec=AgentThread)
@@ -1025,7 +1027,7 @@ async def test_reset_thread_allows_fresh_conversation():
 
 @pytest.mark.asyncio
 async def test_reset_thread_only_affects_specified_session():
-    """Test that reset_thread only affects the specified session, not others."""
+    """Test that reset_thread only affects the specified session."""
     # Arrange
     mock_agent = MagicMock(spec=ChatAgent)
     threads_created: list[MagicMock] = []

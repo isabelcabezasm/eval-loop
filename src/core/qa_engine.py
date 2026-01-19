@@ -199,7 +199,8 @@ class QAEngine:
         """
         # Collect all chunks from the streaming response
         result = ""
-        async for chunk in self.invoke_streaming(question, session_id, reality):
+        stream = self.invoke_streaming(question, session_id, reality)
+        async for chunk in stream:
             result += chunk.content
 
         return result

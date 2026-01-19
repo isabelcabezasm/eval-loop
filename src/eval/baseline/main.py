@@ -1,4 +1,7 @@
+import uuid
+
 from core.dependencies import qa_engine
+from core.qa_engine import UserSessionId
 from eval.main import run_evaluation_with_qa_function
 
 
@@ -22,7 +25,9 @@ async def generate_answer(*, query: str) -> str:
         Generated answer for: What is Python?
     """
     print(f"Generating answer for query: {query}")
-    answer = await qa_engine().invoke(question=query)
+    # Each evaluation query uses a fresh session (no conversation context)
+    session_id = UserSessionId(str(uuid.uuid4()))
+    answer = await qa_engine().invoke(question=query, session_id=session_id)
     return answer
 
 
