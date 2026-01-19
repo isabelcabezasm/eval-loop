@@ -7,5 +7,5 @@
  * @returns A unique session identifier string
  */
 export function generateSessionId(): string {
-    return crypto.randomUUID();
+  return crypto.randomUUID();
 }

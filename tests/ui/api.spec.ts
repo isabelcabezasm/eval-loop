@@ -195,11 +195,17 @@ describe("ApiClient", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn<typeof fetch>(() =>
-        Promise.resolve({ status: 500, text: () => Promise.resolve("server error"), ok: false } as Response)
+        Promise.resolve({
+          status: 500,
+          text: () => Promise.resolve("server error"),
+          ok: false
+        } as Response)
       )
     );
     const subject = apiClient();
     // act + assert
-    await expect(subject.restart(TEST_SESSION_ID)).rejects.toThrowError(new HttpError(500, "server error"));
+    await expect(subject.restart(TEST_SESSION_ID)).rejects.toThrowError(
+      new HttpError(500, "server error")
+    );
   });
 });
