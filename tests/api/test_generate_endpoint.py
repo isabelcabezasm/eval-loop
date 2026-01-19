@@ -44,6 +44,18 @@ def reality_as_base64():
     return reality_base64
 
 
+def collect_text_from_response(response: httpx.Response) -> str:
+    """Extract and concatenate text chunks from an NDJSON response."""
+    text_chunks: list[str] = []
+    for line in response.text.strip().split("\n"):
+        if not line.strip():
+            continue
+        obj = json.loads(line)
+        if obj.get("type") == "text":
+            text_chunks.append(obj["text"])
+    return "".join(text_chunks)
+
+
 @pytest.mark.integration
 @pytest.mark.parametrize(
     "reality",
@@ -199,18 +211,8 @@ def test_session_isolation_between_users(test_client: TestClient):
     ).raise_for_status()
 
     # Collect responses
-    def collect_text(response: httpx.Response) -> str:
-        text_chunks: list[str] = []
-        for line in response.text.strip().split("\n"):
-            if not line.strip():
-                continue
-            obj = json.loads(line)
-            if obj.get("type") == "text":
-                text_chunks.append(obj["text"])
-        return "".join(text_chunks)
-
-    text_1 = collect_text(response_1)
-    text_2 = collect_text(response_2)
+    text_1 = collect_text_from_response(response_1)
+    text_2 = collect_text_from_response(response_2)
 
     # Both responses should have substantial content
     assert len(text_1) > 20, "User 1 should receive a meaningful response"
@@ -234,7 +236,7 @@ def test_session_isolation_between_users(test_client: TestClient):
         "/api/generate", json=followup_request
     ).raise_for_status()
 
-    followup_text = collect_text(followup_response)
+    followup_text = collect_text_from_response(followup_response)
     assert len(followup_text) > 20, (
         "User 2 should still receive a meaningful response after "
         "User 1's session was restarted"
@@ -274,18 +276,8 @@ def test_same_session_maintains_thread(test_client: TestClient):
     ).raise_for_status()
 
     # Both should return valid responses
-    def collect_text(response: httpx.Response) -> str:
-        text_chunks: list[str] = []
-        for line in response.text.strip().split("\n"):
-            if not line.strip():
-                continue
-            obj = json.loads(line)
-            if obj.get("type") == "text":
-                text_chunks.append(obj["text"])
-        return "".join(text_chunks)
-
-    text_1 = collect_text(response_1)
-    text_2 = collect_text(response_2)
+    text_1 = collect_text_from_response(response_1)
+    text_2 = collect_text_from_response(response_2)
 
     assert len(text_1) > 20, "First question should get a meaningful response"
     assert len(text_2) > 20, "Follow-up should get a meaningful response"
