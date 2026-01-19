@@ -139,3 +139,21 @@ def test_generate_endpoint(
     assert len(combined_text) > 20, (
         "Response should contain substantial text content"
     )
+
+
+@pytest.mark.integration
+def test_restart_endpoint(test_client: TestClient):
+    """
+    Test the /api/restart endpoint.
+
+    This test validates:
+    - The endpoint returns a successful status
+    - The response contains the expected structure
+    """
+    # act
+    response = test_client.post("/api/restart")
+
+    # assert
+    assert response.status_code == 200
+    data = response.json()
+    assert data == {"status": "ok"}

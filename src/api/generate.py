@@ -113,10 +113,9 @@ async def generate(request: GenerateRequest):
     """
 
     async def stream():
-        streaming_result = await qa_engine().invoke_streaming(
+        async for chunk in qa_engine().invoke_streaming(
             question=request.question, reality=request.reality or []
-        )
-        async for chunk in streaming_result.chunks:
+        ):
             match chunk:
                 case TextContent():
                     response = TextResponse(text=chunk.content)
@@ -134,3 +133,13 @@ async def generate(request: GenerateRequest):
             yield f"{response.model_dump_json()}\n"
 
     return StreamingResponse(stream(), media_type="application/x-ndjson")
+
+
+@router.post("/restart")
+async def restart():
+    """Reset the conversation thread.
+
+    Clears the conversation history by creating a new thread.
+    """
+    await qa_engine().reset_thread()
+    return {"status": "ok"}

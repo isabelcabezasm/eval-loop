@@ -137,4 +137,13 @@ export class ApiClient {
     }
     yield* parseChunks(response.body.pipeThrough(new TextDecoderStream()));
   }
+
+  public async restart(): Promise<void> {
+    const response = await fetch(new URL("restart", this.baseUrl), {
+      method: "POST"
+    });
+    if (!response.ok) {
+      throw new HttpError(response.status, await response.text());
+    }
+  }
 }
