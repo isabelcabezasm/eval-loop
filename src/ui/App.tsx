@@ -140,15 +140,26 @@ function App() {
     if (sessionId) {
       try {
         await apiClient.restart(sessionId);
+        setMessages([]);
+        setCitations({});
+        setIsContextLocked(false);
+        setInput("");
+        setSessionId(null);
       } catch (error) {
         console.error("Error while restarting:", error);
+        addToast({
+          type: "error",
+          message: "Failed to restart the chat. Please try again."
+        });
+        return;
       }
+    } else {
+      setMessages([]);
+      setCitations({});
+      setIsContextLocked(false);
+      setInput("");
+      setSessionId(null);
     }
-    setMessages([]);
-    setCitations({});
-    setIsContextLocked(false);
-    setInput("");
-    setSessionId(null);
   };
   return (
     <div className="app-container">
