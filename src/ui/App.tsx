@@ -76,7 +76,8 @@ function App() {
   };
   const streamAnswer = async (question: string) => {
     if (!sessionId) {
-      throw new Error("Cannot stream answer without a valid session ID");
+      error("Cannot stream answer without a valid session ID");
+      return;
     }
     setStreamingBot(true);
     try {
