@@ -5,9 +5,11 @@ This example shows how to:
 1. Use the streaming API to get real-time responses
 2. Handle text content and axiom citations
 3. Process citations to display axiom information
+4. Use session IDs for conversation isolation
 """
 
 import asyncio
+import uuid
 
 from core.axiom_store import Axiom
 from core.dependencies import qa_engine
@@ -15,6 +17,7 @@ from core.qa_engine import (
     AxiomCitationContent,
     RealityCitationContent,
     TextContent,
+    UserSessionId,
 )
 
 
@@ -22,6 +25,10 @@ async def main():
     """Demonstrate streaming response with citation handling."""
     # Initialize the QA engine
     engine = qa_engine()
+
+    # Generate a unique session ID for this conversation
+    # Each session ID maintains its own conversation thread
+    session_id = UserSessionId(str(uuid.uuid4()))
 
     # Example question
     question = (
@@ -31,6 +38,7 @@ async def main():
 
     print("Streaming Response Example")
     print("=" * 80)
+    print(f"Session ID: {session_id}")
     print(f"Question: {question}\n")
     print("Response:")
     print("-" * 80)
@@ -38,8 +46,9 @@ async def main():
     # Collect citations for reference section
     axiom_citations: list[Axiom] = []
 
-    # Stream the response
-    async for chunk in engine.invoke_streaming(question):
+    # Stream the response with session_id for thread isolation
+    stream = engine.invoke_streaming(question, session_id=session_id)
+    async for chunk in stream:
         match chunk:
             case TextContent():
                 # Print text content as it arrives

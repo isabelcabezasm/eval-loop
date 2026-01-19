@@ -164,6 +164,28 @@ const handleClearAndRestart = async () => {
 
 ---
 
+## Phase 4: Documentation and Examples ✅
+
+**Completed:** January 19, 2026
+
+### Changes Made
+
+1. **Sample Scripts Updated**
+   - `samples/basic_qa.py` - Added session_id generation and usage
+   - `samples/basic_qa_streaming.py` - Added session_id for thread isolation
+   - `samples/conversation_qa.py` (new) - Multi-turn conversation example showing:
+     - Context retention across questions
+     - Session isolation between different sessions
+     - Thread reset functionality
+
+2. **README.md Updated**
+   - Added "Conversation History" section explaining the feature
+   - Documented session isolation mechanism
+   - Documented API endpoints (`POST /api/generate`, `POST /api/restart`)
+   - Added Python usage examples
+
+---
+
 ## Historical Notes: Original Thread-Based Approach
 
 The sections below document the original implementation approach that was

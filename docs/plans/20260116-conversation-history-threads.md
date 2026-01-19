@@ -176,19 +176,20 @@ Verify the implementation works:
 
 ---
 
-## Phase 4: Documentation and Examples
+## Phase 4: Documentation and Examples ✅
 
-### Task 4.1: Update Sample Scripts
+### Task 4.1: Update Sample Scripts ✅
 
-- [ ] Update `samples/basic_qa.py` to demonstrate conversation usage
-- [ ] Create `samples/conversation_qa.py` with multi-turn example
-- [ ] Show session management patterns
+- [x] Update `samples/basic_qa.py` to demonstrate conversation usage
+- [x] Update `samples/basic_qa_streaming.py` with session_id
+- [x] Create `samples/conversation_qa.py` with multi-turn example
+- [x] Show session management patterns
 
-### Task 4.2: Update README
+### Task 4.2: Update README ✅
 
-- [ ] Add conversation history section to README.md
-- [ ] Document API endpoints for session management
-- [ ] Include usage examples
+- [x] Add conversation history section to README.md
+- [x] Document API endpoints for session management
+- [x] Include usage examples
 
 ---
 
