@@ -10,6 +10,8 @@ import { TextArea } from "@/components/TextArea";
 import { ToastContainer } from "@/components/Toast";
 import "@/styles/App.css";
 import { Citation, TextChunk, useApi } from "@/utils/api";
+import { error } from "@/utils/error";
+import { generateSessionId } from "@/utils/session";
 import { useToast } from "@/utils/useToast";
 
 const assistant = "assistant";
@@ -57,6 +59,7 @@ function App() {
   const [citations, setCitations] = useState<Record<string, Citation>>({});
   const [debugConstitution, setDebugConstitution] = useState<File | undefined>(undefined);
   const [realityFile, setRealityFile] = useState<File | undefined>(undefined);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const apiClient = useApi();
   const { toasts, removeToast } = useToast();
@@ -72,16 +75,16 @@ function App() {
     setSelectedCitation(null);
   };
   const streamAnswer = async (question: string) => {
+    if (!sessionId) {
+      error("Cannot stream answer without a valid session ID");
+      return;
+    }
     setStreamingBot(true);
     try {
-      // Convert ChatMessage[] to Message[] for API (raw content only)
       const response = apiClient.answer(
         question,
         context,
-        messages.map((msg) => ({
-          role: msg.role,
-          content: msg.content ?? ""
-        })),
+        sessionId,
         debugConstitution,
         realityFile
       );
@@ -120,7 +123,7 @@ function App() {
     }
   };
   const handleSend = async () => {
-    if (!input.trim() || streamingBot || !isContextLocked) return;
+    if (!input.trim() || streamingBot || !isContextLocked || !sessionId) return;
     addUserMessage(input);
     setInput("");
     await streamAnswer(input);
@@ -128,14 +131,33 @@ function App() {
   };
   const handleStartChat = () => {
     if (context.trim()) {
+      setSessionId(generateSessionId());
       setIsContextLocked(true);
     }
   };
-  const handleClearAndRestart = () => {
-    setMessages([]);
-    setCitations({});
-    setIsContextLocked(false);
-    setInput("");
+  const handleClearAndRestart = async () => {
+    const resetLocalState = () => {
+      setMessages([]);
+      setCitations({});
+      setIsContextLocked(false);
+      setInput("");
+      setSessionId(null);
+    };
+
+    if (sessionId) {
+      try {
+        await apiClient.restart(sessionId);
+        resetLocalState();
+      } catch (err) {
+        console.error("Error while restarting:", err);
+        error(
+          "Failed to restart the chat on the server. Starting a fresh local session. If problems persist, please refresh the page."
+        );
+        resetLocalState();
+      }
+    } else {
+      resetLocalState();
+    }
   };
   return (
     <div className="app-container">

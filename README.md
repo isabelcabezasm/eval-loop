@@ -139,3 +139,77 @@ The system automatically handles this - just ensure:
 1. Backend is running and has written `.api-config.json`
 2. Frontend is started after the backend
 3. Check VS Code's PORTS tab to see actual forwarded ports
+
+## Conversation History
+
+The system supports multi-turn conversations with per-session thread isolation.
+Each conversation session maintains its own context, allowing:
+
+- **Context retention**: Follow-up questions can reference previous exchanges
+- **Session isolation**: Different users/tabs have independent conversations
+- **Thread reset**: Clear conversation history without affecting other sessions
+
+### How It Works
+
+1. **Frontend** generates a unique `session_id` (UUID v4) when user starts a chat
+2. **Backend** maintains a `dict[UserSessionId, AgentThread]` mapping
+3. Same session ID always uses the same thread (conversation continuity)
+4. Different session IDs use separate threads (user isolation)
+5. "Clear & Restart" resets only that session's thread
+
+### API Endpoints
+
+#### POST /api/generate
+
+Generate a response with conversation context.
+
+**Request:**
+```json
+{
+  "question": "How does inflation affect interest rates?",
+  "reality": null,
+  "session_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Response:** NDJSON stream of text chunks and citations
+
+#### POST /api/restart
+
+Reset a session's conversation thread.
+
+**Request:**
+```json
+{
+  "session_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+### Python Examples
+
+```python
+import uuid
+from core.dependencies import qa_engine
+from core.qa_engine import UserSessionId
+
+engine = qa_engine()
+session_id = UserSessionId(str(uuid.uuid4()))
+
+# First question
+response1 = await engine.invoke(
+    "What is Switzerland's inflation rate?",
+    session_id=session_id
+)
+
+# Follow-up question (retains context from first question)
+response2 = await engine.invoke(
+    "How might that affect mortgage rates?",
+    session_id=session_id
+)
+
+# Reset conversation
+await engine.reset_thread(session_id)
+```
+
+See `samples/conversation_qa.py` for a complete multi-turn conversation example.
+

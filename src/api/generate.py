@@ -18,6 +18,7 @@ from core.qa_engine import (
     AxiomCitationContent,
     RealityCitationContent,
     TextContent,
+    UserSessionId,
 )
 from core.reality import RealityStatement, load_from_json
 
@@ -36,7 +37,10 @@ def _parse_base64(value: Any) -> bytes | object:
         # along the pipeline
         return value
 
-    return TypeAdapter(Base64Bytes).validate_python(value)  # pyright: ignore [reportUnknownVariableType]
+    result = TypeAdapter(  # pyright: ignore [reportUnknownVariableType]
+        Base64Bytes
+    ).validate_python(value)
+    return result  # pyright: ignore [reportUnknownVariableType]
 
 
 # Note the following about the ordering of the validators:
@@ -53,6 +57,7 @@ class GenerateRequest(BaseModel):
 
     question: str = Field(..., min_length=1, description="Question to answer")
     reality: Reality | None = Field(description="Current reality (optional)")
+    session_id: str = Field(..., min_length=1, description="User session ID")
 
 
 class TextResponse(BaseModel):
@@ -112,7 +117,9 @@ async def generate(request: GenerateRequest):
 
     async def stream():
         async for chunk in qa_engine().invoke_streaming(
-            question=request.question, reality=request.reality or []
+            question=request.question,
+            session_id=UserSessionId(request.session_id),
+            reality=request.reality or [],
         ):
             match chunk:
                 case TextContent():
@@ -131,3 +138,19 @@ async def generate(request: GenerateRequest):
             yield f"{response.model_dump_json()}\n"
 
     return StreamingResponse(stream(), media_type="application/x-ndjson")
+
+
+class RestartRequest(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    session_id: str = Field(..., min_length=1, description="User session ID")
+
+
+@router.post("/restart")
+async def restart(request: RestartRequest):
+    """Reset the conversation thread for a specific session.
+
+    Clears the conversation history by creating a new thread for the session.
+    """
+    await qa_engine().reset_thread(UserSessionId(request.session_id))
+    return {"status": "ok"}

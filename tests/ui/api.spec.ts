@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ApiClient, ApiError, Citation, HttpError, TextChunk, parseChunks } from "@/utils/api";
 
+const TEST_SESSION_ID = "test-session-123";
+
 type Chunk = TextChunk | Citation;
 async function accumulate<T>(generator: AsyncGenerator<T>): Promise<T[]> {
   const result: T[] = [];
@@ -108,7 +110,7 @@ describe("ApiClient", () => {
     const subject = apiClient(new URL("http://localhost:8000/api/"));
     // act
     const result = await accumulate(
-      subject.answer("some question", "some reality", [{ role: "user", content: "hello" }])
+      subject.answer("some question", "some reality", TEST_SESSION_ID)
     );
     // assert
     expect(result).toEqual([{ type: "text", text: "foo" }]);
@@ -119,9 +121,9 @@ describe("ApiClient", () => {
     expect(JSON.parse(actualBody)).toEqual({
       context: "some reality",
       question: "some question",
-      history: [{ role: "user", content: "hello" }],
       reality: null,
-      debugConstitution: null
+      debugConstitution: null,
+      session_id: TEST_SESSION_ID
     });
     expect(actualHeaders).toEqual({ "Content-Type": "application/json" });
   });
@@ -135,7 +137,7 @@ describe("ApiClient", () => {
     );
     const subject = apiClient();
     // act + assert
-    await expect(accumulate(subject.answer("", "", []))).rejects.toThrowError(
+    await expect(accumulate(subject.answer("", "", TEST_SESSION_ID))).rejects.toThrowError(
       new HttpError(400, "some error")
     );
   });
@@ -147,7 +149,7 @@ describe("ApiClient", () => {
     );
     const subject = apiClient();
     // act + assert
-    await expect(accumulate(subject.answer("", "", []))).rejects.toThrowError(
+    await expect(accumulate(subject.answer("", "", TEST_SESSION_ID))).rejects.toThrowError(
       new ApiError("No response body received from API.")
     );
   });
@@ -160,8 +162,50 @@ describe("ApiClient", () => {
     );
     const subject = apiClient();
     // act + assert
-    await expect(accumulate(subject.answer("", "", []))).rejects.toThrowError(
+    await expect(accumulate(subject.answer("", "", TEST_SESSION_ID))).rejects.toThrowError(
       new ApiError("Received an unexpected response from the API.")
+    );
+  });
+
+  it("should call restart with session_id in request body", async () => {
+    // arrange
+    const fetch = vi.fn<typeof fetch>(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ status: "ok" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" }
+        })
+      )
+    );
+    vi.stubGlobal("fetch", fetch);
+    const subject = apiClient(new URL("http://localhost:8000/api/"));
+    // act
+    await subject.restart(TEST_SESSION_ID);
+    // assert
+    const [[actualUrl, { method: actualMethod, body: actualBody, headers: actualHeaders }]] =
+      fetch.mock.calls;
+    expect(actualUrl).toEqual(new URL("http://localhost:8000/api/restart"));
+    expect(actualMethod).toEqual("POST");
+    expect(JSON.parse(actualBody)).toEqual({ session_id: TEST_SESSION_ID });
+    expect(actualHeaders).toEqual({ "Content-Type": "application/json" });
+  });
+
+  it("should throw HttpError when restart fails", async () => {
+    // arrange
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>(() =>
+        Promise.resolve({
+          status: 500,
+          text: () => Promise.resolve("server error"),
+          ok: false
+        } as Response)
+      )
+    );
+    const subject = apiClient();
+    // act + assert
+    await expect(subject.restart(TEST_SESSION_ID)).rejects.toThrowError(
+      new HttpError(500, "server error")
     );
   });
 });

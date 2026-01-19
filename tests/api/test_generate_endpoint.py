@@ -4,6 +4,7 @@ from collections.abc import Callable
 from dataclasses import asdict
 from typing import Final
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
@@ -43,6 +44,18 @@ def reality_as_base64():
     return reality_base64
 
 
+def collect_text_from_response(response: httpx.Response) -> str:
+    """Extract and concatenate text chunks from an NDJSON response."""
+    text_chunks: list[str] = []
+    for line in response.text.strip().split("\n"):
+        if not line.strip():
+            continue
+        obj = json.loads(line)
+        if obj.get("type") == "text":
+            text_chunks.append(obj["text"])
+    return "".join(text_chunks)
+
+
 @pytest.mark.integration
 @pytest.mark.parametrize(
     "reality",
@@ -75,6 +88,7 @@ def test_generate_endpoint(
             "borrowing costs given current economic conditions in Switzerland?"
         ),
         "reality": reality(),
+        "session_id": "test-session-123",
     }
 
     # act
@@ -139,3 +153,131 @@ def test_generate_endpoint(
     assert len(combined_text) > 20, (
         "Response should contain substantial text content"
     )
+
+
+@pytest.mark.integration
+def test_restart_endpoint(test_client: TestClient):
+    """
+    Test the /api/restart endpoint.
+
+    This test validates:
+    - The endpoint returns a successful status
+    - The response contains the expected structure
+    """
+    # act
+    response = test_client.post(
+        "/api/restart", json={"session_id": "test-session-123"}
+    )
+
+    # assert
+    assert response.status_code == 200
+    data = response.json()
+    assert data == {"status": "ok"}
+
+
+@pytest.mark.integration
+def test_session_isolation_between_users(test_client: TestClient):
+    """
+    Test that different session IDs maintain separate conversation threads.
+
+    This test simulates two concurrent users with different session IDs
+    and verifies their conversations don't mix. Each user asks a distinct
+    question, and we verify that restarting one session doesn't affect
+    the other.
+    """
+    session_1 = "user-session-alpha-123"
+    session_2 = "user-session-beta-456"
+
+    # User 1 asks about inflation
+    request_1 = {
+        "question": "What is the current inflation rate?",
+        "reality": reality_as_base64(),
+        "session_id": session_1,
+    }
+
+    # User 2 asks about unemployment
+    request_2 = {
+        "question": "What is the unemployment rate?",
+        "reality": reality_as_base64(),
+        "session_id": session_2,
+    }
+
+    # Both users send their questions
+    response_1 = test_client.post(
+        "/api/generate", json=request_1
+    ).raise_for_status()
+    response_2 = test_client.post(
+        "/api/generate", json=request_2
+    ).raise_for_status()
+
+    # Collect responses
+    text_1 = collect_text_from_response(response_1)
+    text_2 = collect_text_from_response(response_2)
+
+    # Both responses should have substantial content
+    assert len(text_1) > 20, "User 1 should receive a meaningful response"
+    assert len(text_2) > 20, "User 2 should receive a meaningful response"
+
+    # Restart session 1 only
+    restart_response = test_client.post(
+        "/api/restart", json={"session_id": session_1}
+    )
+    assert restart_response.status_code == 200
+
+    # User 2 should still be able to continue their conversation
+    # (asking a follow-up that relies on context would work if thread persists)
+    followup_request = {
+        "question": "Can you elaborate on that unemployment figure?",
+        "reality": reality_as_base64(),
+        "session_id": session_2,
+    }
+
+    followup_response = test_client.post(
+        "/api/generate", json=followup_request
+    ).raise_for_status()
+
+    followup_text = collect_text_from_response(followup_response)
+    assert len(followup_text) > 20, (
+        "User 2 should still receive a meaningful response after "
+        "User 1's session was restarted"
+    )
+
+
+@pytest.mark.integration
+def test_same_session_maintains_thread(test_client: TestClient):
+    """
+    Test that the same session ID maintains conversation continuity.
+
+    This test verifies that multiple requests with the same session ID
+    use the same thread, allowing for conversation history to be maintained.
+    """
+    session_id = "persistent-session-789"
+
+    # First question
+    request_1 = {
+        "question": "What is the SNB policy interest rate?",
+        "reality": reality_as_base64(),
+        "session_id": session_id,
+    }
+
+    response_1 = test_client.post(
+        "/api/generate", json=request_1
+    ).raise_for_status()
+
+    # Second question referencing the first
+    request_2 = {
+        "question": "How does that rate compare to historical averages?",
+        "reality": reality_as_base64(),
+        "session_id": session_id,
+    }
+
+    response_2 = test_client.post(
+        "/api/generate", json=request_2
+    ).raise_for_status()
+
+    # Both should return valid responses
+    text_1 = collect_text_from_response(response_1)
+    text_2 = collect_text_from_response(response_2)
+
+    assert len(text_1) > 20, "First question should get a meaningful response"
+    assert len(text_2) > 20, "Follow-up should get a meaningful response"

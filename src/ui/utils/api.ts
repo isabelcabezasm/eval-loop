@@ -28,16 +28,16 @@ export type TextChunk = z.infer<typeof ApiTextChunk>;
 export type Citation =
   | z.infer<typeof ApiAxiomCitationChunk>
   | z.infer<typeof ApiRealityCitationChunk>;
-export interface Message {
-  role: "user" | "assistant";
-  content: string;
-}
 interface AnswerRequest {
   context: string;
   question: string;
-  history: Message[];
   reality: string | null; // Base64 encoded JSON file
   debugConstitution: string | null; // Base64 encoded JSON file
+  session_id: string;
+}
+
+interface RestartRequest {
+  session_id: string;
 }
 export function useApi(): ApiClient {
   const apiBaseUrl = import.meta.env.API_BASE_URL || "http://127.0.0.1:8080/api/";
@@ -107,20 +107,20 @@ export class ApiClient {
   public async *answer(
     question: string,
     reality: string,
-    history: Message[],
+    sessionId: string,
     debugConstitution?: File,
     realityFile?: File
   ): AsyncGenerator<TextChunk | Citation> {
-    const base64EncodedConstitution = debugConstitution
-      ? await readFileAsBase64(debugConstitution)
-      : null;
-    const base64EncodedReality = realityFile ? await readFileAsBase64(realityFile) : null;
+    const base64EncodedConstitution =
+      debugConstitution instanceof File ? await readFileAsBase64(debugConstitution) : null;
+    const base64EncodedReality =
+      realityFile instanceof File ? await readFileAsBase64(realityFile) : null;
     const request: AnswerRequest = {
       context: reality,
       question,
-      history,
       reality: base64EncodedReality,
-      debugConstitution: base64EncodedConstitution
+      debugConstitution: base64EncodedConstitution,
+      session_id: sessionId
     };
     const response = await fetch(new URL("generate", this.baseUrl), {
       method: "POST",
@@ -136,5 +136,21 @@ export class ApiClient {
       throw new ApiError("No response body received from API.");
     }
     yield* parseChunks(response.body.pipeThrough(new TextDecoderStream()));
+  }
+
+  public async restart(sessionId: string): Promise<void> {
+    const request: RestartRequest = {
+      session_id: sessionId
+    };
+    const response = await fetch(new URL("restart", this.baseUrl), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(request)
+    });
+    if (!response.ok) {
+      throw new HttpError(response.status, await response.text());
+    }
   }
 }
