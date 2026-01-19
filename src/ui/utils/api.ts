@@ -87,7 +87,7 @@ export class HttpError extends Error {
     this.body = body;
   }
 }
-export class ApiError extends Error { }
+export class ApiError extends Error {}
 async function readFileAsBase64(file: File): Promise<string> {
   // Note the FileReader API does not exist in node, hence we can't unit test this function.
   return new Promise((resolve, reject) => {
