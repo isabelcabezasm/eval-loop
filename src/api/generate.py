@@ -36,7 +36,9 @@ def _parse_base64(value: Any) -> bytes | object:
         # along the pipeline
         return value
 
-    return TypeAdapter(Base64Bytes).validate_python(value)  # pyright: ignore [reportUnknownVariableType]
+    result = TypeAdapter(  # pyright: ignore [reportUnknownVariableType]
+        Base64Bytes).validate_python(value)
+    return result  # pyright: ignore [reportUnknownVariableType]
 
 
 # Note the following about the ordering of the validators:
@@ -111,9 +113,10 @@ async def generate(request: GenerateRequest):
     """
 
     async def stream():
-        async for chunk in qa_engine().invoke_streaming(
+        streaming_result = await qa_engine().invoke_streaming(
             question=request.question, reality=request.reality or []
-        ):
+        )
+        async for chunk in streaming_result.chunks:
             match chunk:
                 case TextContent():
                     response = TextResponse(text=chunk.content)

@@ -7,6 +7,7 @@ Agent Framework.
 """
 
 import re
+import uuid
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from typing import Literal
@@ -77,6 +78,14 @@ class RealityCitationCandidate:
 
 
 CitationCandidate = AxiomCitationCandidate | RealityCitationCandidate
+
+
+@dataclass
+class InvokeStreamingResult:
+    """Result from invoke_streaming containing chunks and thread_id."""
+
+    chunks: AsyncIterator[TextContent | CitationContent]
+    thread_id: str
 
 
 class QAEngine:
@@ -150,7 +159,7 @@ class QAEngine:
                         text=match.group(0),
                     )
 
-                buffer = buffer[match.end() :]
+                buffer = buffer[match.end():]
 
             # Yield buffer if it doesn't contain an incomplete citation
             if buffer and _is_complete_or_no_citation(buffer):
@@ -162,8 +171,11 @@ class QAEngine:
             yield TextContent(content=buffer)
 
     async def invoke(
-        self, question: str, reality: list[RealityStatement] | None = None
-    ) -> str:
+        self,
+        question: str,
+        reality: list[RealityStatement] | None = None,
+        thread_id: str | None = None,
+    ) -> tuple[str, str]:
         """
         Generate AI response by collecting all streaming chunks into a
         single string.
@@ -171,25 +183,29 @@ class QAEngine:
         Args:
             question: The user's question.
             reality: Optional reality statements for additional context.
+            thread_id: Optional thread ID to continue a conversation.
+                When None, a new thread is created.
 
         Returns:
-            Complete AI response with citations formatted as text.
-
-        Note:
-            TODO: Add support for conversation history with Message list.
+            Tuple of (response_text, thread_id) where thread_id can be used
+            for subsequent requests to continue the conversation.
         """
         # Collect all chunks from the streaming response
         result = ""
-        async for chunk in self.invoke_streaming(question, reality):
+        streaming_result = await self.invoke_streaming(
+            question, reality, thread_id
+        )
+        async for chunk in streaming_result.chunks:
             result += chunk.content
 
-        return result
+        return result, streaming_result.thread_id
 
     async def invoke_streaming(
         self,
         question: str,
         reality: list[RealityStatement] | None = None,
-    ) -> AsyncIterator[TextContent | CitationContent]:
+        thread_id: str | None = None,
+    ) -> InvokeStreamingResult:
         """
         Stream AI response with real-time citation detection and
         validation.
@@ -202,13 +218,11 @@ class QAEngine:
         Args:
             question: The user's question.
             reality: Optional reality statements for additional context.
+            thread_id: Optional thread ID to continue a conversation.
+                When None, a new thread is created.
 
-        Yields:
-            TextContent, AxiomCitationContent, or
-            RealityCitationContent chunks.
-
-        Note:
-            TODO: Add support for conversation history with Message list.
+        Returns:
+            InvokeStreamingResult containing the chunks iterator and thread_id.
         """
         # Create local reality store for this request
         reality_store = {s.id: s for s in reality} if reality else {}
@@ -216,30 +230,52 @@ class QAEngine:
         # Load and format user prompt with constitution, reality, and question
         user_prompt = build_user_prompt(self.axiom_store, question, reality)
 
+        # Use provided thread_id or generate a new one if framework
+        # doesn't provide it. The agent framework may return thread_id
+        # on chunks when it supports threading.
+        result_thread_id: str = thread_id or str(uuid.uuid4())
+
         # Create async generator for streaming chunks
         async def stream() -> AsyncIterator[str]:
-            async for chunk in self.agent.run_stream(user_prompt):
+            nonlocal result_thread_id
+            async for chunk in self.agent.run_stream(
+                user_prompt, thread_id=thread_id
+            ):
+                # Capture thread_id from first chunk if framework provides it
+                chunk_thread_id = getattr(chunk, "thread_id", None)
+                if chunk_thread_id is not None:
+                    result_thread_id = chunk_thread_id
                 if chunk.text:
                     yield chunk.text
 
-        # Process chunks for citations
-        async for chunk in self._process_chunk(stream()):
-            match chunk:
-                case TextContent():
-                    yield chunk
-                case AxiomCitationCandidate() as candidate:
-                    # Validate axiom citation against store
-                    axiom = self.axiom_store.get(id=candidate.id)
-                    if axiom:
-                        yield AxiomCitationContent(item=axiom)
-                    else:
-                        # If axiom not found, yield as plain text
-                        yield TextContent(content=candidate.text)
-                case RealityCitationCandidate() as candidate:
-                    # Validate reality citation against local store
-                    reality_statement = reality_store.get(candidate.id)
-                    if reality_statement:
-                        yield RealityCitationContent(item=reality_statement)
-                    else:
-                        # If reality not found, yield as plain text
-                        yield TextContent(content=candidate.text)
+        # Create async generator for processed chunks with citations
+        async def process_chunks() -> AsyncIterator[
+            TextContent | CitationContent
+        ]:
+            async for chunk in self._process_chunk(stream()):
+                match chunk:
+                    case TextContent():
+                        yield chunk
+                    case AxiomCitationCandidate() as candidate:
+                        # Validate axiom citation against store
+                        axiom = self.axiom_store.get(id=candidate.id)
+                        if axiom:
+                            yield AxiomCitationContent(item=axiom)
+                        else:
+                            # If axiom not found, yield as plain text
+                            yield TextContent(content=candidate.text)
+                    case RealityCitationCandidate() as candidate:
+                        # Validate reality citation against local store
+                        reality_statement = reality_store.get(candidate.id)
+                        if reality_statement:
+                            yield RealityCitationContent(
+                                item=reality_statement
+                            )
+                        else:
+                            # If reality not found, yield as plain text
+                            yield TextContent(content=candidate.text)
+
+        return InvokeStreamingResult(
+            chunks=process_chunks(),
+            thread_id=result_thread_id,
+        )
