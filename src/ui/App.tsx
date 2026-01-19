@@ -136,25 +136,27 @@ function App() {
     }
   };
   const handleClearAndRestart = async () => {
-    if (sessionId) {
-      try {
-        await apiClient.restart(sessionId);
-        setMessages([]);
-        setCitations({});
-        setIsContextLocked(false);
-        setInput("");
-        setSessionId(null);
-      } catch (err) {
-        console.error("Error while restarting:", err);
-        error("Failed to restart the chat. Please try again.");
-        return;
-      }
-    } else {
+    const resetLocalState = () => {
       setMessages([]);
       setCitations({});
       setIsContextLocked(false);
       setInput("");
       setSessionId(null);
+    };
+
+    if (sessionId) {
+      try {
+        await apiClient.restart(sessionId);
+        resetLocalState();
+      } catch (err) {
+        console.error("Error while restarting:", err);
+        error(
+          "Failed to restart the chat on the server. Starting a fresh local session. If problems persist, please refresh the page."
+        );
+        resetLocalState();
+      }
+    } else {
+      resetLocalState();
     }
   };
   return (
