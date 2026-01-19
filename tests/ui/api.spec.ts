@@ -110,7 +110,7 @@ describe("ApiClient", () => {
     const subject = apiClient(new URL("http://localhost:8000/api/"));
     // act
     const result = await accumulate(
-      subject.answer("some question", "some reality", [{ role: "user", content: "hello" }], TEST_SESSION_ID)
+      subject.answer("some question", "some reality", TEST_SESSION_ID)
     );
     // assert
     expect(result).toEqual([{ type: "text", text: "foo" }]);
@@ -121,7 +121,6 @@ describe("ApiClient", () => {
     expect(JSON.parse(actualBody)).toEqual({
       context: "some reality",
       question: "some question",
-      history: [{ role: "user", content: "hello" }],
       reality: null,
       debugConstitution: null,
       session_id: TEST_SESSION_ID
@@ -138,7 +137,7 @@ describe("ApiClient", () => {
     );
     const subject = apiClient();
     // act + assert
-    await expect(accumulate(subject.answer("", "", [], TEST_SESSION_ID))).rejects.toThrowError(
+    await expect(accumulate(subject.answer("", "", TEST_SESSION_ID))).rejects.toThrowError(
       new HttpError(400, "some error")
     );
   });
@@ -150,7 +149,7 @@ describe("ApiClient", () => {
     );
     const subject = apiClient();
     // act + assert
-    await expect(accumulate(subject.answer("", "", [], TEST_SESSION_ID))).rejects.toThrowError(
+    await expect(accumulate(subject.answer("", "", TEST_SESSION_ID))).rejects.toThrowError(
       new ApiError("No response body received from API.")
     );
   });
@@ -163,7 +162,7 @@ describe("ApiClient", () => {
     );
     const subject = apiClient();
     // act + assert
-    await expect(accumulate(subject.answer("", "", [], TEST_SESSION_ID))).rejects.toThrowError(
+    await expect(accumulate(subject.answer("", "", TEST_SESSION_ID))).rejects.toThrowError(
       new ApiError("Received an unexpected response from the API.")
     );
   });

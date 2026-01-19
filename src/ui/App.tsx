@@ -10,6 +10,7 @@ import { TextArea } from "@/components/TextArea";
 import { ToastContainer } from "@/components/Toast";
 import "@/styles/App.css";
 import { Citation, TextChunk, useApi } from "@/utils/api";
+import { error } from "@/utils/error";
 import { generateSessionId } from "@/utils/session";
 import { useToast } from "@/utils/useToast";
 
@@ -77,14 +78,9 @@ function App() {
     if (!sessionId) return;
     setStreamingBot(true);
     try {
-      // Convert ChatMessage[] to Message[] for API (raw content only)
       const response = apiClient.answer(
         question,
         context,
-        messages.map((msg) => ({
-          role: msg.role,
-          content: msg.content ?? ""
-        })),
         sessionId,
         debugConstitution,
         realityFile
@@ -145,12 +141,9 @@ function App() {
         setIsContextLocked(false);
         setInput("");
         setSessionId(null);
-      } catch (error) {
-        console.error("Error while restarting:", error);
-        addToast({
-          type: "error",
-          message: "Failed to restart the chat. Please try again."
-        });
+      } catch (err) {
+        console.error("Error while restarting:", err);
+        error("Failed to restart the chat. Please try again.");
         return;
       }
     } else {

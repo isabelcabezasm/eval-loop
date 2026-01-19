@@ -28,14 +28,9 @@ export type TextChunk = z.infer<typeof ApiTextChunk>;
 export type Citation =
   | z.infer<typeof ApiAxiomCitationChunk>
   | z.infer<typeof ApiRealityCitationChunk>;
-export interface Message {
-  role: "user" | "assistant";
-  content: string;
-}
 interface AnswerRequest {
   context: string;
   question: string;
-  history: Message[];
   reality: string | null; // Base64 encoded JSON file
   debugConstitution: string | null; // Base64 encoded JSON file
   session_id: string;
@@ -87,7 +82,7 @@ export class HttpError extends Error {
     this.body = body;
   }
 }
-export class ApiError extends Error {}
+export class ApiError extends Error { }
 async function readFileAsBase64(file: File): Promise<string> {
   // Note the FileReader API does not exist in node, hence we can't unit test this function.
   return new Promise((resolve, reject) => {
@@ -112,19 +107,17 @@ export class ApiClient {
   public async *answer(
     question: string,
     reality: string,
-    history: Message[],
     sessionId: string,
     debugConstitution?: File,
     realityFile?: File
   ): AsyncGenerator<TextChunk | Citation> {
-    const base64EncodedConstitution = debugConstitution
-      ? await readFileAsBase64(debugConstitution)
-      : null;
-    const base64EncodedReality = realityFile ? await readFileAsBase64(realityFile) : null;
+    const base64EncodedConstitution =
+      debugConstitution instanceof File ? await readFileAsBase64(debugConstitution) : null;
+    const base64EncodedReality =
+      realityFile instanceof File ? await readFileAsBase64(realityFile) : null;
     const request: AnswerRequest = {
       context: reality,
       question,
-      history,
       reality: base64EncodedReality,
       debugConstitution: base64EncodedConstitution,
       session_id: sessionId
