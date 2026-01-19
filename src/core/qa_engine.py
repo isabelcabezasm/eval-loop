@@ -168,7 +168,7 @@ class QAEngine:
                         text=match.group(0),
                     )
 
-                buffer = buffer[match.end():]
+                buffer = buffer[match.end() :]
 
             # Yield buffer if it doesn't contain an incomplete citation
             if buffer and _is_complete_or_no_citation(buffer):
