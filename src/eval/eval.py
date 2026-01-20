@@ -10,12 +10,14 @@ from pydantic import BaseModel
 from core.paths import root
 from eval.dependencies import qa_eval_engine
 from eval.models import (
-    AxiomReferenceMetric,
+    AxiomPrecisionMetric,
+    AxiomRecallMetric,
     AxiomReferenceResults,
     AxiomReferences,
     EvaluationSampleInput,
     EvaluationSampleOutput,
-    RealityReferenceMetric,
+    RealityPrecisionMetric,
+    RealityRecallMetric,
     RealityReferenceResults,
     RealityReferences,
 )
@@ -131,8 +133,10 @@ class EvaluationResult(BaseModel):
     evaluation_outputs: list[EvaluationSampleOutput]
     accuracy: AccuracyMetric
     topic_coverage: CoverageMetric
-    axiom_metric: AxiomReferenceMetric
-    reality_metric: RealityReferenceMetric
+    axiom_precision_metric: AxiomPrecisionMetric
+    axiom_recall_metric: AxiomRecallMetric
+    reality_precision_metric: RealityPrecisionMetric
+    reality_recall_metric: RealityRecallMetric
 
 
 async def evaluate_answer(
@@ -166,11 +170,11 @@ async def evaluate_answer(
     def _calculate_precision_recall(found: list[str], expected: list[str]) -> tuple[float, float]:
         found_set = set(found)
         expected_set = set(expected)
-        
+
         # If both are empty, the answer is correct (nothing expected, nothing found)
         if not found_set and not expected_set:
             return 1.0, 1.0
-        
+
         true_positives = len(found_set & expected_set)
         precision = true_positives / len(found_set) if found_set else 0.0
         recall = true_positives / len(expected_set) if expected_set else 0.0
@@ -179,7 +183,7 @@ async def evaluate_answer(
     def _evaluate_axiom_references(real_axioms: AxiomReferences, expected_axioms: AxiomReferences) -> AxiomReferenceResults:
         # Normalize found axioms by removing brackets: "[A-001]" -> "A-001"
         normalized_found = list(set(ref.strip("[]") for ref in real_axioms))
-        
+
         precision, recall = _calculate_precision_recall(
             normalized_found, expected_axioms)
         return AxiomReferenceResults(
@@ -192,7 +196,7 @@ async def evaluate_answer(
     def _evaluate_reality_references(real_reality: RealityReferences, expected_reality: RealityReferences) -> RealityReferenceResults:
         # Normalize found reality refs by removing brackets: "[R-001]" -> "R-001"
         normalized_found = list(set(ref.strip("[]") for ref in real_reality))
-        
+
         precision, recall = _calculate_precision_recall(
             normalized_found, expected_reality)
         return RealityReferenceResults(
@@ -234,8 +238,10 @@ def calculate_stats(
             evaluation_outputs=[],
             accuracy=AccuracyMetric(mean=0.0, std=0.0),
             topic_coverage=CoverageMetric(mean=0.0, std=0.0),
-            axiom_metric=AxiomReferenceMetric(mean=0.0, std=0.0),
-            reality_metric=RealityReferenceMetric(mean=0.0, std=0.0),
+            axiom_precision_metric=AxiomPrecisionMetric(mean=0.0, std=0.0),
+            axiom_recall_metric=AxiomRecallMetric(mean=0.0, std=0.0),
+            reality_precision_metric=RealityPrecisionMetric(mean=0.0, std=0.0),
+            reality_recall_metric=RealityRecallMetric(mean=0.0, std=0.0),
         )
 
     # Calculate accuracy statistics
@@ -258,32 +264,65 @@ def calculate_stats(
     ) / len(coverage_scores)
     coverage_std = coverage_variance**0.5 if len(coverage_scores) > 1 else 0.0
 
-    # Calculate axiom reference statistics (using recall as the main metric)
-    axiom_scores = [
+    # Calculate axiom precision statistics
+    axiom_precision_scores = [
+        result.axiom_references.precision for result in evaluation_results
+    ]
+    axiom_precision_mean = sum(axiom_precision_scores) / \
+        len(axiom_precision_scores)
+    axiom_precision_variance = sum(
+        (score - axiom_precision_mean) ** 2 for score in axiom_precision_scores
+    ) / len(axiom_precision_scores)
+    axiom_precision_std = axiom_precision_variance**0.5 if len(
+        axiom_precision_scores) > 1 else 0.0
+
+    # Calculate axiom recall statistics
+    axiom_recall_scores = [
         result.axiom_references.recall for result in evaluation_results
     ]
-    axiom_mean = sum(axiom_scores) / len(axiom_scores)
-    axiom_variance = sum(
-        (score - axiom_mean) ** 2 for score in axiom_scores
-    ) / len(axiom_scores)
-    axiom_std = axiom_variance**0.5 if len(axiom_scores) > 1 else 0.0
+    axiom_recall_mean = sum(axiom_recall_scores) / len(axiom_recall_scores)
+    axiom_recall_variance = sum(
+        (score - axiom_recall_mean) ** 2 for score in axiom_recall_scores
+    ) / len(axiom_recall_scores)
+    axiom_recall_std = axiom_recall_variance**0.5 if len(
+        axiom_recall_scores) > 1 else 0.0
 
-    # Calculate reality reference statistics (using recall as the main metric)
-    reality_scores = [
+    # Calculate reality precision statistics
+    reality_precision_scores = [
+        result.reality_references.precision for result in evaluation_results
+    ]
+    reality_precision_mean = sum(
+        reality_precision_scores) / len(reality_precision_scores)
+    reality_precision_variance = sum(
+        (score - reality_precision_mean) ** 2 for score in reality_precision_scores
+    ) / len(reality_precision_scores)
+    reality_precision_std = reality_precision_variance**0.5 if len(
+        reality_precision_scores) > 1 else 0.0
+
+    # Calculate reality recall statistics
+    reality_recall_scores = [
         result.reality_references.recall for result in evaluation_results
     ]
-    reality_mean = sum(reality_scores) / len(reality_scores)
-    reality_variance = sum(
-        (score - reality_mean) ** 2 for score in reality_scores
-    ) / len(reality_scores)
-    reality_std = reality_variance**0.5 if len(reality_scores) > 1 else 0.0
+    reality_recall_mean = sum(reality_recall_scores) / \
+        len(reality_recall_scores)
+    reality_recall_variance = sum(
+        (score - reality_recall_mean) ** 2 for score in reality_recall_scores
+    ) / len(reality_recall_scores)
+    reality_recall_std = reality_recall_variance**0.5 if len(
+        reality_recall_scores) > 1 else 0.0
 
     return EvaluationResult(
         evaluation_outputs=evaluation_results,
         accuracy=AccuracyMetric(mean=accuracy_mean, std=accuracy_std),
         topic_coverage=CoverageMetric(mean=coverage_mean, std=coverage_std),
-        axiom_metric=AxiomReferenceMetric(mean=axiom_mean, std=axiom_std),
-        reality_metric=RealityReferenceMetric(mean=reality_mean, std=reality_std),
+        axiom_precision_metric=AxiomPrecisionMetric(
+            mean=axiom_precision_mean, std=axiom_precision_std),
+        axiom_recall_metric=AxiomRecallMetric(
+            mean=axiom_recall_mean, std=axiom_recall_std),
+        reality_precision_metric=RealityPrecisionMetric(
+            mean=reality_precision_mean, std=reality_precision_std),
+        reality_recall_metric=RealityRecallMetric(
+            mean=reality_recall_mean, std=reality_recall_std),
     )
 
 

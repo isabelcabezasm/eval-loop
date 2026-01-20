@@ -206,15 +206,27 @@ class CoverageMetric(Metric):
     """
 
 
-class AxiomReferenceMetric(Metric):
+class AxiomPrecisionMetric(Metric):
     """
-    A metric class for measuring axiom reference accuracy during evaluation.
+    A metric class for measuring axiom reference precision during evaluation.
     """
 
 
-class RealityReferenceMetric(Metric):
+class AxiomRecallMetric(Metric):
     """
-    A metric class for measuring reality reference accuracy during evaluation.
+    A metric class for measuring axiom reference recall during evaluation.
+    """
+
+
+class RealityPrecisionMetric(Metric):
+    """
+    A metric class for measuring reality reference precision during evaluation.
+    """
+
+
+class RealityRecallMetric(Metric):
+    """
+    A metric class for measuring reality reference recall during evaluation.
     """
 
 
@@ -301,5 +313,7 @@ class EvaluationResult(BaseModel):
     evaluation_outputs: list[EvaluationSampleOutput]
     accuracy: AccuracyMetric
     topic_coverage: CoverageMetric
-    axiom_metric: AxiomReferenceMetric
-    reality_metric: RealityReferenceMetric
+    axiom_precision_metric: AxiomPrecisionMetric
+    axiom_recall_metric: AxiomRecallMetric
+    reality_precision_metric: RealityPrecisionMetric
+    reality_recall_metric: RealityRecallMetric
