@@ -454,26 +454,20 @@ function initializeEntityColors() {
 }
 
 /**
- * Calculates and displays summary statistics for all evaluations.
- * Computes average accuracy, coverage, and overall scores, then updates DOM elements.
+ * Displays summary statistics from pre-calculated metrics in the evaluation data.
  * Updates the summary statistics section at the top of the report.
  */
 function calculateSummaryStats() {
-    const evaluations = window.evaluationData.evaluation_outputs;
-    const totalEvaluations = evaluations.length;
+    const data = window.evaluationData;
+    const totalEvaluations = data.evaluation_outputs.length;
 
-    const avgAccuracy = evaluations.reduce((sum, evaluation) => sum + evaluation.accuracy.accuracy_mean, 0) / totalEvaluations;
-    const avgCoverage = evaluations.reduce((sum, evaluation) => sum + evaluation.topic_coverage.coverage_score, 0) / totalEvaluations;
-
-    // Calculate axiom and reality recall averages
-    const avgAxiomPrecision = evaluations.reduce((sum, evaluation) =>
-        sum + (evaluation.axiom_references?.precision || 0), 0) / totalEvaluations;
-    const avgAxiomRecall = evaluations.reduce((sum, evaluation) =>
-        sum + (evaluation.axiom_references?.recall || 0), 0) / totalEvaluations;
-    const avgRealityPrecision = evaluations.reduce((sum, evaluation) =>
-        sum + (evaluation.reality_references?.precision || 0), 0) / totalEvaluations;
-    const avgRealityRecall = evaluations.reduce((sum, evaluation) =>
-        sum + (evaluation.reality_references?.recall || 0), 0) / totalEvaluations;
+    // Use pre-calculated metrics from the JSON
+    const avgAccuracy = data.accuracy?.mean || 0;
+    const avgCoverage = data.topic_coverage?.mean || 0;
+    const avgAxiomPrecision = data.axiom_precision_metric?.mean || 0;
+    const avgAxiomRecall = data.axiom_recall_metric?.mean || 0;
+    const avgRealityPrecision = data.reality_precision_metric?.mean || 0;
+    const avgRealityRecall = data.reality_recall_metric?.mean || 0;
 
     const overallScore = (avgAccuracy + avgCoverage + avgAxiomRecall + avgRealityRecall) / 4;
 
