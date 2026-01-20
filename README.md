@@ -164,6 +164,7 @@ Each conversation session maintains its own context, allowing:
 Generate a response with conversation context.
 
 **Request:**
+
 ```json
 {
   "question": "How does inflation affect interest rates?",
@@ -179,6 +180,7 @@ Generate a response with conversation context.
 Reset a session's conversation thread.
 
 **Request:**
+
 ```json
 {
   "session_id": "550e8400-e29b-41d4-a716-446655440000"
@@ -212,4 +214,3 @@ await engine.reset_thread(session_id)
 ```
 
 See `samples/conversation_qa.py` for a complete multi-turn conversation example.
-

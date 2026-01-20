@@ -46,6 +46,7 @@ Create a new type `UserSessionId` based on `str` for type-safe session
 identification.
 
 **Files modified:**
+
 - `src/core/qa_engine.py` - Added `UserSessionId = NewType("UserSessionId", str)`
 
 ### Task 1.2: Implement Thread Store in QAEngine ✅
@@ -54,6 +55,7 @@ Modify `QAEngine` to manage multiple threads using a dictionary keyed by
 `UserSessionId`.
 
 **Changes:**
+
 - Added `_threads: dict[UserSessionId, AgentThread]` to store per-session threads
 - Added `get_thread(session_id)` method to retrieve or create thread for session
 - Updated `invoke()` to accept required `session_id` parameter
@@ -61,6 +63,7 @@ Modify `QAEngine` to manage multiple threads using a dictionary keyed by
 - Added `reset_thread(session_id)` method to clear session thread
 
 **Files modified:**
+
 - `src/core/qa_engine.py`
 
 ### Task 1.3: Update API Request Models ✅
@@ -68,10 +71,12 @@ Modify `QAEngine` to manage multiple threads using a dictionary keyed by
 Update request models to include required `session_id` field.
 
 **Changes:**
+
 - Added `session_id: str` field to `GenerateRequest`
 - Created `RestartRequest` model with `session_id: str`
 
 **Files modified:**
+
 - `src/api/generate.py`
 
 ### Task 1.4: Update Generate Endpoint ✅
@@ -79,6 +84,7 @@ Update request models to include required `session_id` field.
 Modify the `/generate` endpoint to pass session ID to QAEngine.
 
 **Files modified:**
+
 - `src/api/generate.py`
 
 ### Task 1.5: Update Restart Endpoint ✅
@@ -87,6 +93,7 @@ Modify the `/restart` endpoint to accept session ID and reset only that
 session's thread.
 
 **Files modified:**
+
 - `src/api/generate.py`
 
 ### Task 1.6: Update Backend Tests ✅
@@ -94,11 +101,13 @@ session's thread.
 Update tests to verify session isolation works correctly.
 
 **New tests added:**
+
 - Test that different session IDs use different threads
 - Test that same session ID reuses the same thread
 - Test that reset with session ID only affects that session
 
 **Files modified:**
+
 - `tests/core/test_qa_engine.py`
 - `tests/api/test_generate.py`
 - `tests/api/test_generate_endpoint.py`
@@ -112,6 +121,7 @@ Update tests to verify session isolation works correctly.
 Create a utility function to generate unique session IDs (UUID v4).
 
 **Files created:**
+
 - `src/ui/utils/session.ts` - `generateSessionId()` using `crypto.randomUUID()`
 
 ### Task 2.2: Update API Client ✅
@@ -119,12 +129,14 @@ Create a utility function to generate unique session IDs (UUID v4).
 Modify `ApiClient` to include session ID in requests.
 
 **Changes:**
+
 - Added `session_id` to `AnswerRequest` interface
 - Created `RestartRequest` interface with `session_id`
 - Updated `answer()` method to accept `sessionId` parameter
 - Updated `restart()` method to accept `sessionId` parameter
 
 **Files modified:**
+
 - `src/ui/utils/api.ts`
 
 ### Task 2.3: Update App Component ✅
@@ -132,6 +144,7 @@ Modify `ApiClient` to include session ID in requests.
 Integrate session ID management in the main App component.
 
 **Changes:**
+
 - Added `sessionId` state (initially `null`)
 - Generate session ID when user clicks "Start Chat"
 - Pass session ID to `apiClient.answer()` calls
@@ -139,6 +152,7 @@ Integrate session ID management in the main App component.
 - Reset session ID to `null` on "Clear & Restart"
 
 **Files modified:**
+
 - `src/ui/App.tsx`
 
 ### Task 2.4: Update Frontend Tests ✅
@@ -146,6 +160,7 @@ Integrate session ID management in the main App component.
 Add tests for session ID handling.
 
 **Files modified:**
+
 - `tests/ui/api.spec.ts` - Updated all tests with session_id, added restart tests
 - `tests/ui/session.spec.ts` (new) - Tests for `generateSessionId()` function
 
@@ -159,15 +174,18 @@ Created integration tests that simulate concurrent users with different
 session IDs and verify their conversations don't mix.
 
 **Tests added:**
+
 - `test_session_isolation_between_users` - Two users with different sessions
 - `test_same_session_maintains_thread` - Same session maintains continuity
 
 **Files modified:**
+
 - `tests/api/test_generate_endpoint.py`
 
 ### Task 3.2: Manual Testing
 
 Verify the implementation works:
+
 - [x] Open two browser tabs
 - [x] Start chat in both tabs
 - [x] Send different questions in each tab
@@ -291,9 +309,9 @@ const handleClearAndRestart = async () => {
 
 ## Risks and Mitigations
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Thread API changes in agent-framework | Medium | Pin version, add abstraction layer |
-| Thread storage limits | Low | Document limits, add cleanup strategy |
-| Performance with long histories | Medium | Limit history window in prompts |
-| Memory growth from thread dict | Low | Add session cleanup/expiry (future) |
+| Risk                                   | Impact | Mitigation                            |
+| -------------------------------------- | ------ | ------------------------------------- |
+| Thread API changes in agent-framework  | Medium | Pin version, add abstraction layer    |
+| Thread storage limits                  | Low    | Document limits, add cleanup strategy |
+| Performance with long histories        | Medium | Limit history window in prompts       |
+| Memory growth from thread dict         | Low    | Add session cleanup/expiry (future)   |
