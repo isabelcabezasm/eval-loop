@@ -166,6 +166,11 @@ async def evaluate_answer(
     def _calculate_precision_recall(found: list[str], expected: list[str]) -> tuple[float, float]:
         found_set = set(found)
         expected_set = set(expected)
+        
+        # If both are empty, the answer is correct (nothing expected, nothing found)
+        if not found_set and not expected_set:
+            return 1.0, 1.0
+        
         true_positives = len(found_set & expected_set)
         precision = true_positives / len(found_set) if found_set else 0.0
         recall = true_positives / len(expected_set) if expected_set else 0.0

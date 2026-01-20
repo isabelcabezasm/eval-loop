@@ -129,7 +129,7 @@ body {
 
 .scores {
     display: flex;
-    gap: 15px;
+    gap: 10px;
     flex-wrap: wrap;
 }
 
@@ -139,7 +139,8 @@ body {
     font-weight: bold;
     font-size: 0.9rem;
     text-align: center;
-    min-width: 80px;
+    width: 140px;
+    flex: 0 0 140px;
 }
 
 .score-accuracy {
@@ -154,14 +155,17 @@ body {
 
 .score-good {
     background: #51cf66;
+    color: white;
 }
 
 .score-medium {
     background: #ffd43b;
+    color: white;
 }
 
 .score-poor {
     background: #ff6b6b;
+    color: white;
 }
 
 .query {
@@ -294,6 +298,84 @@ body {
     font-weight: bold;
 }
 
+/* References section (Axiom and Reality references comparison) */
+.references-section {
+    margin: 20px 0;
+    background: #f0f4f8;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #5c6bc0;
+}
+
+.references-section h4 {
+    color: #5c6bc0;
+    margin-bottom: 12px;
+    font-size: 1rem;
+}
+
+.references-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 12px;
+}
+
+@media (max-width: 600px) {
+    .references-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.references-card {
+    background: white;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+.references-card h5 {
+    color: #495057;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+}
+
+.reference-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.reference-tag {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.expected-tag {
+    background: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #90caf9;
+}
+
+.found-match-tag {
+    background: #c8e6c9;
+    color: #2e7d32;
+    border: 1px solid #81c784;
+}
+
+.found-nomatch-tag {
+    background: #ffcdd2;
+    color: #c62828;
+    border: 1px solid #ef9a9a;
+}
+
+.references-metrics {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
 .entities {
     margin: 20px 0;
 }
@@ -344,26 +426,97 @@ body {
 }
 
 /* Entity color classes - consistent colors for same entities across sections */
-.entity-color-0 { background-color: #667eea; }
-.entity-color-1 { background-color: #f093fb; }
-.entity-color-2 { background-color: #4ecdc4; }
-.entity-color-3 { background-color: #45b7d1; }
-.entity-color-4 { background-color: #96ceb4; }
-.entity-color-5 { background-color: #ffecd2; color: #333; }
-.entity-color-6 { background-color: #a8edea; color: #333; }
-.entity-color-7 { background-color: #d299c2; }
-.entity-color-8 { background-color: #fad0c4; color: #333; }
-.entity-color-9 { background-color: #a18cd1; }
-.entity-color-10 { background-color: #fbc2eb; color: #333; }
-.entity-color-11 { background-color: #84fab0; color: #333; }
-.entity-color-12 { background-color: #f6d365; color: #333; }
-.entity-color-13 { background-color: #fa709a; }
-.entity-color-14 { background-color: #fee140; color: #333; }
-.entity-color-15 { background-color: #f7b267; color: #333; }
-.entity-color-16 { background-color: #d0bfff; color: #333; }
-.entity-color-17 { background-color: #b8f2ff; color: #333; }
-.entity-color-18 { background-color: #ffd93d; color: #333; }
-.entity-color-19 { background-color: #74c0fc; color: #333; }
+.entity-color-0 {
+    background-color: #667eea;
+}
+
+.entity-color-1 {
+    background-color: #f093fb;
+}
+
+.entity-color-2 {
+    background-color: #4ecdc4;
+}
+
+.entity-color-3 {
+    background-color: #45b7d1;
+}
+
+.entity-color-4 {
+    background-color: #96ceb4;
+}
+
+.entity-color-5 {
+    background-color: #ffecd2;
+    color: #333;
+}
+
+.entity-color-6 {
+    background-color: #a8edea;
+    color: #333;
+}
+
+.entity-color-7 {
+    background-color: #d299c2;
+}
+
+.entity-color-8 {
+    background-color: #fad0c4;
+    color: #333;
+}
+
+.entity-color-9 {
+    background-color: #a18cd1;
+}
+
+.entity-color-10 {
+    background-color: #fbc2eb;
+    color: #333;
+}
+
+.entity-color-11 {
+    background-color: #84fab0;
+    color: #333;
+}
+
+.entity-color-12 {
+    background-color: #f6d365;
+    color: #333;
+}
+
+.entity-color-13 {
+    background-color: #fa709a;
+}
+
+.entity-color-14 {
+    background-color: #fee140;
+    color: #333;
+}
+
+.entity-color-15 {
+    background-color: #f7b267;
+    color: #333;
+}
+
+.entity-color-16 {
+    background-color: #d0bfff;
+    color: #333;
+}
+
+.entity-color-17 {
+    background-color: #b8f2ff;
+    color: #333;
+}
+
+.entity-color-18 {
+    background-color: #ffd93d;
+    color: #333;
+}
+
+.entity-color-19 {
+    background-color: #74c0fc;
+    color: #333;
+}
 
 /* Entity highlighting in text - same colors but with transparency */
 .entity-highlight {
@@ -372,49 +525,84 @@ body {
     font-weight: 500;
 }
 
-.entity-highlight.entity-color-0 { background-color: rgba(102, 126, 234, 0.3); }
-.entity-highlight.entity-color-1 { background-color: rgba(240, 147, 251, 0.3); }
-.entity-highlight.entity-color-2 { background-color: rgba(78, 205, 196, 0.3); }
-.entity-highlight.entity-color-3 { background-color: rgba(69, 183, 209, 0.3); }
-.entity-highlight.entity-color-4 { background-color: rgba(150, 206, 180, 0.3); }
-.entity-highlight.entity-color-5 { 
-    background-color: rgba(255, 236, 210, 0.5); 
+.entity-highlight.entity-color-0 {
+    background-color: rgba(102, 126, 234, 0.3);
 }
-.entity-highlight.entity-color-6 { 
-    background-color: rgba(168, 237, 234, 0.5); 
+
+.entity-highlight.entity-color-1 {
+    background-color: rgba(240, 147, 251, 0.3);
 }
-.entity-highlight.entity-color-7 { background-color: rgba(210, 153, 194, 0.3); }
-.entity-highlight.entity-color-8 { 
-    background-color: rgba(250, 208, 196, 0.5); 
+
+.entity-highlight.entity-color-2 {
+    background-color: rgba(78, 205, 196, 0.3);
 }
-.entity-highlight.entity-color-9 { background-color: rgba(161, 140, 209, 0.3); }
-.entity-highlight.entity-color-10 { 
-    background-color: rgba(251, 194, 235, 0.5); 
+
+.entity-highlight.entity-color-3 {
+    background-color: rgba(69, 183, 209, 0.3);
 }
-.entity-highlight.entity-color-11 { 
-    background-color: rgba(132, 250, 176, 0.5); 
+
+.entity-highlight.entity-color-4 {
+    background-color: rgba(150, 206, 180, 0.3);
 }
-.entity-highlight.entity-color-12 { 
-    background-color: rgba(246, 211, 101, 0.5); 
+
+.entity-highlight.entity-color-5 {
+    background-color: rgba(255, 236, 210, 0.5);
 }
-.entity-highlight.entity-color-13 { background-color: rgba(250, 112, 154, 0.3); }
-.entity-highlight.entity-color-14 { 
-    background-color: rgba(254, 225, 64, 0.5); 
+
+.entity-highlight.entity-color-6 {
+    background-color: rgba(168, 237, 234, 0.5);
 }
-.entity-highlight.entity-color-15 { 
-    background-color: rgba(255, 183, 197, 0.5); 
+
+.entity-highlight.entity-color-7 {
+    background-color: rgba(210, 153, 194, 0.3);
 }
-.entity-highlight.entity-color-16 { 
-    background-color: rgba(208, 191, 255, 0.5); 
+
+.entity-highlight.entity-color-8 {
+    background-color: rgba(250, 208, 196, 0.5);
 }
-.entity-highlight.entity-color-17 { 
-    background-color: rgba(184, 242, 255, 0.5); 
+
+.entity-highlight.entity-color-9 {
+    background-color: rgba(161, 140, 209, 0.3);
 }
-.entity-highlight.entity-color-18 { 
-    background-color: rgba(255, 217, 61, 0.5); 
+
+.entity-highlight.entity-color-10 {
+    background-color: rgba(251, 194, 235, 0.5);
 }
-.entity-highlight.entity-color-19 { 
-    background-color: rgba(116, 192, 252, 0.5); 
+
+.entity-highlight.entity-color-11 {
+    background-color: rgba(132, 250, 176, 0.5);
+}
+
+.entity-highlight.entity-color-12 {
+    background-color: rgba(246, 211, 101, 0.5);
+}
+
+.entity-highlight.entity-color-13 {
+    background-color: rgba(250, 112, 154, 0.3);
+}
+
+.entity-highlight.entity-color-14 {
+    background-color: rgba(254, 225, 64, 0.5);
+}
+
+.entity-highlight.entity-color-15 {
+    background-color: rgba(255, 183, 197, 0.5);
+}
+
+.entity-highlight.entity-color-16 {
+    background-color: rgba(208, 191, 255, 0.5);
+}
+
+.entity-highlight.entity-color-17 {
+    background-color: rgba(184, 242, 255, 0.5);
+}
+
+.entity-highlight.entity-color-18 {
+    background-color: rgba(255, 217, 61, 0.5);
+}
+
+.entity-highlight.entity-color-19 {
+    background-color: rgba(116, 192, 252, 0.5);
 }
 
 .evaluation-scores {

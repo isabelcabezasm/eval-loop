@@ -119,23 +119,49 @@ function highlightEntitiesInText(text, entities) {
 }
 
 /**
- * Renders a list of axioms as styled tags in an HTML section.
- * Returns an empty string if no axioms are provided.
- * @param {Array<string>} axioms - Array of axiom strings to display
- * @returns {string} HTML string containing the axioms section, or empty string if no axioms
+ * Renders a comparison of expected vs found references (axioms or realities).
+ * Shows precision and recall scores along with the lists of references.
+ * @param {string} title - The title for the section (e.g., "Axiom References")
+ * @param {Object} references - Object containing references_expected, references_found, precision, recall
+ * @returns {string} HTML string containing the references comparison section
  */
-function renderAxioms(axioms) {
-    if (!axioms || axioms.length === 0) {
+function renderReferences(title, references) {
+    if (!references) {
         return '';
     }
 
+    const precisionClass = getScoreClass(references.precision);
+    const recallClass = getScoreClass(references.recall);
+
     return `
-        <div class="axioms">
-            <h4>Related Axioms</h4>
-            <div class="axiom-list">
-                ${axioms.map(axiom => `
-                    <span class="axiom-tag">${axiom}</span>
-                `).join('')}
+        <div class="references-section">
+            <h4>${title}</h4>
+            <div class="references-grid">
+                <div class="references-card">
+                    <h5>Expected</h5>
+                    <div class="reference-list">
+                        ${references.references_expected.length > 0 ?
+            references.references_expected.map(ref => `
+                                <span class="reference-tag expected-tag">${ref}</span>
+                            `).join('') :
+            '<p style="color: #666; font-style: italic;">None expected</p>'}
+                    </div>
+                </div>
+                <div class="references-card">
+                    <h5>Found in Response</h5>
+                    <div class="reference-list">
+                        ${references.references_found.length > 0 ?
+            references.references_found.map(ref => {
+                const isMatch = references.references_expected.includes(ref);
+                return `<span class="reference-tag ${isMatch ? 'found-match-tag' : 'found-nomatch-tag'}">${ref}</span>`;
+            }).join('') :
+            '<p style="color: #666; font-style: italic;">None found</p>'}
+                    </div>
+                </div>
+            </div>
+            <div class="references-metrics">
+                <span class="score-badge ${precisionClass}">Precision: ${(references.precision * 100).toFixed(0)}%</span>
+                <span class="score-badge ${recallClass}">Recall: ${(references.recall * 100).toFixed(0)}%</span>
             </div>
         </div>
     `;
@@ -260,6 +286,8 @@ function renderEvaluation(evaluation) {
     const coverageClass = getScoreClass(
         evaluation.topic_coverage.coverage_score
     );
+    const axiomPrecisionClass = getScoreClass(evaluation.axiom_references?.precision || 0);
+    const realityPrecisionClass = getScoreClass(evaluation.reality_references?.precision || 0);
 
     // Collect all entities for analysis
     const allEntityValues = [];
@@ -319,6 +347,12 @@ function renderEvaluation(evaluation) {
                     <div class="score-badge score-coverage ${coverageClass}">
                         Coverage: ${(evaluation.topic_coverage.coverage_score * 100).toFixed(0)}%
                     </div>
+                    <div class="score-badge ${axiomPrecisionClass}">
+                        Axiom: ${((evaluation.axiom_references?.precision || 0) * 100).toFixed(0)}%
+                    </div>
+                    <div class="score-badge ${realityPrecisionClass}">
+                        Reality: ${((evaluation.reality_references?.precision || 0) * 100).toFixed(0)}%
+                    </div>
                 </div>
             </div>
             <div class="evaluation-content collapsed">
@@ -355,7 +389,8 @@ function renderEvaluation(evaluation) {
                 ${formatReasoning(evaluation.input.reasoning)}
             </div>
 
-            ${renderAxioms(evaluation.input.axioms_used)}
+            ${renderReferences('Axiom References', evaluation.axiom_references)}
+            ${renderReferences('Reality References', evaluation.reality_references)}
 
             ${renderEntities(evaluation.entities)}
 
@@ -429,7 +464,14 @@ function calculateSummaryStats() {
 
     const avgAccuracy = evaluations.reduce((sum, evaluation) => sum + evaluation.accuracy.accuracy_mean, 0) / totalEvaluations;
     const avgCoverage = evaluations.reduce((sum, evaluation) => sum + evaluation.topic_coverage.coverage_score, 0) / totalEvaluations;
-    const overallScore = (avgAccuracy + avgCoverage) / 2;
+
+    // Calculate axiom and reality recall averages
+    const avgAxiomRecall = evaluations.reduce((sum, evaluation) =>
+        sum + (evaluation.axiom_references?.recall || 0), 0) / totalEvaluations;
+    const avgRealityRecall = evaluations.reduce((sum, evaluation) =>
+        sum + (evaluation.reality_references?.recall || 0), 0) / totalEvaluations;
+
+    const overallScore = (avgAccuracy + avgCoverage + avgAxiomRecall + avgRealityRecall) / 4;
 
     // Safely update summary statistics elements
     const totalEl = document.getElementById('total-evaluations');
@@ -440,6 +482,12 @@ function calculateSummaryStats() {
 
     const coverageEl = document.getElementById('avg-coverage');
     if (coverageEl) coverageEl.textContent = avgCoverage.toFixed(2);
+
+    const axiomRecallEl = document.getElementById('avg-axiom-recall');
+    if (axiomRecallEl) axiomRecallEl.textContent = avgAxiomRecall.toFixed(2);
+
+    const realityRecallEl = document.getElementById('avg-reality-recall');
+    if (realityRecallEl) realityRecallEl.textContent = avgRealityRecall.toFixed(2);
 
     const overallEl = document.getElementById('overall-score');
     if (overallEl) overallEl.textContent = overallScore.toFixed(2);
