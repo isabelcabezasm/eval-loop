@@ -60,8 +60,14 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
-      - name: Run frontend lint
+      - name: Run ESLint and Prettier
         run: npm run lint
+
+      - name: Run TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Run markdownlint
+        run: npx markdownlint '**/*.md' --ignore node_modules --ignore .venv --ignore runs
 
   type-check:
     runs-on: ubuntu-latest

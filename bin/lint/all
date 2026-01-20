@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+#? [LINTING] Runs all linters (Markdown, Python, TypeScript)
+
+set -eo pipefail
+cd "$(dirname "$0")/../.."
+
+function usage {
+    cat <<EOF
+Usage: $0 [--fix]
+
+Runs all linters: Markdown, Python, and TypeScript.
+
+Options:
+  --fix    Automatically fix issues where possible
+EOF
+}
+
+FIX_FLAG=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --fix)
+            FIX_FLAG="--fix"
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+echo "=== Linting Markdown ==="
+./bin/lint/md $FIX_FLAG
+
+echo ""
+echo "=== Linting Python ==="
+./bin/lint/py $FIX_FLAG
+
+echo ""
+echo "=== Linting TypeScript ==="
+./bin/lint/ts $FIX_FLAG
+
+echo ""
+echo "=== All linters passed ==="

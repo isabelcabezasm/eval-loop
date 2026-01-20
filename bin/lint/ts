@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#? [LINTING] Lints ui files
+#? [LINTING] Lints ui files with ESLint, Prettier, and TypeScript type checking
 
 set -eo pipefail
 cd "$(dirname "$0")/../.."
@@ -8,8 +8,10 @@ function usage {
     cat <<EOF
 Usage: $0 [--fix]
 
+Runs ESLint, Prettier, and TypeScript type checking on UI files.
+
 Options:
-  --fix    Automatically fix issues with ESLint and prettier
+  --fix    Automatically fix issues with ESLint and Prettier
 EOF
 }
 
@@ -37,3 +39,6 @@ if [ "$FIX_MODE" = true ]; then
 else
     npm run lint
 fi
+
+# TypeScript type checking
+npx tsc --noEmit
