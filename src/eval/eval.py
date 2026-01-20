@@ -2,6 +2,7 @@ import asyncio
 import json
 from datetime import datetime
 from pathlib import Path
+import re
 from typing import Protocol
 
 from pydantic import BaseModel
@@ -9,8 +10,14 @@ from pydantic import BaseModel
 from core.paths import root
 from eval.dependencies import qa_eval_engine
 from eval.models import (
+    AxiomReferenceMetric,
+    AxiomReferenceResults,
+    AxiomReferences,
     EvaluationSampleInput,
     EvaluationSampleOutput,
+    RealityReferenceMetric,
+    RealityReferenceResults,
+    RealityReferences,
 )
 from eval.report_generation.report import Report
 
@@ -88,7 +95,11 @@ class QuestionAnswerFunction(Protocol):
     """
 
     # this is just the protocol
-    async def __call__(self, *, query: str) -> str:  # pyright: ignore[reportReturnType]
+
+    async def __call__(self,
+                       *,
+                       query: str
+                       ) -> str:  # pyright: ignore[reportReturnType]
         """
         Takes a user query and returns a generated answer.
 
@@ -120,6 +131,8 @@ class EvaluationResult(BaseModel):
     evaluation_outputs: list[EvaluationSampleOutput]
     accuracy: AccuracyMetric
     topic_coverage: CoverageMetric
+    axiom_metric: AxiomReferenceMetric
+    reality_metric: RealityReferenceMetric
 
 
 async def evaluate_answer(
@@ -131,6 +144,7 @@ async def evaluate_answer(
     This function assesses an LLM-generated answer by analyzing various metrics
     including accuracy and topic coverage, and extracting relevant entities.
     """
+
     engine = qa_eval_engine()
 
     entities = await engine.entity_extraction(
@@ -149,12 +163,51 @@ async def evaluate_answer(
         entity_list=entities
     )
 
+    def _calculate_precision_recall(found: list[str], expected: list[str]) -> tuple[float, float]:
+        found_set = set(found)
+        expected_set = set(expected)
+        true_positives = len(found_set & expected_set)
+        precision = true_positives / len(found_set) if found_set else 0.0
+        recall = true_positives / len(expected_set) if expected_set else 0.0
+        return precision, recall
+
+    def _evaluate_axiom_references(real_axioms: AxiomReferences, expected_axioms: AxiomReferences) -> AxiomReferenceResults:
+        # Normalize found axioms by removing brackets: "[A-001]" -> "A-001"
+        normalized_found = list(set(ref.strip("[]") for ref in real_axioms))
+        
+        precision, recall = _calculate_precision_recall(
+            normalized_found, expected_axioms)
+        return AxiomReferenceResults(
+            references_found=normalized_found,
+            references_expected=expected_axioms,
+            precision=precision,
+            recall=recall,
+        )
+
+    def _evaluate_reality_references(real_reality: RealityReferences, expected_reality: RealityReferences) -> RealityReferenceResults:
+        # Normalize found reality refs by removing brackets: "[R-001]" -> "R-001"
+        normalized_found = list(set(ref.strip("[]") for ref in real_reality))
+        
+        precision, recall = _calculate_precision_recall(
+            normalized_found, expected_reality)
+        return RealityReferenceResults(
+            references_found=normalized_found,
+            references_expected=expected_reality,
+            precision=precision,
+            recall=recall,
+        )
+
     return EvaluationSampleOutput(
         input=sample_input,
         llm_response=llm_answer,
         entities=entities,
         accuracy=accuracy,
         topic_coverage=topic_coverage,
+        axiom_references=_evaluate_axiom_references(re.findall(
+            r"\[A-\d+\]", llm_answer), sample_input.axioms_used),
+        reality_references=_evaluate_reality_references(
+            re.findall(r"\[R-\d+\]", llm_answer), sample_input.reality_used),
+
     )
 
 
@@ -176,6 +229,8 @@ def calculate_stats(
             evaluation_outputs=[],
             accuracy=AccuracyMetric(mean=0.0, std=0.0),
             topic_coverage=CoverageMetric(mean=0.0, std=0.0),
+            axiom_metric=AxiomReferenceMetric(mean=0.0, std=0.0),
+            reality_metric=RealityReferenceMetric(mean=0.0, std=0.0),
         )
 
     # Calculate accuracy statistics
@@ -198,10 +253,32 @@ def calculate_stats(
     ) / len(coverage_scores)
     coverage_std = coverage_variance**0.5 if len(coverage_scores) > 1 else 0.0
 
+    # Calculate axiom reference statistics (using recall as the main metric)
+    axiom_scores = [
+        result.axiom_references.recall for result in evaluation_results
+    ]
+    axiom_mean = sum(axiom_scores) / len(axiom_scores)
+    axiom_variance = sum(
+        (score - axiom_mean) ** 2 for score in axiom_scores
+    ) / len(axiom_scores)
+    axiom_std = axiom_variance**0.5 if len(axiom_scores) > 1 else 0.0
+
+    # Calculate reality reference statistics (using recall as the main metric)
+    reality_scores = [
+        result.reality_references.recall for result in evaluation_results
+    ]
+    reality_mean = sum(reality_scores) / len(reality_scores)
+    reality_variance = sum(
+        (score - reality_mean) ** 2 for score in reality_scores
+    ) / len(reality_scores)
+    reality_std = reality_variance**0.5 if len(reality_scores) > 1 else 0.0
+
     return EvaluationResult(
         evaluation_outputs=evaluation_results,
         accuracy=AccuracyMetric(mean=accuracy_mean, std=accuracy_std),
         topic_coverage=CoverageMetric(mean=coverage_mean, std=coverage_std),
+        axiom_metric=AxiomReferenceMetric(mean=axiom_mean, std=axiom_std),
+        reality_metric=RealityReferenceMetric(mean=reality_mean, std=reality_std),
     )
 
 

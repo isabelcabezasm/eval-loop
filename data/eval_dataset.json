@@ -11,7 +11,8 @@
         ],
         "axioms_used": [
             "A-001"
-        ]
+        ],
+        "reality_used": []
     },
     {
         "id": 2,
@@ -25,7 +26,8 @@
         ],
         "axioms_used": [
             "A-002"
-        ]
+        ],
+        "reality_used": []
     },
     {
         "id": 3,
@@ -39,7 +41,8 @@
         ],
         "axioms_used": [
             "A-003"
-        ]
+        ],
+        "reality_used": []
     },
     {
         "id": 4,
@@ -53,7 +56,8 @@
         ],
         "axioms_used": [
             "A-004"
-        ]
+        ],
+        "reality_used": []
     },
     {
         "id": 5,
@@ -67,7 +71,8 @@
         ],
         "axioms_used": [
             "A-007"
-        ]
+        ],
+        "reality_used": []
     },
     {
         "id": 6,

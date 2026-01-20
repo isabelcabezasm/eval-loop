@@ -1,5 +1,8 @@
 from pydantic import BaseModel, Field
 
+AxiomReferences = list[str]
+RealityReferences = list[str]
+
 
 class Entity(BaseModel):
     """
@@ -121,6 +124,36 @@ class TopicCoverageEvaluationResults(BaseModel):
     )
 
 
+class AxiomReferenceResults(BaseModel):
+    """
+    A model for storing axiom reference evaluation results.
+    """
+
+    references_found: AxiomReferences = Field(
+        description="List of axiom references found in the LLM answer."
+    )
+    references_expected: AxiomReferences = Field(
+        description="List of axiom references expected in the answer."
+    )
+    precision: float = Field(
+        description="Precision score for axiom references, between 0.0 and 1.0.",
+        ge=0.0,
+        le=1.0,
+    )
+    recall: float = Field(
+        description="Recall score for axiom references, between 0.0 and 1.0.",
+        ge=0.0,
+        le=1.0,
+    )
+
+
+class RealityReferenceResults(AxiomReferenceResults):
+    """
+    A model for storing reality reference evaluation results.
+    """
+    pass
+
+
 class Metric(BaseModel):
     """
     A data model representing statistical metrics with mean and standard
@@ -173,6 +206,18 @@ class CoverageMetric(Metric):
     """
 
 
+class AxiomReferenceMetric(Metric):
+    """
+    A metric class for measuring axiom reference accuracy during evaluation.
+    """
+
+
+class RealityReferenceMetric(Metric):
+    """
+    A metric class for measuring reality reference accuracy during evaluation.
+    """
+
+
 class EvaluationSampleInput(BaseModel):
     """
     A data model representing input data for evaluation samples.
@@ -192,6 +237,8 @@ class EvaluationSampleInput(BaseModel):
             that lead to the expected answer.
         axioms_used (list[str]): List of axioms, rules, or principles
             applied in deriving the expected answer.
+        reality_used (list[str]): List of real-world facts or data
+            referenced in formulating the expected answer.
     """
 
     id: int
@@ -199,7 +246,8 @@ class EvaluationSampleInput(BaseModel):
     context: str
     expected_answer: str
     reasoning: list[str]
-    axioms_used: list[str]
+    axioms_used: AxiomReferences
+    reality_used: RealityReferences
 
 
 class EvaluationSampleOutput(BaseModel):
@@ -228,6 +276,8 @@ class EvaluationSampleOutput(BaseModel):
     entities: EntityExtraction
     accuracy: AccuracyEvaluationResults
     topic_coverage: TopicCoverageEvaluationResults
+    axiom_references: AxiomReferenceResults
+    reality_references: RealityReferenceResults
 
 
 class EvaluationResult(BaseModel):
@@ -251,3 +301,5 @@ class EvaluationResult(BaseModel):
     evaluation_outputs: list[EvaluationSampleOutput]
     accuracy: AccuracyMetric
     topic_coverage: CoverageMetric
+    axiom_metric: AxiomReferenceMetric
+    reality_metric: RealityReferenceMetric
