@@ -466,8 +466,12 @@ function calculateSummaryStats() {
     const avgCoverage = evaluations.reduce((sum, evaluation) => sum + evaluation.topic_coverage.coverage_score, 0) / totalEvaluations;
 
     // Calculate axiom and reality recall averages
+    const avgAxiomPrecision = evaluations.reduce((sum, evaluation) =>
+        sum + (evaluation.axiom_references?.precision || 0), 0) / totalEvaluations;
     const avgAxiomRecall = evaluations.reduce((sum, evaluation) =>
         sum + (evaluation.axiom_references?.recall || 0), 0) / totalEvaluations;
+    const avgRealityPrecision = evaluations.reduce((sum, evaluation) =>
+        sum + (evaluation.reality_references?.precision || 0), 0) / totalEvaluations;
     const avgRealityRecall = evaluations.reduce((sum, evaluation) =>
         sum + (evaluation.reality_references?.recall || 0), 0) / totalEvaluations;
 
@@ -483,8 +487,14 @@ function calculateSummaryStats() {
     const coverageEl = document.getElementById('avg-coverage');
     if (coverageEl) coverageEl.textContent = avgCoverage.toFixed(2);
 
+    const axiomPrecisionEl = document.getElementById('avg-axiom-precision');
+    if (axiomPrecisionEl) axiomPrecisionEl.textContent = avgAxiomPrecision.toFixed(2);
+
     const axiomRecallEl = document.getElementById('avg-axiom-recall');
     if (axiomRecallEl) axiomRecallEl.textContent = avgAxiomRecall.toFixed(2);
+
+    const realityPrecisionEl = document.getElementById('avg-reality-precision');
+    if (realityPrecisionEl) realityPrecisionEl.textContent = avgRealityPrecision.toFixed(2);
 
     const realityRecallEl = document.getElementById('avg-reality-recall');
     if (realityRecallEl) realityRecallEl.textContent = avgRealityRecall.toFixed(2);
