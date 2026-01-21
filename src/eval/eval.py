@@ -34,7 +34,8 @@ def calculate_mean_std(scores: list[float]) -> tuple[float, float]:
         scores: List of numeric scores to analyze.
 
     Returns:
-        Tuple of (mean, standard_deviation). Returns (0.0, 0.0) for empty lists.
+        Tuple of (mean, standard_deviation). 
+        Returns (0.0, 0.0) for empty lists.
         Standard deviation is 0.0 for single-element lists.
 
     Examples:
