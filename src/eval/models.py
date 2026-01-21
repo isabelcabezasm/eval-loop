@@ -309,6 +309,18 @@ class EvaluationResult(BaseModel):
             predictions or responses across the evaluation dataset.
         topic_coverage (CoverageMetric): Metric measuring how well the
             evaluation spans different topics or categories in the domain.
+        axiom_precision_metric (AxiomPrecisionMetric): Metric measuring
+            the precision of axiom references (ratio of correct axiom
+            references to total axiom references found).
+        axiom_recall_metric (AxiomRecallMetric): Metric measuring the
+            recall of axiom references (ratio of found axiom references
+            to expected axiom references).
+        reality_precision_metric (RealityPrecisionMetric): Metric measuring
+            the precision of reality references (ratio of correct reality
+            references to total reality references found).
+        reality_recall_metric (RealityRecallMetric): Metric measuring the
+            recall of reality references (ratio of found reality references
+            to expected reality references).
     """
 
     evaluation_outputs: list[EvaluationSampleOutput]
