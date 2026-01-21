@@ -180,7 +180,8 @@ class QuestionAnswerFunction(Protocol):
 
     # this is just the protocol
 
-    async def __call__(self, *, query: str) -> str:  # pyright: ignore[reportReturnType]
+    # pyright: ignore[reportReturnType]
+    async def __call__(self, *, query: str) -> str:
         """
         Takes a user query and returns a generated answer.
 
