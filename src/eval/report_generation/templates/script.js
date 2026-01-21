@@ -117,6 +117,19 @@ function getScoreClass(score) {
 }
 
 /**
+ * Creates an HTML score badge with appropriate color styling.
+ * @param {string} label - The label to display (e.g., "Accuracy", "Coverage")
+ * @param {number} score - The score value between 0 and 1
+ * @param {string} [extraClass] - Optional additional CSS class (e.g., "score-accuracy")
+ * @returns {string} HTML string for the score badge
+ */
+function createScoreBadge(label, score, extraClass = '') {
+    const scoreClass = getScoreClass(score);
+    const classes = extraClass ? `score-badge ${extraClass} ${scoreClass}` : `score-badge ${scoreClass}`;
+    return `<div class="${classes}">${label}: ${(score * 100).toFixed(0)}%</div>`;
+}
+
+/**
  * Converts line break characters to HTML <br> tags and markdown bold to HTML <b> tags.
  * Handles various line break formats (CRLF, LF, CR) for cross-platform compatibility.
  * @param {string} text - The text to convert
@@ -366,12 +379,10 @@ function renderAccuracyDetails(accuracy) {
  * @returns {string} HTML string containing the full evaluation display
  */
 function renderEvaluation(evaluation) {
-    const accuracyClass = getScoreClass(evaluation.accuracy.accuracy_mean);
-    const coverageClass = getScoreClass(
-        evaluation.topic_coverage.coverage_score
-    );
-    const axiomPrecisionClass = getScoreClass(evaluation.axiom_references?.precision || 0);
-    const realityPrecisionClass = getScoreClass(evaluation.reality_references?.precision || 0);
+    const accuracyScore = evaluation.accuracy.accuracy_mean;
+    const coverageScore = evaluation.topic_coverage.coverage_score;
+    const axiomPrecisionScore = evaluation.axiom_references?.precision ?? 0;
+    const realityPrecisionScore = evaluation.reality_references?.precision ?? 0;
 
     // Collect all entities for analysis
     const allEntityValues = [];
@@ -425,18 +436,10 @@ function renderEvaluation(evaluation) {
             <div class="evaluation-header collapsed" role="button" tabindex="0" aria-expanded="false" onclick="toggleEvaluation(this)">
                 <div class="evaluation-id">Evaluation #${evaluation.input.id}</div>
                 <div class="scores">
-                    <div class="score-badge score-accuracy ${accuracyClass}">
-                        Accuracy: ${(evaluation.accuracy.accuracy_mean * 100).toFixed(0)}%
-                    </div>
-                    <div class="score-badge score-coverage ${coverageClass}">
-                        Coverage: ${(evaluation.topic_coverage.coverage_score * 100).toFixed(0)}%
-                    </div>
-                    <div class="score-badge ${axiomPrecisionClass}">
-                        Axiom: ${((evaluation.axiom_references?.precision || 0) * 100).toFixed(0)}%
-                    </div>
-                    <div class="score-badge ${realityPrecisionClass}">
-                        Reality: ${((evaluation.reality_references?.precision || 0) * 100).toFixed(0)}%
-                    </div>
+                    ${createScoreBadge('Accuracy', accuracyScore, 'score-accuracy')}
+                    ${createScoreBadge('Coverage', coverageScore, 'score-coverage')}
+                    ${createScoreBadge('Axiom', axiomPrecisionScore)}
+                    ${createScoreBadge('Reality', realityPrecisionScore)}
                 </div>
             </div>
             <div class="evaluation-content collapsed">
@@ -483,8 +486,8 @@ function renderEvaluation(evaluation) {
                 <div class="score-item">
                     <div class="score-header">
                         <h5>Accuracy (Mean)</h5>
-                        <span class="score-badge ${accuracyClass}">
-                            ${(evaluation.accuracy.accuracy_mean * 100).toFixed(0)}%
+                        <span class="score-badge ${getScoreClass(accuracyScore)}">
+                            ${(accuracyScore * 100).toFixed(0)}%
                         </span>
                     </div>
                     ${renderAccuracyDetails(evaluation.accuracy)}
@@ -492,8 +495,8 @@ function renderEvaluation(evaluation) {
                 <div class="score-item">
                     <div class="score-header">
                         <h5>Topic Coverage</h5>
-                        <span class="score-badge ${coverageClass}">
-                            ${(evaluation.topic_coverage.coverage_score * 100).toFixed(0)}%
+                        <span class="score-badge ${getScoreClass(coverageScore)}">
+                            ${(coverageScore * 100).toFixed(0)}%
                         </span>
                     </div>
                     <div class="score-reason">${convertLineBreaks(evaluation.topic_coverage.reason)}</div>
