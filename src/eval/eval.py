@@ -252,9 +252,7 @@ class QuestionAnswerFunction(Protocol):
         >>> answer = await my_qa_function(query="What if it rains?")
     """
 
-    # this is just the protocol
-    async def __call__(self, *,
-                       query: str) -> str:  # pyright: ignore[reportReturnType]
+    async def __call__(self, *, query: str) -> str:
         """
         Takes a user query and returns a generated answer.
 
@@ -264,6 +262,7 @@ class QuestionAnswerFunction(Protocol):
         Returns:
             A generated answer as a string
         """
+        ...
 
 
 class EvaluationResult(BaseModel):
