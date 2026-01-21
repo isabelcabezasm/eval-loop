@@ -23,9 +23,8 @@ from eval.models import (
 )
 from eval.report_generation.report import Report
 
-# =============================================================================
-# Reference Evaluation Functions
-# =============================================================================
+AXIOM_REFERENCE_PATTERN = r"\[A-\d+\]"
+REALITY_REFERENCE_PATTERN = r"\[R-\d+\]"
 
 
 def calculate_precision_recall(
@@ -33,12 +32,24 @@ def calculate_precision_recall(
 ) -> tuple[float, float]:
     """Calculate precision and recall for reference evaluation.
 
+    Precision measures how many of the found references are correct.
+    Recall measures how many of the expected references were found.
+
     Args:
-        found: List of references found in the answer
-        expected: List of expected references
+        found: List of references found in the answer.
+        expected: List of expected references.
 
     Returns:
-        Tuple of (precision, recall) scores between 0.0 and 1.0
+        Tuple of (precision, recall) scores between 0.0 and 1.0.
+        Returns (1.0, 1.0) when both lists are empty.
+
+    Examples:
+        >>> calculate_precision_recall(["A-001", "A-002"], ["A-001", "A-002"])
+        (1.0, 1.0)
+        >>> calculate_precision_recall(["A-001", "A-003"], ["A-001", "A-002"])
+        (0.5, 0.5)
+        >>> calculate_precision_recall([], [])
+        (1.0, 1.0)
     """
     found_set = set(found)
     expected_set = set(expected)
@@ -49,8 +60,10 @@ def calculate_precision_recall(
         return 1.0, 1.0
 
     true_positives = len(found_set & expected_set)
-    precision = true_positives / len(found_set) if found_set else 0.0
-    recall = true_positives / len(expected_set) if expected_set else 0.0
+    precision = round(true_positives / len(found_set), 4) if found_set else 0.0
+    recall = (
+        round(true_positives / len(expected_set), 4) if expected_set else 0.0
+    )
     return precision, recall
 
 
@@ -59,12 +72,28 @@ def evaluate_axiom_references(
 ) -> AxiomReferenceResults:
     """Evaluate axiom references found vs expected.
 
+    Extracts and normalizes axiom references from the LLM answer,
+    removing brackets (e.g., "[A-001]" -> "A-001"), then calculates
+    precision and recall against the expected references.
+
     Args:
-        real_axioms: Axiom references found in the LLM answer
-        expected_axioms: Expected axiom references
+        real_axioms: Axiom references found in the LLM answer,
+            typically extracted via regex (e.g., ["[A-001]", "[A-002]"]).
+        expected_axioms: Expected axiom references without brackets
+            (e.g., ["A-001", "A-002"]).
 
     Returns:
-        AxiomReferenceResults with precision and recall scores
+        AxiomReferenceResults containing the normalized found references,
+        expected references, and precision/recall scores.
+
+    Examples:
+        >>> result = evaluate_axiom_references(
+        ...     ["[A-001]", "[A-002]"], ["A-001", "A-002"]
+        ... )
+        >>> result.precision
+        1.0
+        >>> result.recall
+        1.0
     """
     # Normalize found axioms: "[A-001]" -> "A-001"
     normalized_found = list(set(ref.strip("[]") for ref in real_axioms))
@@ -85,12 +114,28 @@ def evaluate_reality_references(
 ) -> RealityReferenceResults:
     """Evaluate reality references found vs expected.
 
+    Extracts and normalizes reality references from the LLM answer,
+    removing brackets (e.g., "[R-001]" -> "R-001"), then calculates
+    precision and recall against the expected references.
+
     Args:
-        real_reality: Reality references found in the LLM answer
-        expected_reality: Expected reality references
+        real_reality: Reality references found in the LLM answer,
+            typically extracted via regex (e.g., ["[R-001]", "[R-002]"]).
+        expected_reality: Expected reality references without brackets
+            (e.g., ["R-001", "R-002"]).
 
     Returns:
-        RealityReferenceResults with precision and recall scores
+        RealityReferenceResults containing the normalized found references,
+        expected references, and precision/recall scores.
+
+    Examples:
+        >>> result = evaluate_reality_references(
+        ...     ["[R-001]", "[R-002]"], ["R-001", "R-002"]
+        ... )
+        >>> result.precision
+        1.0
+        >>> result.recall
+        1.0
     """
     # Normalize found reality refs: "[R-001]" -> "R-001"
     normalized_found = list(set(ref.strip("[]") for ref in real_reality))
@@ -180,8 +225,7 @@ class QuestionAnswerFunction(Protocol):
 
     # this is just the protocol
 
-    # pyright: ignore[reportReturnType]
-    async def __call__(self, *, query: str) -> str:
+    async def __call__(self, *, query: str) -> str:  # pyright: ignore[reportReturnType]
         """
         Takes a user query and returns a generated answer.
 
@@ -222,11 +266,20 @@ class EvaluationResult(BaseModel):
 async def evaluate_answer(
     sample_input: EvaluationSampleInput, llm_answer: str
 ) -> EvaluationSampleOutput:
-    """
-    Evaluate the quality of an LLM's answer against the given input.
+    """Evaluate the quality of an LLM's answer against the expected output.
 
-    This function assesses an LLM-generated answer by analyzing various metrics
-    including accuracy and topic coverage, and extracting relevant entities.
+    This function assesses an LLM-generated answer by analyzing multiple
+    metrics including accuracy, topic coverage, and reference evaluation
+    (axiom and reality references).
+
+    Args:
+        sample_input: The evaluation sample containing the query,
+            expected answer, and expected references.
+        llm_answer: The LLM-generated answer to evaluate.
+
+    Returns:
+        EvaluationSampleOutput containing the input, LLM response,
+        extracted entities, and all computed metrics.
     """
 
     engine = qa_eval_engine()
@@ -254,10 +307,12 @@ async def evaluate_answer(
         accuracy=accuracy,
         topic_coverage=topic_coverage,
         axiom_references=evaluate_axiom_references(
-            re.findall(r"\[A-\d+\]", llm_answer), sample_input.axioms_used
+            re.findall(AXIOM_REFERENCE_PATTERN, llm_answer),
+            sample_input.axioms_used,
         ),
         reality_references=evaluate_reality_references(
-            re.findall(r"\[R-\d+\]", llm_answer), sample_input.reality_used
+            re.findall(REALITY_REFERENCE_PATTERN, llm_answer),
+            sample_input.reality_used,
         ),
     )
 
@@ -390,11 +445,24 @@ async def run_evaluation(
     input_data_path: Path | None = None,
     ouptput_data_path: Path | None = None,
 ) -> None:
-    """
-    Run the evaluation process with the given data path.
+    """Run the full evaluation pipeline.
+
+    Executes the evaluation process by reading input samples, generating
+    LLM responses, computing evaluation metrics, and generating a report.
 
     Args:
-        data_path (str): Path to the data file or directory
+        question_answer_fn: Async function that takes a query and returns
+            an LLM-generated answer.
+        input_data_path: Path to the input JSON file containing evaluation
+            samples. Defaults to 'data/eval_dataset.json'.
+        ouptput_data_path: Path to the output directory for results.
+            Defaults to 'runs/{timestamp}'.
+
+    Side Effects:
+        - Creates output directory if it doesn't exist.
+        - Writes individual result markdown files for each sample.
+        - Writes evaluation_results.json with aggregated metrics.
+        - Generates an HTML report in the output directory.
     """
 
     input_path = input_data_path or root() / "data/eval_dataset.json"

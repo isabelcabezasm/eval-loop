@@ -19,6 +19,8 @@ from eval.eval import (
     calculate_precision_recall,
     evaluate_axiom_references,
     evaluate_reality_references,
+    AXIOM_REFERENCE_PATTERN as AXIOM_PATTERN,
+    REALITY_REFERENCE_PATTERN as REALITY_PATTERN,
 )
 from eval.models import (
     AxiomPrecisionMetric,
@@ -43,11 +45,6 @@ SAMPLE_AXIOMS_FOUND: AxiomReferences = ["A-001", "A-002", "A-004"]
 SAMPLE_REALITY_EXPECTED: RealityReferences = ["R-001", "R-002"]
 SAMPLE_REALITY_FOUND: RealityReferences = ["R-001", "R-003"]
 
-# Regex patterns for reference extraction
-AXIOM_PATTERN = r"\[A-\d+\]"
-REALITY_PATTERN = r"\[R-\d+\]"
-
-
 # =============================================================================
 # Tests for Precision/Recall Calculation
 # =============================================================================
@@ -64,17 +61,17 @@ REALITY_PATTERN = r"\[R-\d+\]"
         ([], ["A-001", "A-002"], 0.0, 0.0),
         # Found not empty, expected empty
         (["A-001"], [], 0.0, 0.0),
-        # Partial overlap (2/3 each)
+        # Partial overlap (2/3 each, rounded to 4 decimals)
         (
             ["A-001", "A-002", "A-004"],
             ["A-001", "A-002", "A-003"],
-            2 / 3,
-            2 / 3,
+            0.6667,
+            0.6667,
         ),
         # No overlap
         (["A-001", "A-002"], ["A-003", "A-004"], 0.0, 0.0),
-        # All found correct but missing some (precision=1, recall=1/3)
-        (["A-001"], ["A-001", "A-002", "A-003"], 1.0, 1 / 3),
+        # All found correct but missing some (precision=1, recall=1/3 rounded)
+        (["A-001"], ["A-001", "A-002", "A-003"], 1.0, 0.3333),
         # Found more than expected (precision=0.5, recall=1)
         (["A-001", "A-002", "A-003", "A-004"], ["A-001", "A-002"], 0.5, 1.0),
         # Duplicates in found (set removes them)
@@ -429,8 +426,8 @@ def test_statistics_calculation(
             AXIOM_PATTERN,
             evaluate_axiom_references,
             ["[A-001]", "[A-002]", "[A-003]"],
-            2 / 3,
-            2 / 3,
+            0.6667,
+            0.6667,
         ),
         # Reality evaluation workflow
         (
@@ -443,7 +440,7 @@ def test_statistics_calculation(
             evaluate_reality_references,
             ["[R-001]", "[R-002]"],
             1.0,
-            2 / 3,
+            0.6667,
         ),
     ],
     ids=["axiom_workflow", "reality_workflow"],
