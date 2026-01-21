@@ -16,11 +16,15 @@ import pytest
 from pytest import approx  # type: ignore[reportUnknownMemberType]
 
 from eval.eval import (
+    AXIOM_REFERENCE_PATTERN as AXIOM_PATTERN,
+)
+from eval.eval import (
+    REALITY_REFERENCE_PATTERN as REALITY_PATTERN,
+)
+from eval.eval import (
     calculate_precision_recall,
     evaluate_axiom_references,
     evaluate_reality_references,
-    AXIOM_REFERENCE_PATTERN as AXIOM_PATTERN,
-    REALITY_REFERENCE_PATTERN as REALITY_PATTERN,
 )
 from eval.models import (
     AxiomPrecisionMetric,
