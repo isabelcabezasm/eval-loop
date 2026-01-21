@@ -455,7 +455,7 @@ async def run_evaluation(
             an LLM-generated answer.
         input_data_path: Path to the input JSON file containing evaluation
             samples. Defaults to 'data/eval_dataset.json'.
-        ouptput_data_path: Path to the output directory for results.
+        output_data_path: Path to the output directory for results.
             Defaults to 'runs/{timestamp}'.
 
     Side Effects:
