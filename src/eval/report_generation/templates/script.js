@@ -559,7 +559,14 @@ function calculateSummaryStats() {
     const avgRealityPrecision = data.reality_precision_metric?.mean ?? 0;
     const avgRealityRecall = data.reality_recall_metric?.mean ?? 0;
 
-    const overallScore = (avgAccuracy + avgCoverage + avgAxiomRecall + avgRealityRecall) / 4;
+    const overallScore = (
+        avgAccuracy +
+        avgCoverage +
+        avgAxiomPrecision +
+        avgAxiomRecall +
+        avgRealityPrecision +
+        avgRealityRecall
+    ) / 6;
 
     // Safely update summary statistics elements
     const totalEl = document.getElementById('total-evaluations');
