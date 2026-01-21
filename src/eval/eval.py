@@ -27,6 +27,34 @@ AXIOM_REFERENCE_PATTERN = r"\[A-\d+\]"
 REALITY_REFERENCE_PATTERN = r"\[R-\d+\]"
 
 
+def calculate_mean_std(scores: list[float]) -> tuple[float, float]:
+    """Calculate mean and standard deviation for a list of scores.
+
+    Args:
+        scores: List of numeric scores to analyze.
+
+    Returns:
+        Tuple of (mean, standard_deviation). Returns (0.0, 0.0) for empty lists.
+        Standard deviation is 0.0 for single-element lists.
+
+    Examples:
+        >>> calculate_mean_std([1.0, 2.0, 3.0])
+        (2.0, 0.816496580927726)
+        >>> calculate_mean_std([5.0])
+        (5.0, 0.0)
+        >>> calculate_mean_std([])
+        (0.0, 0.0)
+    """
+    if not scores:
+        return 0.0, 0.0
+
+    mean = sum(scores) / len(scores)
+    variance = sum((score - mean) ** 2 for score in scores) / len(scores)
+    std = variance**0.5 if len(scores) > 1 else 0.0
+
+    return mean, std
+
+
 def calculate_precision_recall(
     found: list[str], expected: list[str]
 ) -> tuple[float, float]:
@@ -225,7 +253,8 @@ class QuestionAnswerFunction(Protocol):
 
     # this is just the protocol
 
-    async def __call__(self, *, query: str) -> str:  # pyright: ignore[reportReturnType]
+    async def __call__(self, *,
+                       query: str) -> str:  # pyright: ignore[reportReturnType]
         """
         Takes a user query and returns a generated answer.
 
@@ -345,79 +374,44 @@ def calculate_stats(
     accuracy_scores = [
         result.accuracy.accuracy_mean for result in evaluation_results
     ]
-    accuracy_mean = sum(accuracy_scores) / len(accuracy_scores)
-    accuracy_variance = sum(
-        (score - accuracy_mean) ** 2 for score in accuracy_scores
-    ) / len(accuracy_scores)
-    accuracy_std = accuracy_variance**0.5 if len(accuracy_scores) > 1 else 0.0
+    accuracy_mean, accuracy_std = calculate_mean_std(accuracy_scores)
 
     # Calculate topic coverage statistics
     coverage_scores = [
         result.topic_coverage.coverage_score for result in evaluation_results
     ]
-    coverage_mean = sum(coverage_scores) / len(coverage_scores)
-    coverage_variance = sum(
-        (score - coverage_mean) ** 2 for score in coverage_scores
-    ) / len(coverage_scores)
-    coverage_std = coverage_variance**0.5 if len(coverage_scores) > 1 else 0.0
+    coverage_mean, coverage_std = calculate_mean_std(coverage_scores)
 
     # Calculate axiom precision statistics
     axiom_precision_scores = [
         result.axiom_references.precision for result in evaluation_results
     ]
-    axiom_precision_mean = sum(axiom_precision_scores) / len(
+    axiom_precision_mean, axiom_precision_std = calculate_mean_std(
         axiom_precision_scores
-    )
-    axiom_precision_variance = sum(
-        (score - axiom_precision_mean) ** 2 for score in axiom_precision_scores
-    ) / len(axiom_precision_scores)
-    axiom_precision_std = (
-        axiom_precision_variance**0.5
-        if len(axiom_precision_scores) > 1
-        else 0.0
     )
 
     # Calculate axiom recall statistics
     axiom_recall_scores = [
         result.axiom_references.recall for result in evaluation_results
     ]
-    axiom_recall_mean = sum(axiom_recall_scores) / len(axiom_recall_scores)
-    axiom_recall_variance = sum(
-        (score - axiom_recall_mean) ** 2 for score in axiom_recall_scores
-    ) / len(axiom_recall_scores)
-    axiom_recall_std = (
-        axiom_recall_variance**0.5 if len(axiom_recall_scores) > 1 else 0.0
+    axiom_recall_mean, axiom_recall_std = calculate_mean_std(
+        axiom_recall_scores
     )
 
     # Calculate reality precision statistics
     reality_precision_scores = [
         result.reality_references.precision for result in evaluation_results
     ]
-    reality_precision_mean = sum(reality_precision_scores) / len(
+    reality_precision_mean, reality_precision_std = calculate_mean_std(
         reality_precision_scores
-    )
-    reality_precision_variance = sum(
-        (score - reality_precision_mean) ** 2
-        for score in reality_precision_scores
-    ) / len(reality_precision_scores)
-    reality_precision_std = (
-        reality_precision_variance**0.5
-        if len(reality_precision_scores) > 1
-        else 0.0
     )
 
     # Calculate reality recall statistics
     reality_recall_scores = [
         result.reality_references.recall for result in evaluation_results
     ]
-    reality_recall_mean = sum(reality_recall_scores) / len(
+    reality_recall_mean, reality_recall_std = calculate_mean_std(
         reality_recall_scores
-    )
-    reality_recall_variance = sum(
-        (score - reality_recall_mean) ** 2 for score in reality_recall_scores
-    ) / len(reality_recall_scores)
-    reality_recall_std = (
-        reality_recall_variance**0.5 if len(reality_recall_scores) > 1 else 0.0
     )
 
     return EvaluationResult(
