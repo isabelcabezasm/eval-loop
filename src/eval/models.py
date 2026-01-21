@@ -136,7 +136,7 @@ class AxiomReferenceResults(BaseModel):
         description="List of axiom references expected in the answer."
     )
     precision: float = Field(
-        description="Precision score for axiom references, between 0.0 and 1.0.",
+        description="Precision score for axiom references (0.0 to 1.0).",
         ge=0.0,
         le=1.0,
     )
@@ -151,6 +151,7 @@ class RealityReferenceResults(AxiomReferenceResults):
     """
     A model for storing reality reference evaluation results.
     """
+
     pass
 
 
