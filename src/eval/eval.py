@@ -225,7 +225,9 @@ class QuestionAnswerFunction(Protocol):
 
     # this is just the protocol
 
-    async def __call__(self, *, query: str) -> str:  # pyright: ignore[reportReturnType]
+    async def __call__(self,
+                       *,
+                       query: str) -> str:  # pyright: ignore[reportReturnType]
         """
         Takes a user query and returns a generated answer.
 
@@ -443,7 +445,7 @@ async def run_evaluation(
     *,
     question_answer_fn: QuestionAnswerFunction,
     input_data_path: Path | None = None,
-    ouptput_data_path: Path | None = None,
+    output_data_path: Path | None = None,
 ) -> None:
     """Run the full evaluation pipeline.
 
@@ -467,7 +469,7 @@ async def run_evaluation(
 
     input_path = input_data_path or root() / "data/eval_dataset.json"
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_path = ouptput_data_path or root() / f"runs/{timestamp}"
+    output_path = output_data_path or root() / f"runs/{timestamp}"
     output_path.mkdir(parents=True, exist_ok=True)
 
     print(f"Running evaluation with data path: {input_path}")
