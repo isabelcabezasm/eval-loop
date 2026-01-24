@@ -22,6 +22,7 @@ from eval.eval import (
     REALITY_REFERENCE_PATTERN as REALITY_PATTERN,
 )
 from eval.eval import (
+    calculate_mean_std,
     calculate_precision_recall,
     evaluate_axiom_references,
     evaluate_reality_references,
@@ -369,6 +370,54 @@ def test_metric_serialization() -> None:
     metric = AxiomPrecisionMetric(mean=0.85, std=0.1)
     data = metric.model_dump()
     assert data == {"mean": 0.85, "std": 0.1}
+
+
+# =============================================================================
+# Tests for calculate_mean_std Function
+# =============================================================================
+
+
+@pytest.mark.parametrize(
+    ("scores", "expected_mean", "expected_std"),
+    [
+        # Empty list
+        ([], 0.0, 0.0),
+        # Single element
+        ([5.0], 5.0, 0.0),
+        # Two elements
+        ([0.0, 1.0], 0.5, 0.5),
+        # Identical values
+        ([0.8, 0.8, 0.8, 0.8], 0.8, 0.0),
+        # Normal distribution of scores
+        ([0.8, 0.9, 0.7, 1.0], 0.85, 0.1118),
+        # All zeros
+        ([0.0, 0.0, 0.0], 0.0, 0.0),
+        # All ones
+        ([1.0, 1.0, 1.0], 1.0, 0.0),
+        # Large spread of values
+        ([0.0, 0.5, 1.0], 0.5, 0.408),
+        # Negative values (edge case)
+        ([-1.0, 0.0, 1.0], 0.0, 0.816),
+    ],
+    ids=[
+        "empty_list",
+        "single_element",
+        "two_elements",
+        "identical_values",
+        "normal_scores",
+        "all_zeros",
+        "all_ones",
+        "large_spread",
+        "negative_values",
+    ],
+)
+def test_calculate_mean_std(
+    scores: list[float], expected_mean: float, expected_std: float
+) -> None:
+    """Test calculate_mean_std utility function with various inputs."""
+    mean, std = calculate_mean_std(scores)
+    assert mean == approx(expected_mean)
+    assert std == approx(expected_std, rel=0.01)
 
 
 # =============================================================================
