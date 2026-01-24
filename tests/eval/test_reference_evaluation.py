@@ -264,7 +264,7 @@ def test_empty_references() -> None:
 
 
 def test_reference_results_inheritance() -> None:
-    """Both AxiomReferenceResults and RealityReferenceResults 
+    """Both AxiomReferenceResults and RealityReferenceResults
     inherit from ReferenceResults."""
     axiom_result = AxiomReferenceResults(
         references_found=[],
