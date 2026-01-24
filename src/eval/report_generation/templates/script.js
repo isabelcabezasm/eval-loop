@@ -1,5 +1,93 @@
-// Global entity color mapping
+// ============================================================================
+// Type Definitions (JSDoc)
+// ============================================================================
+
+/**
+ * @typedef {Object} EntityPair
+ * @property {string} trigger_variable - The trigger variable name
+ * @property {string} consequence_variable - The consequence variable name
+ */
+
+/**
+ * @typedef {Object} Entities
+ * @property {EntityPair[]} user_query_entities - Entities from user query
+ * @property {EntityPair[]} expected_answer_entities - Entities from expected answer
+ * @property {EntityPair[]} llm_answer_entities - Entities from LLM response
+ */
+
+/**
+ * @typedef {Object} ReferenceResults
+ * @property {string[]} references_expected - Expected reference identifiers
+ * @property {string[]} references_found - Found reference identifiers in response
+ * @property {number} precision - Precision score (0-1)
+ * @property {number} recall - Recall score (0-1)
+ */
+
+/**
+ * @typedef {Object} EntityAccuracyResult
+ * @property {string} entity - The entity being evaluated
+ * @property {number} score - Accuracy score (0-1)
+ * @property {string} reason - Explanation for the score
+ */
+
+/**
+ * @typedef {Object} AccuracyResults
+ * @property {number} accuracy_mean - Mean accuracy across all entities
+ * @property {EntityAccuracyResult[]} entity_accuracies - Per-entity accuracy results
+ */
+
+/**
+ * @typedef {Object} TopicCoverage
+ * @property {number} coverage_score - Coverage score (0-1)
+ * @property {string} reason - Explanation for the score
+ */
+
+/**
+ * @typedef {Object} EvaluationInput
+ * @property {number} id - Evaluation identifier
+ * @property {string} query - The user query
+ * @property {string} context - Context provided for the query
+ * @property {string} expected_answer - Expected correct answer
+ * @property {string|string[]} reasoning - Reasoning for expected answer
+ */
+
+/**
+ * @typedef {Object} EvaluationOutput
+ * @property {EvaluationInput} input - The input data for this evaluation
+ * @property {string} llm_response - The LLM's generated response
+ * @property {Entities} entities - Identified entities
+ * @property {AccuracyResults} accuracy - Accuracy evaluation results
+ * @property {TopicCoverage} topic_coverage - Topic coverage results
+ * @property {ReferenceResults} [axiom_references] - Axiom reference results (optional)
+ * @property {ReferenceResults} [reality_references] - Reality reference results (optional)
+ */
+
+/**
+ * @typedef {Object} MetricSummary
+ * @property {number} mean - Mean value of the metric
+ * @property {number} [min] - Minimum value (optional)
+ * @property {number} [max] - Maximum value (optional)
+ */
+
+/**
+ * @typedef {Object} EvaluationData
+ * @property {EvaluationOutput[]} evaluation_outputs - Array of evaluation results
+ * @property {MetricSummary} [accuracy] - Accuracy metric summary
+ * @property {MetricSummary} [topic_coverage] - Topic coverage metric summary
+ * @property {MetricSummary} [axiom_precision_metric] - Axiom precision metric summary
+ * @property {MetricSummary} [axiom_recall_metric] - Axiom recall metric summary
+ * @property {MetricSummary} [reality_precision_metric] - Reality precision metric summary
+ * @property {MetricSummary} [reality_recall_metric] - Reality recall metric summary
+ */
+
+// ============================================================================
+// Global State
+// ============================================================================
+
+/** @type {Map<string, number>} Maps entity names to their assigned color index */
 const entityColorMap = new Map();
+
+/** @type {number} Counter for assigning sequential color indices */
 let colorIndex = 0;
 
 /**
@@ -26,6 +114,19 @@ function getScoreClass(score) {
     if (score >= 0.7) return 'score-good';
     if (score >= 0.4) return 'score-medium';
     return 'score-poor';
+}
+
+/**
+ * Creates an HTML score badge with appropriate color styling.
+ * @param {string} label - The label to display (e.g., "Accuracy", "Coverage")
+ * @param {number} score - The score value between 0 and 1
+ * @param {string} [extraClass] - Optional additional CSS class (e.g., "score-accuracy")
+ * @returns {string} HTML string for the score badge
+ */
+function createScoreBadge(label, score, extraClass = '') {
+    const scoreClass = getScoreClass(score);
+    const classes = extraClass ? `score-badge ${extraClass} ${scoreClass}` : `score-badge ${scoreClass}`;
+    return `<div class="${classes}">${label}: ${(score * 100).toFixed(0)}%</div>`;
 }
 
 /**
@@ -119,23 +220,49 @@ function highlightEntitiesInText(text, entities) {
 }
 
 /**
- * Renders a list of axioms as styled tags in an HTML section.
- * Returns an empty string if no axioms are provided.
- * @param {Array<string>} axioms - Array of axiom strings to display
- * @returns {string} HTML string containing the axioms section, or empty string if no axioms
+ * Renders a comparison of expected vs found references (axioms or realities).
+ * Shows precision and recall scores along with the lists of references.
+ * @param {string} title - The title for the section (e.g., "Axiom References")
+ * @param {ReferenceResults|null|undefined} references - Reference evaluation results
+ * @returns {string} HTML string containing the references comparison section, or empty string if no references
  */
-function renderAxioms(axioms) {
-    if (!axioms || axioms.length === 0) {
+function renderReferences(title, references) {
+    if (!references) {
         return '';
     }
 
+    const precisionClass = getScoreClass(references.precision);
+    const recallClass = getScoreClass(references.recall);
+
     return `
-        <div class="axioms">
-            <h4>Related Axioms</h4>
-            <div class="axiom-list">
-                ${axioms.map(axiom => `
-                    <span class="axiom-tag">${axiom}</span>
-                `).join('')}
+        <div class="references-section">
+            <h4>${title}</h4>
+            <div class="references-grid">
+                <div class="references-card">
+                    <h5>Expected</h5>
+                    <div class="reference-list">
+                        ${references.references_expected.length > 0 ?
+            references.references_expected.map(ref => `
+                                <span class="reference-tag expected-tag">${ref}</span>
+                            `).join('') :
+            '<p style="color: #666; font-style: italic;">None expected</p>'}
+                    </div>
+                </div>
+                <div class="references-card">
+                    <h5>Found in Response</h5>
+                    <div class="reference-list">
+                        ${references.references_found.length > 0 ?
+            references.references_found.map(ref => {
+                const isMatch = references.references_expected.includes(ref);
+                return `<span class="reference-tag ${isMatch ? 'found-match-tag' : 'found-nomatch-tag'}">${ref}</span>`;
+            }).join('') :
+            '<p style="color: #666; font-style: italic;">None found</p>'}
+                    </div>
+                </div>
+            </div>
+            <div class="references-metrics">
+                <span class="score-badge ${precisionClass}">Precision: ${(references.precision * 100).toFixed(0)}%</span>
+                <span class="score-badge ${recallClass}">Recall: ${(references.recall * 100).toFixed(0)}%</span>
             </div>
         </div>
     `;
@@ -145,10 +272,7 @@ function renderAxioms(axioms) {
  * Renders entity information in a three-column grid layout.
  * Displays query entities, expected answer entities, and LLM answer entities.
  * Each entity pair shows trigger variable → consequence variable with consistent colors.
- * @param {Object} entities - Object containing three arrays of entity pairs
- * @param {Array} entities.user_query_entities - Entities from user query
- * @param {Array} entities.expected_answer_entities - Entities from expected answer
- * @param {Array} entities.llm_answer_entities - Entities from LLM response
+ * @param {Entities} entities - Object containing three arrays of entity pairs
  * @returns {string} HTML string containing the entities grid layout
  */
 function renderEntities(entities) {
@@ -221,8 +345,7 @@ function renderEntities(entities) {
 /**
  * Renders detailed accuracy information showing entity-level scores and reasons.
  * Displays each entity's accuracy score as a percentage with explanatory text.
- * @param {Object} accuracy - Accuracy object containing entity_accuracies array
- * @param {Array} accuracy.entity_accuracies - Array of entity accuracy results
+ * @param {AccuracyResults} accuracy - Accuracy evaluation results
  * @returns {string} HTML string containing the accuracy details section
  */
 function renderAccuracyDetails(accuracy) {
@@ -252,14 +375,16 @@ function renderAccuracyDetails(accuracy) {
  * Renders a complete evaluation item with collapsible content.
  * Includes query, expected/LLM responses with entity highlighting, scores, and detailed analysis.
  * Only highlights entities that appear in both expected and LLM responses for clarity.
- * @param {Object} evaluation - Complete evaluation object containing input, responses, and scores
+ * @param {EvaluationOutput} evaluation - Complete evaluation object containing input, responses, and scores
  * @returns {string} HTML string containing the full evaluation display
  */
 function renderEvaluation(evaluation) {
-    const accuracyClass = getScoreClass(evaluation.accuracy.accuracy_mean);
-    const coverageClass = getScoreClass(
-        evaluation.topic_coverage.coverage_score
-    );
+    const accuracyScore = evaluation.accuracy.accuracy_mean;
+    const coverageScore = evaluation.topic_coverage.coverage_score;
+    const axiomPrecisionScore = evaluation.axiom_references?.precision ?? 0;
+    const axiomRecallScore = evaluation.axiom_references?.recall ?? 0;
+    const realityPrecisionScore = evaluation.reality_references?.precision ?? 0;
+    const realityRecallScore = evaluation.reality_references?.recall ?? 0;
 
     // Collect all entities for analysis
     const allEntityValues = [];
@@ -313,12 +438,12 @@ function renderEvaluation(evaluation) {
             <div class="evaluation-header collapsed" role="button" tabindex="0" aria-expanded="false" onclick="toggleEvaluation(this)">
                 <div class="evaluation-id">Evaluation #${evaluation.input.id}</div>
                 <div class="scores">
-                    <div class="score-badge score-accuracy ${accuracyClass}">
-                        Accuracy: ${(evaluation.accuracy.accuracy_mean * 100).toFixed(0)}%
-                    </div>
-                    <div class="score-badge score-coverage ${coverageClass}">
-                        Coverage: ${(evaluation.topic_coverage.coverage_score * 100).toFixed(0)}%
-                    </div>
+                    ${createScoreBadge('Accuracy', accuracyScore, 'score-accuracy')}
+                    ${createScoreBadge('Coverage', coverageScore, 'score-coverage')}
+                    ${createScoreBadge('Axiom P', axiomPrecisionScore)}
+                    ${createScoreBadge('Axiom R', axiomRecallScore)}
+                    ${createScoreBadge('Reality P', realityPrecisionScore)}
+                    ${createScoreBadge('Reality R', realityRecallScore)}
                 </div>
             </div>
             <div class="evaluation-content collapsed">
@@ -355,7 +480,8 @@ function renderEvaluation(evaluation) {
                 ${formatReasoning(evaluation.input.reasoning)}
             </div>
 
-            ${renderAxioms(evaluation.input.axioms_used)}
+            ${renderReferences('Axiom References', evaluation.axiom_references)}
+            ${renderReferences('Reality References', evaluation.reality_references)}
 
             ${renderEntities(evaluation.entities)}
 
@@ -364,8 +490,8 @@ function renderEvaluation(evaluation) {
                 <div class="score-item">
                     <div class="score-header">
                         <h5>Accuracy (Mean)</h5>
-                        <span class="score-badge ${accuracyClass}">
-                            ${(evaluation.accuracy.accuracy_mean * 100).toFixed(0)}%
+                        <span class="score-badge ${getScoreClass(accuracyScore)}">
+                            ${(accuracyScore * 100).toFixed(0)}%
                         </span>
                     </div>
                     ${renderAccuracyDetails(evaluation.accuracy)}
@@ -373,8 +499,8 @@ function renderEvaluation(evaluation) {
                 <div class="score-item">
                     <div class="score-header">
                         <h5>Topic Coverage</h5>
-                        <span class="score-badge ${coverageClass}">
-                            ${(evaluation.topic_coverage.coverage_score * 100).toFixed(0)}%
+                        <span class="score-badge ${getScoreClass(coverageScore)}">
+                            ${(coverageScore * 100).toFixed(0)}%
                         </span>
                     </div>
                     <div class="score-reason">${convertLineBreaks(evaluation.topic_coverage.reason)}</div>
@@ -389,6 +515,7 @@ function renderEvaluation(evaluation) {
  * Pre-processes all evaluation data to assign consistent colors to entities.
  * Ensures the same entity always gets the same color across all evaluations.
  * Collects all unique entities and assigns them sequential color indices.
+ * @returns {void}
  */
 function initializeEntityColors() {
     // Pre-process all entities to assign consistent colors
@@ -419,17 +546,38 @@ function initializeEntityColors() {
 }
 
 /**
- * Calculates and displays summary statistics for all evaluations.
- * Computes average accuracy, coverage, and overall scores, then updates DOM elements.
+ * Displays summary statistics from pre-calculated metrics in the evaluation data.
  * Updates the summary statistics section at the top of the report.
+ * Includes defensive checks for missing metric fields.
+ * @returns {void}
  */
 function calculateSummaryStats() {
-    const evaluations = window.evaluationData.evaluation_outputs;
-    const totalEvaluations = evaluations.length;
+    const data = window.evaluationData;
+    const totalEvaluations = data.evaluation_outputs?.length ?? 0;
 
-    const avgAccuracy = evaluations.reduce((sum, evaluation) => sum + evaluation.accuracy.accuracy_mean, 0) / totalEvaluations;
-    const avgCoverage = evaluations.reduce((sum, evaluation) => sum + evaluation.topic_coverage.coverage_score, 0) / totalEvaluations;
-    const overallScore = (avgAccuracy + avgCoverage) / 2;
+    // Use pre-calculated metrics from the JSON with defensive null checks
+    const avgAccuracy = data.accuracy?.mean ?? 0;
+    const avgCoverage = data.topic_coverage?.mean ?? 0;
+    const avgAxiomPrecision = data.axiom_precision_metric?.mean ?? 0;
+    const avgAxiomRecall = data.axiom_recall_metric?.mean ?? 0;
+    const avgRealityPrecision = data.reality_precision_metric?.mean ?? 0;
+    const avgRealityRecall = data.reality_recall_metric?.mean ?? 0;
+
+    // Overall score is the unweighted average of all 6 evaluation metrics:
+    // - Accuracy: How well the LLM response matches the expected answer
+    // - Coverage: How well the response covers the expected topics
+    // - Axiom Precision: Proportion of cited axioms that are relevant
+    // - Axiom Recall: Proportion of relevant axioms that were cited
+    // - Reality Precision: Proportion of cited reality facts that are relevant
+    // - Reality Recall: Proportion of relevant reality facts that were cited
+    const overallScore = (
+        avgAccuracy +
+        avgCoverage +
+        avgAxiomPrecision +
+        avgAxiomRecall +
+        avgRealityPrecision +
+        avgRealityRecall
+    ) / 6;
 
     // Safely update summary statistics elements
     const totalEl = document.getElementById('total-evaluations');
@@ -441,6 +589,18 @@ function calculateSummaryStats() {
     const coverageEl = document.getElementById('avg-coverage');
     if (coverageEl) coverageEl.textContent = avgCoverage.toFixed(2);
 
+    const axiomPrecisionEl = document.getElementById('avg-axiom-precision');
+    if (axiomPrecisionEl) axiomPrecisionEl.textContent = avgAxiomPrecision.toFixed(2);
+
+    const axiomRecallEl = document.getElementById('avg-axiom-recall');
+    if (axiomRecallEl) axiomRecallEl.textContent = avgAxiomRecall.toFixed(2);
+
+    const realityPrecisionEl = document.getElementById('avg-reality-precision');
+    if (realityPrecisionEl) realityPrecisionEl.textContent = avgRealityPrecision.toFixed(2);
+
+    const realityRecallEl = document.getElementById('avg-reality-recall');
+    if (realityRecallEl) realityRecallEl.textContent = avgRealityRecall.toFixed(2);
+
     const overallEl = document.getElementById('overall-score');
     if (overallEl) overallEl.textContent = overallScore.toFixed(2);
 }
@@ -450,6 +610,7 @@ function calculateSummaryStats() {
  * Processes each evaluation through renderEvaluation() and concatenates the results.
  * Updates the evaluations container with the complete HTML content.
  * Attaches keyboard event handlers to evaluation headers for accessibility.
+ * @returns {void}
  */
 function renderEvaluations() {
     const container = document.getElementById('evaluations-container');
@@ -499,13 +660,16 @@ function toggleEvaluation(headerElement) {
     }
 }
 
+// ============================================================================
+// Initialization
+// ============================================================================
+
 /**
- * Main initialization function that loads evaluation data and sets up the page.
+ * Main initialization - loads evaluation data and sets up the page.
  * Fetches JSON data, validates structure, makes it globally available, and
  * initializes all page components.
  * Handles errors gracefully by displaying error messages to the user.
  */
-// Load evaluation data and initialize the page
 fetch('evaluation_data.json')
     .then(response => response.json())
     .then(evaluationData => {

@@ -28,7 +28,8 @@ def sample_evaluation_data() -> dict[str, Any]:
                         "account is $10,000"
                     ),
                     "reasoning": ["Premium account requirements"],
-                    "axioms_used": ["AXIOM-001"],
+                    "axioms_used": ["A-001"],
+                    "reality_used": ["R-001"],
                 },
                 "llm_response": (
                     "The minimum balance required for a premium savings "
@@ -75,6 +76,18 @@ def sample_evaluation_data() -> dict[str, Any]:
                     "reason": "Good coverage of expected topics",
                     "coverage_score": 0.9,
                 },
+                "axiom_references": {
+                    "references_found": ["A-001"],
+                    "references_expected": ["A-001"],
+                    "precision": 1.0,
+                    "recall": 1.0,
+                },
+                "reality_references": {
+                    "references_found": ["R-001"],
+                    "references_expected": ["R-001"],
+                    "precision": 1.0,
+                    "recall": 1.0,
+                },
             },
             {
                 "input": {
@@ -90,6 +103,7 @@ def sample_evaluation_data() -> dict[str, Any]:
                     ),
                     "reasoning": ["Standard fixed deposit rates"],
                     "axioms_used": [],
+                    "reality_used": [],
                 },
                 "llm_response": (
                     "The interest rate for a 12-month fixed deposit is "
@@ -132,6 +146,18 @@ def sample_evaluation_data() -> dict[str, Any]:
                     "reason": "Full coverage of expected content",
                     "coverage_score": 1.0,
                 },
+                "axiom_references": {
+                    "references_found": [],
+                    "references_expected": [],
+                    "precision": 1.0,
+                    "recall": 1.0,
+                },
+                "reality_references": {
+                    "references_found": [],
+                    "references_expected": [],
+                    "precision": 1.0,
+                    "recall": 1.0,
+                },
             },
         ],
         "accuracy": {
@@ -141,6 +167,22 @@ def sample_evaluation_data() -> dict[str, Any]:
         "topic_coverage": {
             "mean": 0.95,
             "std": 0.05,
+        },
+        "axiom_precision_metric": {
+            "mean": 1.0,
+            "std": 0.0,
+        },
+        "axiom_recall_metric": {
+            "mean": 1.0,
+            "std": 0.0,
+        },
+        "reality_precision_metric": {
+            "mean": 1.0,
+            "std": 0.0,
+        },
+        "reality_recall_metric": {
+            "mean": 1.0,
+            "std": 0.0,
         },
     }
 
@@ -232,6 +274,10 @@ def test_load_json_data_complete_structure_no_error(
         "evaluation_outputs": [],
         "accuracy": {"mean": 0.0, "std": 0.0},
         "topic_coverage": {"mean": 0.0, "std": 0.0},
+        "axiom_precision_metric": {"mean": 0.0, "std": 0.0},
+        "axiom_recall_metric": {"mean": 0.0, "std": 0.0},
+        "reality_precision_metric": {"mean": 0.0, "std": 0.0},
+        "reality_recall_metric": {"mean": 0.0, "std": 0.0},
     }
     with open(complete_json_file, "w", encoding="utf-8") as f:
         json.dump(complete_data, f)

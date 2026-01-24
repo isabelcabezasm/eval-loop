@@ -1,5 +1,8 @@
 from pydantic import BaseModel, Field
 
+AxiomReferences = list[str]
+RealityReferences = list[str]
+
 
 class Entity(BaseModel):
     """
@@ -121,6 +124,49 @@ class TopicCoverageEvaluationResults(BaseModel):
     )
 
 
+class ReferenceResults(BaseModel):
+    """
+    Base model for storing reference evaluation results.
+
+    This class provides the common structure for evaluating references
+    (axioms or reality facts) cited in LLM responses against expected
+    references.
+    """
+
+    references_found: list[str] = Field(
+        description="List of references found in the LLM answer."
+    )
+    references_expected: list[str] = Field(
+        description="List of references expected in the answer."
+    )
+    precision: float = Field(
+        description="Precision score for references (0.0 to 1.0).",
+        ge=0.0,
+        le=1.0,
+    )
+    recall: float = Field(
+        description="Recall score for references, between 0.0 and 1.0.",
+        ge=0.0,
+        le=1.0,
+    )
+
+
+class AxiomReferenceResults(ReferenceResults):
+    """
+    A model for storing axiom reference evaluation results.
+    """
+
+    pass
+
+
+class RealityReferenceResults(ReferenceResults):
+    """
+    A model for storing reality reference evaluation results.
+    """
+
+    pass
+
+
 class Metric(BaseModel):
     """
     A data model representing statistical metrics with mean and standard
@@ -173,6 +219,30 @@ class CoverageMetric(Metric):
     """
 
 
+class AxiomPrecisionMetric(Metric):
+    """
+    A metric class for measuring axiom reference precision during evaluation.
+    """
+
+
+class AxiomRecallMetric(Metric):
+    """
+    A metric class for measuring axiom reference recall during evaluation.
+    """
+
+
+class RealityPrecisionMetric(Metric):
+    """
+    A metric class for measuring reality reference precision during evaluation.
+    """
+
+
+class RealityRecallMetric(Metric):
+    """
+    A metric class for measuring reality reference recall during evaluation.
+    """
+
+
 class EvaluationSampleInput(BaseModel):
     """
     A data model representing input data for evaluation samples.
@@ -192,6 +262,8 @@ class EvaluationSampleInput(BaseModel):
             that lead to the expected answer.
         axioms_used (list[str]): List of axioms, rules, or principles
             applied in deriving the expected answer.
+        reality_used (list[str]): List of real-world facts or data
+            referenced in formulating the expected answer.
     """
 
     id: int
@@ -199,7 +271,8 @@ class EvaluationSampleInput(BaseModel):
     context: str
     expected_answer: str
     reasoning: list[str]
-    axioms_used: list[str]
+    axioms_used: AxiomReferences
+    reality_used: RealityReferences
 
 
 class EvaluationSampleOutput(BaseModel):
@@ -228,6 +301,8 @@ class EvaluationSampleOutput(BaseModel):
     entities: EntityExtraction
     accuracy: AccuracyEvaluationResults
     topic_coverage: TopicCoverageEvaluationResults
+    axiom_references: AxiomReferenceResults
+    reality_references: RealityReferenceResults
 
 
 class EvaluationResult(BaseModel):
@@ -246,8 +321,24 @@ class EvaluationResult(BaseModel):
             predictions or responses across the evaluation dataset.
         topic_coverage (CoverageMetric): Metric measuring how well the
             evaluation spans different topics or categories in the domain.
+        axiom_precision_metric (AxiomPrecisionMetric): Metric measuring
+            the precision of axiom references (ratio of correct axiom
+            references to total axiom references found).
+        axiom_recall_metric (AxiomRecallMetric): Metric measuring the
+            recall of axiom references (ratio of found axiom references
+            to expected axiom references).
+        reality_precision_metric (RealityPrecisionMetric): Metric measuring
+            the precision of reality references (ratio of correct reality
+            references to total reality references found).
+        reality_recall_metric (RealityRecallMetric): Metric measuring the
+            recall of reality references (ratio of found reality references
+            to expected reality references).
     """
 
     evaluation_outputs: list[EvaluationSampleOutput]
     accuracy: AccuracyMetric
     topic_coverage: CoverageMetric
+    axiom_precision_metric: AxiomPrecisionMetric
+    axiom_recall_metric: AxiomRecallMetric
+    reality_precision_metric: RealityPrecisionMetric
+    reality_recall_metric: RealityRecallMetric
