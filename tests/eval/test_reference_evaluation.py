@@ -13,6 +13,7 @@ import re
 from typing import Any
 
 import pytest
+from pydantic import ValidationError
 from pytest import approx  # type: ignore[reportUnknownMemberType]
 
 from eval.eval import (
@@ -246,7 +247,7 @@ def test_reference_results_validation_bounds(
         "recall": 0.5,
     }
     kwargs[field] = invalid_value
-    with pytest.raises(ValueError):
+    with pytest.raises(ValidationError):
         _ = AxiomReferenceResults(**kwargs)
 
 
@@ -263,7 +264,8 @@ def test_empty_references() -> None:
 
 
 def test_reference_results_inheritance() -> None:
-    """Both AxiomReferenceResults and RealityReferenceResults inherit from ReferenceResults."""
+    """Both AxiomReferenceResults and RealityReferenceResults 
+    inherit from ReferenceResults."""
     axiom_result = AxiomReferenceResults(
         references_found=[],
         references_expected=[],
