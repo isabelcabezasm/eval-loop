@@ -36,6 +36,7 @@ from eval.models import (
     RealityRecallMetric,
     RealityReferenceResults,
     RealityReferences,
+    ReferenceResults,
 )
 
 # =============================================================================
@@ -261,15 +262,25 @@ def test_empty_references() -> None:
     assert result.references_expected == []
 
 
-def test_reality_inherits_from_axiom_results() -> None:
-    """RealityReferenceResults inherits from AxiomReferenceResults."""
-    result = RealityReferenceResults(
+def test_reference_results_inheritance() -> None:
+    """Both AxiomReferenceResults and RealityReferenceResults inherit from ReferenceResults."""
+    axiom_result = AxiomReferenceResults(
         references_found=[],
         references_expected=[],
         precision=0.0,
         recall=0.0,
     )
-    assert isinstance(result, AxiomReferenceResults)
+    reality_result = RealityReferenceResults(
+        references_found=[],
+        references_expected=[],
+        precision=0.0,
+        recall=0.0,
+    )
+    assert isinstance(axiom_result, ReferenceResults)
+    assert isinstance(reality_result, ReferenceResults)
+    # Ensure they are not related to each other
+    assert not isinstance(axiom_result, RealityReferenceResults)
+    assert not isinstance(reality_result, AxiomReferenceResults)
 
 
 # =============================================================================

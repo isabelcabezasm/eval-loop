@@ -124,30 +124,42 @@ class TopicCoverageEvaluationResults(BaseModel):
     )
 
 
-class AxiomReferenceResults(BaseModel):
+class ReferenceResults(BaseModel):
     """
-    A model for storing axiom reference evaluation results.
+    Base model for storing reference evaluation results.
+
+    This class provides the common structure for evaluating references
+    (axioms or reality facts) cited in LLM responses against expected
+    references.
     """
 
-    references_found: AxiomReferences = Field(
-        description="List of axiom references found in the LLM answer."
+    references_found: list[str] = Field(
+        description="List of references found in the LLM answer."
     )
-    references_expected: AxiomReferences = Field(
-        description="List of axiom references expected in the answer."
+    references_expected: list[str] = Field(
+        description="List of references expected in the answer."
     )
     precision: float = Field(
-        description="Precision score for axiom references (0.0 to 1.0).",
+        description="Precision score for references (0.0 to 1.0).",
         ge=0.0,
         le=1.0,
     )
     recall: float = Field(
-        description="Recall score for axiom references, between 0.0 and 1.0.",
+        description="Recall score for references, between 0.0 and 1.0.",
         ge=0.0,
         le=1.0,
     )
 
 
-class RealityReferenceResults(AxiomReferenceResults):
+class AxiomReferenceResults(ReferenceResults):
+    """
+    A model for storing axiom reference evaluation results.
+    """
+
+    pass
+
+
+class RealityReferenceResults(ReferenceResults):
     """
     A model for storing reality reference evaluation results.
     """
