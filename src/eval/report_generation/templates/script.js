@@ -382,7 +382,9 @@ function renderEvaluation(evaluation) {
     const accuracyScore = evaluation.accuracy.accuracy_mean;
     const coverageScore = evaluation.topic_coverage.coverage_score;
     const axiomPrecisionScore = evaluation.axiom_references?.precision ?? 0;
+    const axiomRecallScore = evaluation.axiom_references?.recall ?? 0;
     const realityPrecisionScore = evaluation.reality_references?.precision ?? 0;
+    const realityRecallScore = evaluation.reality_references?.recall ?? 0;
 
     // Collect all entities for analysis
     const allEntityValues = [];
@@ -438,8 +440,10 @@ function renderEvaluation(evaluation) {
                 <div class="scores">
                     ${createScoreBadge('Accuracy', accuracyScore, 'score-accuracy')}
                     ${createScoreBadge('Coverage', coverageScore, 'score-coverage')}
-                    ${createScoreBadge('Axiom', axiomPrecisionScore)}
-                    ${createScoreBadge('Reality', realityPrecisionScore)}
+                    ${createScoreBadge('Axiom P', axiomPrecisionScore)}
+                    ${createScoreBadge('Axiom R', axiomRecallScore)}
+                    ${createScoreBadge('Reality P', realityPrecisionScore)}
+                    ${createScoreBadge('Reality R', realityRecallScore)}
                 </div>
             </div>
             <div class="evaluation-content collapsed">
@@ -559,6 +563,13 @@ function calculateSummaryStats() {
     const avgRealityPrecision = data.reality_precision_metric?.mean ?? 0;
     const avgRealityRecall = data.reality_recall_metric?.mean ?? 0;
 
+    // Overall score is the unweighted average of all 6 evaluation metrics:
+    // - Accuracy: How well the LLM response matches the expected answer
+    // - Coverage: How well the response covers the expected topics
+    // - Axiom Precision: Proportion of cited axioms that are relevant
+    // - Axiom Recall: Proportion of relevant axioms that were cited
+    // - Reality Precision: Proportion of cited reality facts that are relevant
+    // - Reality Recall: Proportion of relevant reality facts that were cited
     const overallScore = (
         avgAccuracy +
         avgCoverage +
