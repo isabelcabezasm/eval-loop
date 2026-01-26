@@ -37,9 +37,17 @@ function escapeHtml(text: string | null | undefined): string {
   if (text == null) {
     return "";
   }
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
+  const entityMap: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+    '/': '&#x2F;',
+    '`': '&#x60;',
+    '=': '&#x3D;',
+  };
+  return String(text).replace(/[&<>"'`=\/]/g, (ch) => entityMap[ch]);
 }
 
 /**
