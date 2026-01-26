@@ -7,7 +7,10 @@ cd "$(dirname "$0")/.."
 
 # Display usage information
 usage() {  
-    echo "Usage: $0 [-skipIT] [be | fe]"
+    echo "Usage: $0 [-skipIT] [be | fe | js]"
+    echo "  be  - Run backend (Python) tests"
+    echo "  fe  - Run frontend tests (alias for js)"
+    echo "  js  - Run JavaScript/TypeScript tests"
     echo "  If no argument is provided, runs all tests (backend and frontend)"
     exit 1
 }
@@ -39,7 +42,8 @@ case "$target" in
         fi    
         ;;  
 
-    fe)    
+    fe|js)  # Frontend/JavaScript tests
+        echo "Running JavaScript/TypeScript tests..."
         npm run test    
         ;;
 
@@ -51,7 +55,7 @@ case "$target" in
             uv run pytest --cov=src/ --cov-report=xml:coverage.xml --cov-report=term-missing    
         fi
         echo ""
-        echo "Running frontend tests..."
+        echo "Running JavaScript/TypeScript tests..."
         npm run test
         ;;
     # 
