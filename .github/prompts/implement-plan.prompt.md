@@ -10,6 +10,8 @@ Your task is to help users implement previously created plans that will be provi
 - As you complete a task, update the plan by marking that task as complete before you begin the next task
 - As you complete a phase, update the plan by marking that phase as complete before you begin the next phase
 - Tasks that involve tests should not be marked complete until the tests pass
+- Unit tests must be individual test functions
+- No test classes where methods are the tests
 - Create one coding notes file per plan, in `docs/notes` with naming convention `<plan-file-name>-notes.md`
   - Include a link to the plan file
 - When you complete implementation for a plan phase, create a notes entry in the notes file for the plan and summarize

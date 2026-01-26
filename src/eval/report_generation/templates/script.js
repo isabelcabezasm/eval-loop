@@ -78,7 +78,42 @@
  * @property {MetricSummary} [axiom_recall_metric] - Axiom recall metric summary
  * @property {MetricSummary} [reality_precision_metric] - Reality precision metric summary
  * @property {MetricSummary} [reality_recall_metric] - Reality recall metric summary
+ * @property {AxiomItem[]} [axiom_definitions] - Axiom definitions (optional)
+ * @property {RealityItem[]} [reality_definitions] - Reality item definitions (optional)
  */
+
+/**
+ * @typedef {Object} AxiomItem
+ * @property {string} id - Unique identifier for the axiom
+ * @property {string} description - Description of the axiom
+ */
+
+/**
+ * @typedef {Object} RealityItem
+ * @property {string} id - Unique identifier for the reality item
+ * @property {string} description - Description of the reality item
+ */
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+/**
+ * Escapes HTML special characters to prevent XSS attacks.
+ * @param {string} unsafe - String that may contain HTML special characters
+ * @returns {string} Escaped string safe for HTML insertion
+ */
+function escapeHtml(unsafe) {
+    if (typeof unsafe !== 'string') {
+        return '';
+    }
+    return unsafe
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
 
 // ============================================================================
 // Global State
@@ -220,17 +255,59 @@ function highlightEntitiesInText(text, entities) {
 }
 
 /**
+ * Builds a lookup map from definitions array for quick ID-to-description lookup.
+ * Works with both axiom definitions (axiom_id) and reality definitions (reality_id).
+ * @param {AxiomItem[]|RealityItem[]|undefined} definitions - Array of definition items
+ * @returns {Map<string, string>} Map from ID to description
+ */
+function buildDefinitionsMap(definitions) {
+    const map = new Map();
+    if (!definitions || !Array.isArray(definitions)) {
+        return map;
+    }
+    definitions.forEach(item => {
+        // Both axiom and reality items use 'id' field
+        const id = item.id;
+        if (id && item.description) {
+            map.set(id, item.description);
+        }
+    });
+    return map;
+}
+
+/**
+ * Renders a single reference tag with optional tooltip showing description.
+ * @param {string} refId - The reference ID (e.g., "A-001" or "R-001")
+ * @param {string} tagClass - CSS class for the tag styling
+ * @param {Map<string, string>} definitionsMap - Map from ID to description
+ * @returns {string} HTML string for the reference tag
+ */
+function renderReferenceTag(refId, tagClass, definitionsMap) {
+    const escapedRefId = escapeHtml(refId);
+    const description = definitionsMap.get(refId);
+    if (description) {
+        // Escape description for safe attribute value (already done by escapeHtml)
+        const escapedDescription = escapeHtml(description);
+        return `<span class="reference-tag ${tagClass}" data-tooltip="${escapedDescription}" tabindex="0">${escapedRefId}</span>`;
+    }
+    return `<span class="reference-tag ${tagClass}">${escapedRefId}</span>`;
+}
+
+/**
  * Renders a comparison of expected vs found references (axioms or realities).
  * Shows precision and recall scores along with the lists of references.
+ * Reference tags display tooltips with descriptions when definitions are provided.
  * @param {string} title - The title for the section (e.g., "Axiom References")
  * @param {ReferenceResults|null|undefined} references - Reference evaluation results
+ * @param {Map<string, string>} [definitionsMap] - Optional map from ID to description for tooltips
  * @returns {string} HTML string containing the references comparison section, or empty string if no references
  */
-function renderReferences(title, references) {
+function renderReferences(title, references, definitionsMap) {
     if (!references) {
         return '';
     }
 
+    const defMap = definitionsMap || new Map();
     const precisionClass = getScoreClass(references.precision);
     const recallClass = getScoreClass(references.recall);
 
@@ -242,9 +319,9 @@ function renderReferences(title, references) {
                     <h5>Expected</h5>
                     <div class="reference-list">
                         ${references.references_expected.length > 0 ?
-            references.references_expected.map(ref => `
-                                <span class="reference-tag expected-tag">${ref}</span>
-                            `).join('') :
+            references.references_expected.map(ref =>
+                renderReferenceTag(ref, 'expected-tag', defMap)
+            ).join('') :
             '<p style="color: #666; font-style: italic;">None expected</p>'}
                     </div>
                 </div>
@@ -254,7 +331,8 @@ function renderReferences(title, references) {
                         ${references.references_found.length > 0 ?
             references.references_found.map(ref => {
                 const isMatch = references.references_expected.includes(ref);
-                return `<span class="reference-tag ${isMatch ? 'found-match-tag' : 'found-nomatch-tag'}">${ref}</span>`;
+                const tagClass = isMatch ? 'found-match-tag' : 'found-nomatch-tag';
+                return renderReferenceTag(ref, tagClass, defMap);
             }).join('') :
             '<p style="color: #666; font-style: italic;">None found</p>'}
                     </div>
@@ -378,9 +456,11 @@ function renderAccuracyDetails(accuracy) {
  * Includes query, expected/LLM responses with entity highlighting, scores, and detailed analysis.
  * Only highlights entities that appear in both expected and LLM responses for clarity.
  * @param {EvaluationOutput} evaluation - Complete evaluation object containing input, responses, and scores
+ * @param {Map<string, string>} axiomDefinitionsMap - Map from axiom ID to description
+ * @param {Map<string, string>} realityDefinitionsMap - Map from reality ID to description
  * @returns {string} HTML string containing the full evaluation display
  */
-function renderEvaluation(evaluation) {
+function renderEvaluation(evaluation, axiomDefinitionsMap, realityDefinitionsMap) {
     const accuracyScore = evaluation.accuracy.accuracy_mean;
     const coverageScore = evaluation.topic_coverage.coverage_score;
     const axiomPrecisionScore = evaluation.axiom_references?.precision ?? 0;
@@ -482,8 +562,8 @@ function renderEvaluation(evaluation) {
                 ${formatReasoning(evaluation.input.reasoning)}
             </div>
 
-            ${renderReferences('Axiom References', evaluation.axiom_references)}
-            ${renderReferences('Reality References', evaluation.reality_references)}
+            ${renderReferences('Axiom References', evaluation.axiom_references, axiomDefinitionsMap)}
+            ${renderReferences('Reality References', evaluation.reality_references, realityDefinitionsMap)}
 
             ${renderEntities(evaluation.entities)}
 
@@ -621,8 +701,12 @@ function renderEvaluations() {
         return;
     }
 
+    // Build definitions lookup maps for tooltips
+    const axiomDefinitionsMap = buildDefinitionsMap(window.evaluationData.axiom_definitions);
+    const realityDefinitionsMap = buildDefinitionsMap(window.evaluationData.reality_definitions);
+
     const evaluationsHtml = window.evaluationData.evaluation_outputs
-        .map(evaluation => renderEvaluation(evaluation))
+        .map(evaluation => renderEvaluation(evaluation, axiomDefinitionsMap, realityDefinitionsMap))
         .join('');
 
     container.innerHTML = evaluationsHtml;
@@ -660,6 +744,138 @@ function toggleEvaluation(headerElement) {
         content.classList.add('collapsed');
         headerElement.setAttribute('aria-expanded', 'false');
     }
+}
+
+/**
+ * Toggles the collapsed/expanded state of a definitions section.
+ * Called when the definitions header is clicked or activated via keyboard.
+ * Manages CSS classes and ARIA attributes to control visibility and state.
+ * @param {HTMLElement} headerElement - The header element that was activated
+ */
+function toggleDefinitionsSection(headerElement) {
+    const content = headerElement.nextElementSibling;
+    const isCollapsed = headerElement.classList.contains('collapsed');
+
+    if (isCollapsed) {
+        headerElement.classList.remove('collapsed');
+        content.classList.remove('collapsed');
+        headerElement.setAttribute('aria-expanded', 'true');
+    } else {
+        headerElement.classList.add('collapsed');
+        content.classList.add('collapsed');
+        headerElement.setAttribute('aria-expanded', 'false');
+    }
+}
+
+/**
+ * Attaches keyboard event handlers to definitions headers for accessibility.
+ * Enables Enter and Space key to toggle collapsed state.
+ * @returns {void}
+ */
+function setupDefinitionsKeyboardHandlers() {
+    const headers = document.querySelectorAll('.definitions-header');
+    headers.forEach(header => {
+        // Attach click handler
+        header.addEventListener('click', () => {
+            toggleDefinitionsSection(header);
+        });
+
+        // Attach keyboard handler
+        header.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                toggleDefinitionsSection(header);
+            }
+        });
+    });
+}
+
+// ============================================================================
+// Definition Rendering
+// ============================================================================
+
+/**
+ * Renders the axiom definitions section.
+ * Populates the axiom-definitions-list element with definition items.
+ * Shows a message if no definitions are available.
+ * @returns {void}
+ */
+function renderAxiomDefinitions() {
+    const container = document.getElementById('axiom-definitions-list');
+    if (!container) {
+        console.error('Error: axiom-definitions-list element not found');
+        return;
+    }
+
+    const definitions = window.evaluationData.axiom_definitions;
+    if (!definitions || definitions.length === 0) {
+        container.innerHTML =
+            '<p class="no-definitions">No axiom definitions available.</p>';
+        return;
+    }
+
+    // Clear any existing content before rendering definitions
+    container.innerHTML = '';
+
+    definitions.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'definition-item';
+
+        const idSpan = document.createElement('span');
+        idSpan.className = 'definition-id';
+        idSpan.textContent = item.id;
+
+        const textSpan = document.createElement('span');
+        textSpan.className = 'definition-text';
+        textSpan.textContent = item.description;
+
+        itemDiv.appendChild(idSpan);
+        itemDiv.appendChild(textSpan);
+
+        container.appendChild(itemDiv);
+    });
+}
+
+/**
+ * Renders the reality item definitions section.
+ * Populates the reality-definitions-list element with definition items.
+ * Shows a message if no definitions are available.
+ * @returns {void}
+ */
+function renderRealityDefinitions() {
+    const container = document.getElementById('reality-definitions-list');
+    if (!container) {
+        console.error('Error: reality-definitions-list element not found');
+        return;
+    }
+
+    const definitions = window.evaluationData.reality_definitions;
+    if (!definitions || definitions.length === 0) {
+        container.innerHTML =
+            '<p class="no-definitions">No reality definitions available.</p>';
+        return;
+    }
+
+    // Clear any existing content before rendering definitions
+    container.innerHTML = '';
+
+    definitions.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'definition-item';
+
+        const idSpan = document.createElement('span');
+        idSpan.className = 'definition-id';
+        idSpan.textContent = item.id;
+
+        const textSpan = document.createElement('span');
+        textSpan.className = 'definition-text';
+        textSpan.textContent = item.description;
+
+        itemDiv.appendChild(idSpan);
+        itemDiv.appendChild(textSpan);
+
+        container.appendChild(itemDiv);
+    });
 }
 
 // ============================================================================
@@ -702,6 +918,9 @@ fetch('evaluation_data.json')
         initializeEntityColors();
         calculateSummaryStats();
         renderEvaluations();
+        renderAxiomDefinitions();
+        renderRealityDefinitions();
+        setupDefinitionsKeyboardHandlers();
     })
     .catch(error => {
         console.error('Error loading evaluation data:', error);

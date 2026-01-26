@@ -5,17 +5,20 @@ from datetime import datetime
 from pathlib import Path
 from typing import Protocol
 
-from pydantic import BaseModel
-
 from core.paths import root
 from eval.dependencies import qa_eval_engine
 from eval.models import (
+    AccuracyMetric,
+    AxiomItem,
     AxiomPrecisionMetric,
     AxiomRecallMetric,
     AxiomReferenceResults,
     AxiomReferences,
+    CoverageMetric,
+    EvaluationResult,
     EvaluationSampleInput,
     EvaluationSampleOutput,
+    RealityItem,
     RealityPrecisionMetric,
     RealityRecallMetric,
     RealityReferenceResults,
@@ -25,6 +28,70 @@ from eval.report_generation.report import Report
 
 AXIOM_REFERENCE_PATTERN = r"\[A-\d+\]"
 REALITY_REFERENCE_PATTERN = r"\[R-\d+\]"
+
+
+def load_axiom_definitions(
+    file_path: Path | None = None,
+) -> list[AxiomItem]:
+    """Load axiom definitions from a JSON file.
+
+    Reads and parses a JSON file containing axiom definitions, converting
+    each entry into an AxiomItem model instance.
+
+    Args:
+        file_path: Path to the JSON file containing axiom definitions.
+            Defaults to 'data/constitution.json' relative to the project root.
+
+    Returns:
+        List of AxiomItem instances containing id and description for each
+        axiom.
+
+    Raises:
+        FileNotFoundError: If the specified file does not exist.
+        json.JSONDecodeError: If the file contains invalid JSON.
+        ValidationError: If the JSON data doesn't match the AxiomItem schema.
+
+    Examples:
+        >>> axioms = load_axiom_definitions()
+        >>> axioms[0].id
+        'A-001'
+        >>> axioms = load_axiom_definitions(Path("custom/axioms.json"))
+    """
+    path = file_path or root() / "data/constitution.json"
+    data = json.loads(path.read_text())
+    return [AxiomItem.model_validate(item) for item in data]
+
+
+def load_reality_definitions(
+    file_path: Path | None = None,
+) -> list[RealityItem]:
+    """Load reality definitions from a JSON file.
+
+    Reads and parses a JSON file containing reality item definitions,
+    converting each entry into a RealityItem model instance.
+
+    Args:
+        file_path: Path to the JSON file containing reality definitions.
+            Defaults to 'data/reality.json' relative to the project root.
+
+    Returns:
+        List of RealityItem instances containing id and description for each
+        reality item.
+
+    Raises:
+        FileNotFoundError: If the specified file does not exist.
+        json.JSONDecodeError: If the file contains invalid JSON.
+        ValidationError: If the JSON data doesn't match the RealityItem schema.
+
+    Examples:
+        >>> reality_items = load_reality_definitions()
+        >>> reality_items[0].id
+        'R-001'
+        >>> items = load_reality_definitions(Path("custom/reality.json"))
+    """
+    path = file_path or root() / "data/reality.json"
+    data = json.loads(path.read_text())
+    return [RealityItem.model_validate(item) for item in data]
 
 
 def calculate_mean_std(scores: list[float]) -> tuple[float, float]:
@@ -180,58 +247,6 @@ def evaluate_reality_references(
     )
 
 
-class Metric(BaseModel):
-    """
-    A data model representing statistical metrics with mean and standard
-    deviation.
-
-    Attributes:
-        mean (float): The arithmetic mean of the data. std (float): The
-        standard deviation of the data.
-    """
-
-    mean: float
-    std: float
-
-
-class AccuracyMetric(Metric):
-    """
-    A metric class for calculating accuracy of predictions.
-
-    This metric computes the accuracy as the fraction of predictions that match
-    the true labels. Accuracy is calculated as the number of correct
-    predictions divided by the total number of predictions.
-
-    The metric can be used for classification tasks where exact matches between
-    predicted and actual values are required.
-
-    Returns:
-        float: Accuracy score between 0.0 and 1.0, where 1.0 represents perfect
-        accuracy.
-    """
-
-
-class CoverageMetric(Metric):
-    """
-    A metric class for measuring topic coverage during evaluation.
-
-    This metric tracks the degree to which responses cover expected topics or
-    concepts in the evaluation samples. It provides insights into how
-    comprehensively the system addresses the relevant subject matter.
-
-    Attributes:
-        Inherits all attributes from the base Metric class.
-
-    Methods:
-        Inherits all methods from the base Metric class and may override
-        specific methods to implement coverage-specific calculations.
-
-    Usage:
-        Used to monitor and report topic coverage statistics during evaluation
-        workflows.
-    """
-
-
 class QuestionAnswerFunction(Protocol):
     """
     Protocol for functions that generate answers from user queries.
@@ -263,32 +278,6 @@ class QuestionAnswerFunction(Protocol):
             A generated answer as a string
         """
         ...
-
-
-class EvaluationResult(BaseModel):
-    """
-    Represents the complete result of an evaluation run.
-
-    This class encapsulates all outputs and metrics from evaluating a model or
-    system, providing a comprehensive view of performance across multiple
-    dimensions.
-
-    Attributes:
-        evaluation_outputs (list[EvaluationSampleOutput]): A list of individual
-        sample evaluation results, containing the detailed outputs for each
-        test case. accuracy (AccuracyMetric): Metric measuring the correctness
-        of predictions or responses across the evaluation dataset.
-        topic_coverage (CoverageMetric): Metric measuring how well the
-        evaluation spans different topics or categories in the domain.
-    """
-
-    evaluation_outputs: list[EvaluationSampleOutput]
-    accuracy: AccuracyMetric
-    topic_coverage: CoverageMetric
-    axiom_precision_metric: AxiomPrecisionMetric
-    axiom_recall_metric: AxiomRecallMetric
-    reality_precision_metric: RealityPrecisionMetric
-    reality_recall_metric: RealityRecallMetric
 
 
 async def evaluate_answer(
@@ -347,12 +336,17 @@ async def evaluate_answer(
 
 def calculate_stats(
     evaluation_results: list[EvaluationSampleOutput],
+    axiom_definitions: list[AxiomItem] | None = None,
+    reality_definitions: list[RealityItem] | None = None,
 ) -> EvaluationResult:
     """
     Calculate statistical metrics from evaluation results.
 
     Args:
         evaluation_results: Collection of evaluation outputs to analyze
+        axiom_definitions: Optional list of axiom items to include in results
+        reality_definitions: Optional list of reality items to include in
+            results
 
     Returns:
         EvaluationResult: Object containing the evaluation outputs and computed
@@ -367,6 +361,8 @@ def calculate_stats(
             axiom_recall_metric=AxiomRecallMetric(mean=0.0, std=0.0),
             reality_precision_metric=RealityPrecisionMetric(mean=0.0, std=0.0),
             reality_recall_metric=RealityRecallMetric(mean=0.0, std=0.0),
+            axiom_definitions=axiom_definitions,
+            reality_definitions=reality_definitions,
         )
 
     # Calculate accuracy statistics
@@ -429,6 +425,8 @@ def calculate_stats(
         reality_recall_metric=RealityRecallMetric(
             mean=reality_recall_mean, std=reality_recall_std
         ),
+        axiom_definitions=axiom_definitions,
+        reality_definitions=reality_definitions,
     )
 
 
@@ -466,6 +464,10 @@ async def run_evaluation(
     print(f"Running evaluation with data path: {input_path}")
     print(f"Running evaluation with output data path: {output_path}")
 
+    # Load axiom and reality definitions for inclusion in results
+    axiom_definitions = load_axiom_definitions()
+    reality_definitions = load_reality_definitions()
+
     async def process_sample(sample_data: str) -> EvaluationSampleOutput:
         parsed_input = EvaluationSampleInput.model_validate(sample_data)
 
@@ -479,7 +481,11 @@ async def run_evaluation(
     evaluation_results = await asyncio.gather(
         *map(process_sample, json.loads(input_path.read_text()))
     )
-    result = calculate_stats(evaluation_results)
+    result = calculate_stats(
+        evaluation_results,
+        axiom_definitions=axiom_definitions,
+        reality_definitions=reality_definitions,
+    )
 
     # save the results
     result_path = output_path / "evaluation_results.json"

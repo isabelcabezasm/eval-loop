@@ -18,7 +18,6 @@ body {
     background: white;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
 }
 
 .header {
@@ -26,6 +25,7 @@ body {
     color: white;
     padding: 30px;
     text-align: center;
+    border-radius: 10px 10px 0 0;
 }
 
 .header h1 {
@@ -350,6 +350,76 @@ body {
     border-radius: 12px;
     font-size: 0.8rem;
     font-weight: 500;
+    position: relative;
+    cursor: default;
+}
+
+/* Tooltip for reference tags with descriptions */
+.reference-tag[data-tooltip] {
+    cursor: help;
+}
+
+.reference-tag[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 400;
+    white-space: normal;
+    max-width: 300px;
+    min-width: 150px;
+    width: max-content;
+    text-align: left;
+    line-height: 1.4;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Tooltip arrow */
+.reference-tag[data-tooltip]::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #333;
+    z-index: 1001;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    pointer-events: none;
+}
+
+/* Show tooltip on hover */
+.reference-tag[data-tooltip]:hover::after,
+.reference-tag[data-tooltip]:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Show tooltip on focus for accessibility */
+.reference-tag[data-tooltip]:focus::after,
+.reference-tag[data-tooltip]:focus::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Allow focus on reference tags with tooltips */
+.reference-tag[data-tooltip]:focus {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5);
 }
 
 .expected-tag {
@@ -691,4 +761,208 @@ body {
     font-weight: bold;
     color: #28a745;
     font-size: 0.9rem;
+}
+
+/* =============================================================================
+   Definitions Sections (Axioms and Reality Items)
+   ============================================================================= */
+
+.definitions-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 20px 30px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+@media (max-width: 900px) {
+    .definitions-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .definitions-container {
+        padding: 15px;
+        gap: 15px;
+    }
+
+    .definitions-section {
+        padding: 15px;
+    }
+
+    .definitions-section h2 {
+        font-size: 1.1rem;
+    }
+
+    .definitions-list {
+        max-height: 250px;
+    }
+
+    .definition-item {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .definition-id {
+        width: fit-content;
+    }
+}
+
+.definitions-section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.definitions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 10px;
+}
+
+.definitions-header:hover {
+    opacity: 0.8;
+}
+
+.definitions-header:focus {
+    outline: 2px solid rgba(0, 123, 255, 0.5);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.definitions-header.collapsed {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.toggle-icon {
+    font-size: 0.8rem;
+    color: #666;
+    transition: transform 0.3s ease;
+}
+
+.definitions-header.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.definitions-content {
+    display: block;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.definitions-content.collapsed {
+    display: none;
+}
+
+.definitions-section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.definitions-section h2::before {
+    font-size: 1.2rem;
+}
+
+.axiom-definitions h2 {
+    color: #5c6bc0;
+}
+
+.axiom-definitions h2::before {
+    content: '⚖️';
+}
+
+.reality-definitions h2 {
+    color: #00897b;
+}
+
+.reality-definitions h2::before {
+    content: '📊';
+}
+
+.definitions-description {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    font-style: italic;
+}
+
+.definitions-list {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.definition-item {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.definition-item:last-child {
+    border-bottom: none;
+}
+
+.definition-id {
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 4px 10px;
+    border-radius: 12px;
+    white-space: nowrap;
+    height: fit-content;
+}
+
+.axiom-definitions .definition-id {
+    background: #e8eaf6;
+    color: #3949ab;
+}
+
+.reality-definitions .definition-id {
+    background: #e0f2f1;
+    color: #00695c;
+}
+
+.definition-text {
+    flex: 1;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #333;
+}
+
+.definitions-empty {
+    color: #999;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Scrollbar styling for definitions list */
+.definitions-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.definitions-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.definitions-list::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+.definitions-list::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
 }

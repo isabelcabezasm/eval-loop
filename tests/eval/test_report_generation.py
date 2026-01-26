@@ -216,8 +216,17 @@ def test_load_json_data_successfully(
     report = Report(data_path=str(temp_json_file))
     loaded_data = report.load_json_data()
 
-    assert loaded_data == sample_evaluation_data
-    assert report.evaluation_data == sample_evaluation_data
+    # The model adds default None values for optional fields not in source data
+    # so we need to compare only the original keys from sample_evaluation_data
+    for key, value in sample_evaluation_data.items():
+        assert key in loaded_data
+        assert loaded_data[key] == value, f"Mismatch for key '{key}'"
+
+    # Verify optional definition fields have expected defaults when not
+    # provided
+    assert loaded_data.get("axiom_definitions") is None
+    assert loaded_data.get("reality_definitions") is None
+    assert report.evaluation_data == loaded_data
 
 
 def test_load_json_data_empty_file(tmp_path: Path) -> None:
@@ -285,8 +294,13 @@ def test_load_json_data_complete_structure_no_error(
     report = Report(data_path=str(complete_json_file))
     loaded_data = report.load_json_data()
 
-    # Verify data was loaded successfully
-    assert loaded_data == complete_data
+    # Verify original data was loaded successfully
+    for key, value in complete_data.items():
+        assert loaded_data[key] == value
+    # Verify optional definition fields have expected defaults when not
+    # provided
+    assert loaded_data.get("axiom_definitions") is None
+    assert loaded_data.get("reality_definitions") is None
 
 
 def test_load_json_data_invalid_evaluation_outputs_type(
@@ -354,7 +368,9 @@ def test_generate_report_with_default_output_dir(
     # Verify evaluation data was written correctly
     with open(output_path / "evaluation_data.json", encoding="utf-8") as f:
         written_data = json.load(f)
-    assert written_data == sample_evaluation_data
+    # Compare only original keys since model adds defaults for optional fields
+    for key, value in sample_evaluation_data.items():
+        assert written_data[key] == value
 
 
 def test_generate_report_with_custom_output_dir(
@@ -377,7 +393,9 @@ def test_generate_report_with_custom_output_dir(
     # Verify evaluation data was written correctly
     with open(temp_output_dir / "evaluation_data.json", encoding="utf-8") as f:
         written_data = json.load(f)
-    assert written_data == sample_evaluation_data
+    # Compare only original keys since model adds defaults for optional fields
+    for key, value in sample_evaluation_data.items():
+        assert written_data[key] == value
 
 
 def test_generate_report_creates_output_directory_if_not_exists(
@@ -489,7 +507,9 @@ def test_full_report_generation_workflow(
 
     # Load data
     loaded_data = report.load_json_data()
-    assert loaded_data == sample_evaluation_data
+    # Compare only original keys since model adds defaults for optional fields
+    for key, value in sample_evaluation_data.items():
+        assert loaded_data[key] == value
 
     # Generate report
     report.generate_report()
@@ -505,11 +525,15 @@ def test_full_report_generation_workflow(
 
     with open(output_path / "evaluation_data.json", encoding="utf-8") as f:
         final_data = json.load(f)
-    assert final_data == sample_evaluation_data
+    # Compare only original keys since model adds defaults for optional fields
+    for key, value in sample_evaluation_data.items():
+        assert final_data[key] == value
 
     # Verify report object state (data_path is now a resolved Path object)
     assert report.data_path == temp_json_file.resolve()
-    assert report.evaluation_data == sample_evaluation_data
+    # Compare only original keys for evaluation_data
+    for key, value in sample_evaluation_data.items():
+        assert report.evaluation_data[key] == value
 
     # Verify file permissions and types
     assert (
@@ -525,3 +549,236 @@ def test_full_report_generation_workflow(
         assert file_path.is_file()
         assert not file_path.is_dir()
         assert file_path.stat().st_size > 0
+
+
+# =============================================================================
+# Integration Tests for Definitions Edge Cases
+# =============================================================================
+
+
+@pytest.fixture
+def sample_evaluation_data_with_empty_definitions() -> dict[str, Any]:
+    """Sample evaluation data with empty axiom and reality definitions."""
+    return {
+        "evaluation_outputs": [
+            {
+                "input": {
+                    "id": 1,
+                    "query": "Test query",
+                    "context": "Test context",
+                    "expected_answer": "Test answer",
+                    "reasoning": ["Test reasoning"],
+                    "axioms_used": [],
+                    "reality_used": [],
+                },
+                "llm_response": "Test response",
+                "entities": {
+                    "user_query_entities": [],
+                    "llm_answer_entities": [],
+                    "expected_answer_entities": [],
+                },
+                "accuracy": {
+                    "entity_accuracies": [],
+                    "accuracy_mean": 1.0,
+                },
+                "topic_coverage": {
+                    "reason": "Test coverage",
+                    "coverage_score": 1.0,
+                },
+                "axiom_references": {
+                    "references_found": [],
+                    "references_expected": [],
+                    "precision": 1.0,
+                    "recall": 1.0,
+                },
+                "reality_references": {
+                    "references_found": [],
+                    "references_expected": [],
+                    "precision": 1.0,
+                    "recall": 1.0,
+                },
+            }
+        ],
+        "accuracy": {"mean": 1.0, "std": 0.0},
+        "topic_coverage": {"mean": 1.0, "std": 0.0},
+        "axiom_precision_metric": {"mean": 1.0, "std": 0.0},
+        "axiom_recall_metric": {"mean": 1.0, "std": 0.0},
+        "reality_precision_metric": {"mean": 1.0, "std": 0.0},
+        "reality_recall_metric": {"mean": 1.0, "std": 0.0},
+        "axiom_definitions": [],
+        "reality_definitions": [],
+    }
+
+
+@pytest.fixture
+def sample_evaluation_data_with_definitions() -> dict[str, Any]:
+    """Sample evaluation data with axiom and reality definitions."""
+    return {
+        "evaluation_outputs": [
+            {
+                "input": {
+                    "id": 1,
+                    "query": "Test query about loans",
+                    "context": "Loan policy context",
+                    "expected_answer": "Loan rates are determined by A-001",
+                    "reasoning": ["Based on axiom A-001"],
+                    "axioms_used": ["A-001"],
+                    "reality_used": ["R-001"],
+                },
+                "llm_response": "Based on A-001 and R-001, loan rates apply",
+                "entities": {
+                    "user_query_entities": [],
+                    "llm_answer_entities": [],
+                    "expected_answer_entities": [],
+                },
+                "accuracy": {
+                    "entity_accuracies": [],
+                    "accuracy_mean": 0.9,
+                },
+                "topic_coverage": {
+                    "reason": "Good coverage",
+                    "coverage_score": 0.85,
+                },
+                "axiom_references": {
+                    "references_found": ["A-001"],
+                    "references_expected": ["A-001"],
+                    "precision": 1.0,
+                    "recall": 1.0,
+                },
+                "reality_references": {
+                    "references_found": ["R-001"],
+                    "references_expected": ["R-001"],
+                    "precision": 1.0,
+                    "recall": 1.0,
+                },
+            }
+        ],
+        "accuracy": {"mean": 0.9, "std": 0.0},
+        "topic_coverage": {"mean": 0.85, "std": 0.0},
+        "axiom_precision_metric": {"mean": 1.0, "std": 0.0},
+        "axiom_recall_metric": {"mean": 1.0, "std": 0.0},
+        "reality_precision_metric": {"mean": 1.0, "std": 0.0},
+        "reality_recall_metric": {"mean": 1.0, "std": 0.0},
+        "axiom_definitions": [
+            {"id": "A-001", "description": "Loan rates must comply"},
+            {"id": "A-002", "description": "Interest caps apply"},
+        ],
+        "reality_definitions": [
+            {"id": "R-001", "description": "Current prime rate is 5.5%"},
+            {"id": "R-002", "description": "Maximum loan term is 30 years"},
+        ],
+    }
+
+
+def test_report_generation_with_empty_definitions(
+    tmp_path: Path,
+    sample_evaluation_data_with_empty_definitions: dict[str, Any],
+) -> None:
+    """Test report generation when definitions are empty arrays."""
+    json_file = tmp_path / "empty_defs.json"
+    with open(json_file, "w", encoding="utf-8") as f:
+        json.dump(sample_evaluation_data_with_empty_definitions, f)
+
+    report = Report(data_path=str(json_file))
+    report.generate_report()
+
+    output_path = json_file.parent / "report"
+    assert (output_path / "evaluation_data.json").exists()
+
+    with open(output_path / "evaluation_data.json", encoding="utf-8") as f:
+        written_data = json.load(f)
+
+    assert written_data["axiom_definitions"] == []
+    assert written_data["reality_definitions"] == []
+
+
+def test_report_generation_with_definitions(
+    tmp_path: Path, sample_evaluation_data_with_definitions: dict[str, Any]
+) -> None:
+    """Test report generation includes axiom and reality definitions."""
+    json_file = tmp_path / "with_defs.json"
+    with open(json_file, "w", encoding="utf-8") as f:
+        json.dump(sample_evaluation_data_with_definitions, f)
+
+    report = Report(data_path=str(json_file))
+    report.generate_report()
+
+    output_path = json_file.parent / "report"
+    with open(output_path / "evaluation_data.json", encoding="utf-8") as f:
+        written_data = json.load(f)
+
+    # Verify axiom definitions are preserved
+    assert len(written_data["axiom_definitions"]) == 2
+    assert written_data["axiom_definitions"][0]["id"] == "A-001"
+    axiom_desc = written_data["axiom_definitions"][0]["description"]
+    assert "Loan rates" in axiom_desc
+
+    # Verify reality definitions are preserved
+    assert len(written_data["reality_definitions"]) == 2
+    assert written_data["reality_definitions"][0]["id"] == "R-001"
+    reality_desc = written_data["reality_definitions"][0]["description"]
+    assert "prime rate" in reality_desc
+
+
+def test_report_generation_missing_definitions_defaults_to_none(
+    tmp_path: Path, sample_evaluation_data: dict[str, Any]
+) -> None:
+    """Test that missing definitions default to None in output."""
+    # sample_evaluation_data fixture doesn't include definitions
+    json_file = tmp_path / "no_defs.json"
+    with open(json_file, "w", encoding="utf-8") as f:
+        json.dump(sample_evaluation_data, f)
+
+    report = Report(data_path=str(json_file))
+    loaded_data = report.load_json_data()
+
+    assert loaded_data.get("axiom_definitions") is None
+    assert loaded_data.get("reality_definitions") is None
+
+
+def test_report_generation_with_axiom_only_definitions(
+    tmp_path: Path, sample_evaluation_data: dict[str, Any]
+) -> None:
+    """Test report generation with only axiom definitions (no reality)."""
+    data = sample_evaluation_data.copy()
+    data["axiom_definitions"] = [{"id": "A-001", "description": "Test axiom"}]
+    # reality_definitions not included
+
+    json_file = tmp_path / "axiom_only.json"
+    with open(json_file, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+
+    report = Report(data_path=str(json_file))
+    report.generate_report()
+
+    output_path = json_file.parent / "report"
+    with open(output_path / "evaluation_data.json", encoding="utf-8") as f:
+        written_data = json.load(f)
+
+    assert len(written_data["axiom_definitions"]) == 1
+    assert written_data["reality_definitions"] is None
+
+
+def test_report_generation_with_reality_only_definitions(
+    tmp_path: Path, sample_evaluation_data: dict[str, Any]
+) -> None:
+    """Test report generation with only reality definitions (no axiom)."""
+    data = sample_evaluation_data.copy()
+    data["reality_definitions"] = [
+        {"id": "R-001", "description": "Test reality"}
+    ]
+    # axiom_definitions not included
+
+    json_file = tmp_path / "reality_only.json"
+    with open(json_file, "w", encoding="utf-8") as f:
+        json.dump(data, f)
+
+    report = Report(data_path=str(json_file))
+    report.generate_report()
+
+    output_path = json_file.parent / "report"
+    with open(output_path / "evaluation_data.json", encoding="utf-8") as f:
+        written_data = json.load(f)
+
+    assert written_data["axiom_definitions"] is None
+    assert len(written_data["reality_definitions"]) == 1

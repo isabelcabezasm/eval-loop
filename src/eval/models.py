@@ -4,6 +4,48 @@ AxiomReferences = list[str]
 RealityReferences = list[str]
 
 
+class AxiomItem(BaseModel):
+    """
+    Represents a constitutional axiom with its ID and description.
+
+    Axioms are fundamental principles that guide decision-making and reasoning
+    in the evaluation system.
+
+    Attributes:
+        id: Unique identifier for the axiom (e.g., "A-001").
+        description: Full text description of the axiom.
+    """
+
+    id: str = Field(
+        min_length=1,
+        description="Unique identifier for the axiom (e.g., 'A-001').",
+    )
+    description: str = Field(
+        min_length=1, description="Full text description of the axiom."
+    )
+
+
+class RealityItem(BaseModel):
+    """
+    Represents a reality item with its ID and description.
+
+    Reality items are factual data points that provide context and grounding
+    for evaluations.
+
+    Attributes:
+        id: Unique identifier for the reality item (e.g., "R-001").
+        description: Full text description of the reality item.
+    """
+
+    id: str = Field(
+        min_length=1,
+        description="Unique identifier for the reality item (e.g., 'R-001').",
+    )
+    description: str = Field(
+        min_length=1, description="Full text description of the reality item."
+    )
+
+
 class Entity(BaseModel):
     """
     Represents a causal relationship between two variables.
@@ -128,9 +170,8 @@ class ReferenceResults(BaseModel):
     """
     Base model for storing reference evaluation results.
 
-    This class provides the common structure for evaluating references
-    (axioms or reality facts) cited in LLM responses against expected
-    references.
+    This class provides the common structure for evaluating references (axioms
+    or reality facts) cited in LLM responses against expected references.
     """
 
     references_found: list[str] = Field(
@@ -173,8 +214,8 @@ class Metric(BaseModel):
     deviation.
 
     Attributes:
-        mean (float): The arithmetic mean of the data.
-        std (float): The standard deviation of the data.
+        mean (float): The arithmetic mean of the data. std (float): The
+        standard deviation of the data.
     """
 
     mean: float
@@ -185,16 +226,16 @@ class AccuracyMetric(Metric):
     """
     A metric class for calculating accuracy of predictions.
 
-    This metric computes the accuracy as the fraction of predictions that
-    match the true labels. Accuracy is calculated as the number of correct
+    This metric computes the accuracy as the fraction of predictions that match
+    the true labels. Accuracy is calculated as the number of correct
     predictions divided by the total number of predictions.
 
-    The metric can be used for classification tasks where exact matches
-    between predicted and actual values are required.
+    The metric can be used for classification tasks where exact matches between
+    predicted and actual values are required.
 
     Returns:
-        float: Accuracy score between 0.0 and 1.0, where 1.0 represents
-        perfect accuracy.
+        float: Accuracy score between 0.0 and 1.0, where 1.0 represents perfect
+        accuracy.
     """
 
 
@@ -202,8 +243,8 @@ class CoverageMetric(Metric):
     """
     A metric class for measuring topic coverage during evaluation.
 
-    This metric tracks the degree to which responses cover expected topics
-    or concepts in the evaluation samples. It provides insights into how
+    This metric tracks the degree to which responses cover expected topics or
+    concepts in the evaluation samples. It provides insights into how
     comprehensively the system addresses the relevant subject matter.
 
     Attributes:
@@ -214,8 +255,8 @@ class CoverageMetric(Metric):
         specific methods to implement coverage-specific calculations.
 
     Usage:
-        Used to monitor and report topic coverage statistics during
-        evaluation workflows.
+        Used to monitor and report topic coverage statistics during evaluation
+        workflows.
     """
 
 
@@ -247,14 +288,14 @@ class EvaluationSampleInput(BaseModel):
     """
     A data model representing input data for evaluation samples.
 
-    This class defines the structure for evaluation sample inputs used in
-    the evaluation process, containing all necessary information to assess
-    model performance.
+    This class defines the structure for evaluation sample inputs used in the
+    evaluation process, containing all necessary information to assess model
+    performance.
 
     Attributes:
-        id (int): Unique identifier for the evaluation sample.
-        query (str): The input question or prompt to be evaluated.
-        context (str): Contextual information or background data relevant
+        id (int): Unique identifier for the evaluation sample. query (str): The
+        input question or prompt to be evaluated. context (str): Contextual
+        information or background data relevant
             to the query.
         expected_answer (str): The correct or expected response for the
             given query.
@@ -277,8 +318,8 @@ class EvaluationSampleInput(BaseModel):
 
 class EvaluationSampleOutput(BaseModel):
     """
-    Represents the output of an evaluation sample containing input data,
-    model response, and metrics.
+    Represents the output of an evaluation sample containing input data, model
+    response, and metrics.
 
     This class encapsulates the results of evaluating a single sample,
     including the original input, the language model's response, extracted
@@ -292,8 +333,7 @@ class EvaluationSampleOutput(BaseModel):
         accuracy (AccuracyEvaluationResults): Accuracy score for the
             evaluation sample
         topic_coverage (TopicCoverageEvaluationResults): Topic coverage
-            score indicating how well the response covers the expected
-            topics
+            score indicating how well the response covers the expected topics
     """
 
     input: EvaluationSampleInput
@@ -309,9 +349,9 @@ class EvaluationResult(BaseModel):
     """
     Represents the complete result of an evaluation run.
 
-    This class encapsulates all outputs and metrics from evaluating a
-    model or system, providing a comprehensive view of performance across
-    multiple dimensions.
+    This class encapsulates all outputs and metrics from evaluating a model or
+    system, providing a comprehensive view of performance across multiple
+    dimensions.
 
     Attributes:
         evaluation_outputs (list[EvaluationSampleOutput]): A list of
@@ -325,14 +365,20 @@ class EvaluationResult(BaseModel):
             the precision of axiom references (ratio of correct axiom
             references to total axiom references found).
         axiom_recall_metric (AxiomRecallMetric): Metric measuring the
-            recall of axiom references (ratio of found axiom references
-            to expected axiom references).
+            recall of axiom references (ratio of found axiom references to
+            expected axiom references).
         reality_precision_metric (RealityPrecisionMetric): Metric measuring
             the precision of reality references (ratio of correct reality
             references to total reality references found).
         reality_recall_metric (RealityRecallMetric): Metric measuring the
-            recall of reality references (ratio of found reality references
-            to expected reality references).
+            recall of reality references (ratio of found reality references to
+            expected reality references).
+        axiom_definitions (list[AxiomItem] | None): Optional list of all
+            axiom items with their full text descriptions. Used for displaying
+            axiom content in reports.
+        reality_definitions (list[RealityItem] | None): Optional list of all
+            reality items with their full text descriptions. Used for
+            displaying reality content in reports.
     """
 
     evaluation_outputs: list[EvaluationSampleOutput]
@@ -342,3 +388,17 @@ class EvaluationResult(BaseModel):
     axiom_recall_metric: AxiomRecallMetric
     reality_precision_metric: RealityPrecisionMetric
     reality_recall_metric: RealityRecallMetric
+    axiom_definitions: list[AxiomItem] | None = Field(
+        default=None,
+        description=(
+            "Optional list of all axiom items with their full text "
+            "descriptions. Used for displaying axiom content in reports."
+        ),
+    )
+    reality_definitions: list[RealityItem] | None = Field(
+        default=None,
+        description=(
+            "Optional list of all reality items with their full text "
+            "descriptions. Used for displaying reality content in reports."
+        ),
+    )

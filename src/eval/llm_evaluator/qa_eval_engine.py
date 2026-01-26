@@ -1,7 +1,7 @@
+from pathlib import Path
 from typing import Literal
 
 from agent_framework import ChatAgent
-from anyio import Path
 from pydantic import BaseModel
 
 from eval.models import (
@@ -48,11 +48,11 @@ class QAEvalEngine:
         super().__init__()
         self.agent = agent
 
-    def _get_prompt(self, promptType: PromptTypes) -> str:
+    def _get_prompt(self, prompt_type: PromptTypes) -> str:
         """Load prompts."""
 
         file_path = (
-            Path(__file__).parent / "prompts" / f"{promptType}_prompt.md"
+            Path(__file__).parent / "prompts" / f"{prompt_type}_prompt.md"
         )
         with open(file_path, encoding="utf-8") as f:
             return f.read()
@@ -65,7 +65,13 @@ class QAEvalEngine:
 
         # Use asyncio to run the async agent with structured output
         response = await self.agent.run(prompt, response_format=output_type)
-        assert isinstance(response.value, output_type)
+        if not isinstance(response.value, output_type):
+            error_msg = (
+                f"Expected response of type {output_type.__name__}, "
+                f"got {type(response.value).__name__}. "
+                f"Response value: {str(response.value)[:200]}"
+            )
+            raise TypeError(error_msg)
         return response.value
 
     async def entity_extraction(

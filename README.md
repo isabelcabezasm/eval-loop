@@ -140,6 +140,42 @@ The system automatically handles this - just ensure:
 2. Frontend is started after the backend
 3. Check VS Code's PORTS tab to see actual forwarded ports
 
+## Evaluation Reports
+
+The evaluation system generates detailed HTML reports showing how well the agent's responses align
+with constitutional axioms and reality items.
+
+### Running Evaluations
+
+```bash
+# Run the evaluation pipeline
+uv run python -m eval.main
+```
+
+Reports are saved to `runs/<timestamp>/report/index.html`.
+
+### Report Features
+
+The HTML report includes the following features:
+
+- **Axiom Definitions Section**: Collapsible section listing all constitutional axioms with their
+  IDs and full descriptions
+- **Reality Definitions Section**: Collapsible section listing all reality items with their IDs
+  and full descriptions
+- **Reference Tag Tooltips**: Hovering over axiom/reality reference tags (e.g., `A-001`, `R-002`)
+  shows the full description in a tooltip
+- **Responsive Layout**: The report adapts to different screen sizes, with single-column layout
+  on mobile devices
+- **Collapsible Sections**: Definition sections can be collapsed/expanded to manage visual space
+
+### Report Data
+
+The report reads evaluation data from `evaluation_data.json`, which includes:
+
+- `axiom_definitions`: Array of axiom items with `id` and `description` fields
+- `reality_definitions`: Array of reality items with `id` and `description` fields
+- `evaluations`: Array of evaluation results with expected/found references and verdicts
+
 ## Conversation History
 
 The system supports multi-turn conversations with per-session thread isolation.
