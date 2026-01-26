@@ -36,3 +36,52 @@ results:
 
 All 175 tests pass (28 new + 147 existing, with 5 existing tests updated for compatibility).
 
+
+## Phase 2: Evaluation Pipeline Updates (Completed 2026-01-26)
+
+### Summary
+
+Implemented functions to load axiom and reality definitions during evaluation and include them in
+the output JSON:
+
+1. **Loading Functions** - Added in [src/eval/eval.py](../../src/eval/eval.py):
+   - `load_axiom_definitions(file_path: Path | None = None) -> list[AxiomItem]`: Loads axioms from
+     `data/constitution.json` (or custom path)
+   - `load_reality_definitions(file_path: Path | None = None) -> list[RealityItem]`: Loads reality
+     items from `data/reality.json` (or custom path)
+   - Both functions include comprehensive docstrings and error handling for missing files,
+     invalid JSON, and validation errors
+
+2. **Updated `EvaluationResult` in eval.py** - Added optional fields to match models.py:
+   - `axiom_definitions: list[AxiomItem] | None = None`
+   - `reality_definitions: list[RealityItem] | None = None`
+
+3. **Updated `calculate_stats` function** - Modified signature to accept definitions:
+   - Added `axiom_definitions` and `reality_definitions` optional parameters
+   - Includes definitions in returned `EvaluationResult` object
+   - Maintains backward compatibility when definitions are not provided
+
+4. **Updated `run_evaluation` function**:
+   - Loads axiom and reality definitions at the start of evaluation
+   - Passes definitions to `calculate_stats` for inclusion in output JSON
+
+5. **Unit Tests** - Created [tests/eval/test_definition_loading.py](../../tests/eval/test_definition_loading.py)
+   with 22 tests covering:
+   - `load_axiom_definitions`: valid file, missing file, invalid JSON, missing/empty fields,
+     empty array, default path, structure validation
+   - `load_reality_definitions`: same coverage as axiom loading
+   - `calculate_stats` with definitions: axiom only, reality only, both, without definitions
+     (backward compat), empty results with definitions, JSON serialization
+
+### Test Results
+
+All 205 tests pass (22 new + 183 existing).
+
+### Files Modified
+
+| File | Changes |
+| ---- | ------- |
+| [src/eval/eval.py](../../src/eval/eval.py) | Added `load_axiom_definitions`, `load_reality_definitions`, updated `EvaluationResult`, `calculate_stats`, and `run_evaluation` |
+| [tests/eval/test_definition_loading.py](../../tests/eval/test_definition_loading.py) | New test file with 22 tests |
+| [docs/plans/20260121-display-axioms-reality-in-report.md](../plans/20260121-display-axioms-reality-in-report.md) | Marked Phase 2 as complete |
+

@@ -10,12 +10,14 @@ from pydantic import BaseModel
 from core.paths import root
 from eval.dependencies import qa_eval_engine
 from eval.models import (
+    AxiomItem,
     AxiomPrecisionMetric,
     AxiomRecallMetric,
     AxiomReferenceResults,
     AxiomReferences,
     EvaluationSampleInput,
     EvaluationSampleOutput,
+    RealityItem,
     RealityPrecisionMetric,
     RealityRecallMetric,
     RealityReferenceResults,
@@ -25,6 +27,70 @@ from eval.report_generation.report import Report
 
 AXIOM_REFERENCE_PATTERN = r"\[A-\d+\]"
 REALITY_REFERENCE_PATTERN = r"\[R-\d+\]"
+
+
+def load_axiom_definitions(
+    file_path: Path | None = None,
+) -> list[AxiomItem]:
+    """Load axiom definitions from a JSON file.
+
+    Reads and parses a JSON file containing axiom definitions, converting
+    each entry into an AxiomItem model instance.
+
+    Args:
+        file_path: Path to the JSON file containing axiom definitions.
+            Defaults to 'data/constitution.json' relative to the project root.
+
+    Returns:
+        List of AxiomItem instances containing id and description for each
+        axiom.
+
+    Raises:
+        FileNotFoundError: If the specified file does not exist.
+        json.JSONDecodeError: If the file contains invalid JSON.
+        ValidationError: If the JSON data doesn't match the AxiomItem schema.
+
+    Examples:
+        >>> axioms = load_axiom_definitions()
+        >>> axioms[0].id
+        'A-001'
+        >>> axioms = load_axiom_definitions(Path("custom/axioms.json"))
+    """
+    path = file_path or root() / "data/constitution.json"
+    data = json.loads(path.read_text())
+    return [AxiomItem.model_validate(item) for item in data]
+
+
+def load_reality_definitions(
+    file_path: Path | None = None,
+) -> list[RealityItem]:
+    """Load reality definitions from a JSON file.
+
+    Reads and parses a JSON file containing reality item definitions,
+    converting each entry into a RealityItem model instance.
+
+    Args:
+        file_path: Path to the JSON file containing reality definitions.
+            Defaults to 'data/reality.json' relative to the project root.
+
+    Returns:
+        List of RealityItem instances containing id and description for each
+        reality item.
+
+    Raises:
+        FileNotFoundError: If the specified file does not exist.
+        json.JSONDecodeError: If the file contains invalid JSON.
+        ValidationError: If the JSON data doesn't match the RealityItem schema.
+
+    Examples:
+        >>> reality_items = load_reality_definitions()
+        >>> reality_items[0].id
+        'R-001'
+        >>> items = load_reality_definitions(Path("custom/reality.json"))
+    """
+    path = file_path or root() / "data/reality.json"
+    data = json.loads(path.read_text())
+    return [RealityItem.model_validate(item) for item in data]
 
 
 def calculate_mean_std(scores: list[float]) -> tuple[float, float]:
@@ -289,6 +355,8 @@ class EvaluationResult(BaseModel):
     axiom_recall_metric: AxiomRecallMetric
     reality_precision_metric: RealityPrecisionMetric
     reality_recall_metric: RealityRecallMetric
+    axiom_definitions: list[AxiomItem] | None = None
+    reality_definitions: list[RealityItem] | None = None
 
 
 async def evaluate_answer(
@@ -347,12 +415,17 @@ async def evaluate_answer(
 
 def calculate_stats(
     evaluation_results: list[EvaluationSampleOutput],
+    axiom_definitions: list[AxiomItem] | None = None,
+    reality_definitions: list[RealityItem] | None = None,
 ) -> EvaluationResult:
     """
     Calculate statistical metrics from evaluation results.
 
     Args:
         evaluation_results: Collection of evaluation outputs to analyze
+        axiom_definitions: Optional list of axiom items to include in results
+        reality_definitions: Optional list of reality items to include in
+            results
 
     Returns:
         EvaluationResult: Object containing the evaluation outputs and computed
@@ -367,6 +440,8 @@ def calculate_stats(
             axiom_recall_metric=AxiomRecallMetric(mean=0.0, std=0.0),
             reality_precision_metric=RealityPrecisionMetric(mean=0.0, std=0.0),
             reality_recall_metric=RealityRecallMetric(mean=0.0, std=0.0),
+            axiom_definitions=axiom_definitions,
+            reality_definitions=reality_definitions,
         )
 
     # Calculate accuracy statistics
@@ -429,6 +504,8 @@ def calculate_stats(
         reality_recall_metric=RealityRecallMetric(
             mean=reality_recall_mean, std=reality_recall_std
         ),
+        axiom_definitions=axiom_definitions,
+        reality_definitions=reality_definitions,
     )
 
 
@@ -466,6 +543,10 @@ async def run_evaluation(
     print(f"Running evaluation with data path: {input_path}")
     print(f"Running evaluation with output data path: {output_path}")
 
+    # Load axiom and reality definitions for inclusion in results
+    axiom_definitions = load_axiom_definitions()
+    reality_definitions = load_reality_definitions()
+
     async def process_sample(sample_data: str) -> EvaluationSampleOutput:
         parsed_input = EvaluationSampleInput.model_validate(sample_data)
 
@@ -479,7 +560,11 @@ async def run_evaluation(
     evaluation_results = await asyncio.gather(
         *map(process_sample, json.loads(input_path.read_text()))
     )
-    result = calculate_stats(evaluation_results)
+    result = calculate_stats(
+        evaluation_results,
+        axiom_definitions=axiom_definitions,
+        reality_definitions=reality_definitions,
+    )
 
     # save the results
     result_path = output_path / "evaluation_results.json"

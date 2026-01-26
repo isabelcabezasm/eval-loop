@@ -35,17 +35,17 @@ descriptions in the final HTML report.
 - [x] Task 1.7: Testing - Run existing tests to ensure data model changes maintain backward
   compatibility
 
-## Phase 2: Evaluation Pipeline Updates
+## Phase 2: Evaluation Pipeline Updates ✅
 
-- [ ] Task 2.1: Identify where the evaluation result JSON is generated
+- [x] Task 2.1: Identify where the evaluation result JSON is generated
   (likely in `src/eval/eval.py` or `src/eval/main.py`)
-- [ ] Task 2.2: Load axiom definitions from `data/constitution.json` during evaluation
-- [ ] Task 2.3: Load reality definitions from `data/reality.json` during evaluation
-- [ ] Task 2.4: Include axiom and reality definitions in the evaluation result output JSON
-- [ ] Task 2.5: Create unit tests for axiom loading function (valid file, missing file, invalid JSON)
-- [ ] Task 2.6: Create unit tests for reality loading function (valid file, missing file, invalid JSON)
-- [ ] Task 2.7: Modify existing evaluation pipeline tests to verify definitions are included in output
-- [ ] Task 2.8: Testing - Verify the generated `evaluation_data.json` includes axiom and reality
+- [x] Task 2.2: Load axiom definitions from `data/constitution.json` during evaluation
+- [x] Task 2.3: Load reality definitions from `data/reality.json` during evaluation
+- [x] Task 2.4: Include axiom and reality definitions in the evaluation result output JSON
+- [x] Task 2.5: Create unit tests for axiom loading function (valid file, missing file, invalid JSON)
+- [x] Task 2.6: Create unit tests for reality loading function (valid file, missing file, invalid JSON)
+- [x] Task 2.7: Modify existing evaluation pipeline tests to verify definitions are included in output
+- [x] Task 2.8: Testing - Verify the generated `evaluation_data.json` includes axiom and reality
   definitions
 
 ## Phase 3: Report UI - Add Axioms/Reality Summary Section
@@ -78,8 +78,6 @@ descriptions in the final HTML report.
 
 ## Phase 5: Edge Cases and Polish
 
-- [ ] Task 5.1: Handle case where axiom/reality definitions are not present in data
-  (backward compatibility)
 - [ ] Task 5.2: Handle case where a referenced ID is not found in definitions (show ID only)
 - [ ] Task 5.3: Add collapsible/expandable behavior for definitions sections if they become too long
 - [ ] Task 5.4: Ensure responsive layout works on different screen sizes
