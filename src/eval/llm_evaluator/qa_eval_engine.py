@@ -1,7 +1,7 @@
+from pathlib import Path
 from typing import Literal
 
 from agent_framework import ChatAgent
-from anyio import Path
 from pydantic import BaseModel
 
 from eval.models import (
