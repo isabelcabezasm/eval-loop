@@ -775,6 +775,12 @@ function toggleDefinitionsSection(headerElement) {
 function setupDefinitionsKeyboardHandlers() {
     const headers = document.querySelectorAll('.definitions-header');
     headers.forEach(header => {
+        // Attach click handler
+        header.addEventListener('click', () => {
+            toggleDefinitionsSection(header);
+        });
+
+        // Attach keyboard handler
         header.addEventListener('keydown', (event) => {
             if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
