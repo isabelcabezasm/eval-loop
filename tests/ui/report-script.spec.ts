@@ -174,7 +174,7 @@ describe("renderAxiomDefinitions", () => {
 
   it("should log error when container element is missing", () => {
     document.body.innerHTML = ""; // Remove the container
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => { });
 
     renderAxiomDefinitions();
 
@@ -240,7 +240,7 @@ describe("renderRealityDefinitions", () => {
 
   it("should log error when container element is missing", () => {
     document.body.innerHTML = ""; // Remove the container
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => { });
 
     renderRealityDefinitions();
 
@@ -333,31 +333,29 @@ function renderReferences(
                 <div class="references-card">
                     <h5>Expected</h5>
                     <div class="reference-list">
-                        ${
-                          references.references_expected.length > 0
-                            ? references.references_expected
-                                .map((ref) => renderReferenceTag(ref, "expected-tag", defMap))
-                                .join("")
-                            : '<p style="color: #666; font-style: italic;">None expected</p>'
-                        }
+                        ${references.references_expected.length > 0
+      ? references.references_expected
+        .map((ref) => renderReferenceTag(ref, "expected-tag", defMap))
+        .join("")
+      : '<p style="color: #666; font-style: italic;">None expected</p>'
+    }
                     </div>
                 </div>
                 <div class="references-card">
                     <h5>Found in Response</h5>
                     <div class="reference-list">
-                        ${
-                          references.references_found.length > 0
-                            ? references.references_found
-                                .map((ref) => {
-                                  const isMatch = references.references_expected.includes(ref);
-                                  const tagClass = isMatch
-                                    ? "found-match-tag"
-                                    : "found-nomatch-tag";
-                                  return renderReferenceTag(ref, tagClass, defMap);
-                                })
-                                .join("")
-                            : '<p style="color: #666; font-style: italic;">None found</p>'
-                        }
+                        ${references.references_found.length > 0
+      ? references.references_found
+        .map((ref) => {
+          const isMatch = references.references_expected.includes(ref);
+          const tagClass = isMatch
+            ? "found-match-tag"
+            : "found-nomatch-tag";
+          return renderReferenceTag(ref, tagClass, defMap);
+        })
+        .join("")
+      : '<p style="color: #666; font-style: italic;">None found</p>'
+    }
                     </div>
                 </div>
             </div>
@@ -844,5 +842,23 @@ describe("Edge Cases - renderRealityDefinitions", () => {
     const container = document.getElementById("reality-definitions-list");
     const textElement = container?.querySelector(".definition-text");
     expect(textElement?.textContent).toBe(longDescription);
+  });
+
+  it("should handle reality definitions with special characters", () => {
+    window.evaluationData = {
+      evaluation_outputs: [],
+      reality_definitions: [
+        { id: "R-001", description: "Description with <script>alert('xss')</script>" }
+      ]
+    };
+
+    renderRealityDefinitions();
+
+    const container = document.getElementById("reality-definitions-list");
+    const descriptionElement = container?.querySelector(".definition-text");
+    // Verify that the description is escaped and not executed
+    expect(descriptionElement?.innerHTML).toContain("&lt;script&gt;");
+    expect(descriptionElement?.innerHTML).not.toContain("<script>");
+    expect(descriptionElement?.innerHTML).toContain("&lt;/script&gt;");
   });
 });
