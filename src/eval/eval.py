@@ -5,16 +5,17 @@ from datetime import datetime
 from pathlib import Path
 from typing import Protocol
 
-from pydantic import BaseModel
-
 from core.paths import root
 from eval.dependencies import qa_eval_engine
 from eval.models import (
+    AccuracyMetric,
     AxiomItem,
     AxiomPrecisionMetric,
     AxiomRecallMetric,
     AxiomReferenceResults,
     AxiomReferences,
+    CoverageMetric,
+    EvaluationResult,
     EvaluationSampleInput,
     EvaluationSampleOutput,
     RealityItem,
@@ -246,58 +247,6 @@ def evaluate_reality_references(
     )
 
 
-class Metric(BaseModel):
-    """
-    A data model representing statistical metrics with mean and standard
-    deviation.
-
-    Attributes:
-        mean (float): The arithmetic mean of the data. std (float): The
-        standard deviation of the data.
-    """
-
-    mean: float
-    std: float
-
-
-class AccuracyMetric(Metric):
-    """
-    A metric class for calculating accuracy of predictions.
-
-    This metric computes the accuracy as the fraction of predictions that match
-    the true labels. Accuracy is calculated as the number of correct
-    predictions divided by the total number of predictions.
-
-    The metric can be used for classification tasks where exact matches between
-    predicted and actual values are required.
-
-    Returns:
-        float: Accuracy score between 0.0 and 1.0, where 1.0 represents perfect
-        accuracy.
-    """
-
-
-class CoverageMetric(Metric):
-    """
-    A metric class for measuring topic coverage during evaluation.
-
-    This metric tracks the degree to which responses cover expected topics or
-    concepts in the evaluation samples. It provides insights into how
-    comprehensively the system addresses the relevant subject matter.
-
-    Attributes:
-        Inherits all attributes from the base Metric class.
-
-    Methods:
-        Inherits all methods from the base Metric class and may override
-        specific methods to implement coverage-specific calculations.
-
-    Usage:
-        Used to monitor and report topic coverage statistics during evaluation
-        workflows.
-    """
-
-
 class QuestionAnswerFunction(Protocol):
     """
     Protocol for functions that generate answers from user queries.
@@ -329,34 +278,6 @@ class QuestionAnswerFunction(Protocol):
             A generated answer as a string
         """
         ...
-
-
-class EvaluationResult(BaseModel):
-    """
-    Represents the complete result of an evaluation run.
-
-    This class encapsulates all outputs and metrics from evaluating a model or
-    system, providing a comprehensive view of performance across multiple
-    dimensions.
-
-    Attributes:
-        evaluation_outputs (list[EvaluationSampleOutput]): A list of individual
-        sample evaluation results, containing the detailed outputs for each
-        test case. accuracy (AccuracyMetric): Metric measuring the correctness
-        of predictions or responses across the evaluation dataset.
-        topic_coverage (CoverageMetric): Metric measuring how well the
-        evaluation spans different topics or categories in the domain.
-    """
-
-    evaluation_outputs: list[EvaluationSampleOutput]
-    accuracy: AccuracyMetric
-    topic_coverage: CoverageMetric
-    axiom_precision_metric: AxiomPrecisionMetric
-    axiom_recall_metric: AxiomRecallMetric
-    reality_precision_metric: RealityPrecisionMetric
-    reality_recall_metric: RealityRecallMetric
-    axiom_definitions: list[AxiomItem] | None = None
-    reality_definitions: list[RealityItem] | None = None
 
 
 async def evaluate_answer(
