@@ -5,7 +5,7 @@ from agent_framework.azure import AzureOpenAIChatClient
 from azure.core.credentials import TokenCredential
 from azure.identity import AzureCliCredential
 
-from core.axiom_store import load_from_json
+from core.axiom_store import AxiomStore, load_from_json
 from core.paths import root
 from core.qa_engine import QAEngine
 
@@ -17,7 +17,7 @@ def credential() -> TokenCredential:
 
 
 @cache
-def azure_chat_openai():
+def azure_chat_openai() -> AzureOpenAIChatClient:
     """Get an Azure OpenAI chat client."""
     return AzureOpenAIChatClient(credential=credential())
 
@@ -36,7 +36,7 @@ def chat_agent() -> ChatAgent:
 
 
 @cache
-def axiom_store():
+def axiom_store() -> AxiomStore:
     """Load the constitutional axioms from JSON data file."""
     return load_from_json((root() / "data/constitution.json").read_text())
 
