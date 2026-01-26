@@ -46,10 +46,9 @@ definitions in evaluation results:
 All 175 tests pass (28 new + 147 existing, with 5 existing tests updated for
 compatibility).
 
-
 ## Phase 2: Evaluation Pipeline Updates (Completed 2026-01-26)
 
-### Summary
+### Phase 2 Summary
 
 Implemented functions to load axiom and reality definitions during evaluation
 and include them in the output JSON:
@@ -89,11 +88,11 @@ and include them in the output JSON:
      without definitions (backward compat), empty results with definitions,
      JSON serialization
 
-### Test Results
+### Phase 2 Test Results
 
 All 205 tests pass (22 new + 183 existing).
 
-### Files Modified
+### Phase 2 Files Modified
 
 | File | Changes |
 | ---- | ------- |
@@ -101,10 +100,9 @@ All 205 tests pass (22 new + 183 existing).
 | [tests/eval/test_definition_loading.py](../../tests/eval/test_definition_loading.py) | New test file with 22 tests |
 | [docs/plans/20260121-display-axioms-reality-in-report.md](../plans/20260121-display-axioms-reality-in-report.md) | Marked Phase 2 as complete |
 
-
 ## Phase 3: Report UI - Add Axioms/Reality Summary Section (Completed 2026-01-26)
 
-### Summary
+### Phase 3 Summary
 
 Implemented the UI sections to display axiom and reality definitions in the
 evaluation report:
@@ -151,13 +149,13 @@ evaluation report:
      - Error logging when container element is missing
    - Installed `jsdom` package as dev dependency
 
-### Test Results
+### Phase 3 Test Results
 
 - All 30 JavaScript/TypeScript tests pass (8 new + 22 existing)
 - All 209 Python tests pass
 - All lint checks pass (ESLint, Prettier, Ruff)
 
-### Files Modified
+### Phase 3 Files Modified
 
 | File | Changes |
 | ---- | ------- |
@@ -168,10 +166,9 @@ evaluation report:
 | [package.json](../../package.json) | Added `jsdom` as dev dependency |
 | [docs/plans/20260121-display-axioms-reality-in-report.md](../plans/20260121-display-axioms-reality-in-report.md) | Marked Phase 3 as complete |
 
-
 ## Phase 4: Report UI - Enhance Reference Display (Completed 2026-01-26)
 
-### Summary
+### Phase 4 Summary
 
 Enhanced the reference tags in evaluation items to show tooltips with
 descriptions when hovering:
@@ -218,13 +215,13 @@ descriptions when hovering:
      - `renderReferences`: 8 tests for null/undefined, with/without
        definitions, empty states, tag classes, and partial definitions
 
-### Test Results
+### Phase 4 Test Results
 
 - All 47 JavaScript/TypeScript tests pass (25 report-script + 22 existing)
 - All 209 Python tests pass
 - All lint checks pass (ESLint, Prettier, Ruff)
 
-### Files Modified
+### Phase 4 Files Modified
 
 | File | Changes |
 | ---- | ------- |
@@ -233,10 +230,9 @@ descriptions when hovering:
 | [tests/ui/report-script.spec.ts](../../tests/ui/report-script.spec.ts) | Added 17 new tests for reference tag and tooltip functionality |
 | [docs/plans/20260121-display-axioms-reality-in-report.md](../plans/20260121-display-axioms-reality-in-report.md) | Marked Phase 4 as complete |
 
-
 ## Phase 5: Edge Cases and Polish (Completed 2026-01-26)
 
-### Summary
+### Phase 5 Summary
 
 Implemented edge case handling and UI polish including collapsible sections and
 responsive layouts:
@@ -248,6 +244,7 @@ responsive layouts:
      definition exists"
 
 2. **Task 5.3: Collapsible Definitions Sections**
+
    - Updated
      [index.html](../../src/eval/report_generation/templates/index.html) to use
      new collapsible structure with headers and content divs
@@ -292,13 +289,13 @@ responsive layouts:
    - All 66 JavaScript tests pass (increased from 47)
    - Linting and formatting checks pass (Ruff, ESLint, Prettier)
 
-### Test Results
+### Phase 5 Test Results
 
 - Python tests: 214 passed (5 new integration tests)
 - JavaScript tests: 66 passed (19 new edge case tests)
 - All lint checks pass
 
-### Files Modified
+### Phase 5 Files Modified
 
 | File | Changes |
 | ---- | ------- |
@@ -309,8 +306,7 @@ responsive layouts:
 | [tests/ui/report-script.spec.ts](../../tests/ui/report-script.spec.ts) | Added 19 edge case tests for definitions and collapsible sections |
 | [docs/plans/20260121-display-axioms-reality-in-report.md](../plans/20260121-display-axioms-reality-in-report.md) | Marked Phase 5 as complete |
 
-
-### Bug Fixes During Phase 5
+### Phase 5 Bug Fixes During Implementation
 
 #### Bug 1: Axiom/Reality IDs Showing "undefined"
 
@@ -318,11 +314,13 @@ responsive layouts:
 "A-001").
 
 **Root Cause**: Field name mismatch between Python models and JavaScript code:
+
 - Python `AxiomItem` and `RealityItem` models use `id` field
 - JavaScript code incorrectly expected `axiom_id` and `reality_id` fields
 
 **Fix**: Updated JavaScript code to use `item.id` instead of
 `item.axiom_id`/`item.reality_id`:
+
 - [script.js](../../src/eval/report_generation/templates/script.js): Fixed
   `buildDefinitionsMap()`, `renderAxiomDefinitions()`, and
   `renderRealityDefinitions()` functions
@@ -342,10 +340,9 @@ above reference tags.
 [styles.css](../../src/eval/report_generation/templates/styles.css). Added
 `border-radius` to `.header` to maintain rounded corner appearance at the top.
 
-
 ## Phase 6: Documentation and Cleanup (Completed 2026-01-26)
 
-### Summary
+### Phase 6 Summary
 
 Completed final documentation and cleanup tasks:
 
@@ -376,7 +373,7 @@ Completed final documentation and cleanup tasks:
    - All JavaScript tests pass
    - All lint checks pass (Ruff, ESLint, Prettier)
 
-### Files Modified
+### Phase 6 Files Modified
 
 | File | Changes |
 | ---- | ------- |
