@@ -50,31 +50,31 @@ descriptions in the final HTML report.
 
 ## Phase 3: Report UI - Add Axioms/Reality Summary Section
 
-- [ ] Task 3.1: Add a new summary section to `templates/index.html` for displaying axiom definitions
-- [ ] Task 3.2: Add a new summary section to `templates/index.html` for displaying reality definitions
-- [ ] Task 3.3: Add CSS styles for the new definitions sections in `templates/styles.css`
-- [ ] Task 3.4: Create `renderAxiomDefinitions()` function in `script.js` to render axiom list
+- [x] Task 3.1: Add a new summary section to `templates/index.html` for displaying axiom definitions
+- [x] Task 3.2: Add a new summary section to `templates/index.html` for displaying reality definitions
+- [x] Task 3.3: Add CSS styles for the new definitions sections in `templates/styles.css`
+- [x] Task 3.4: Create `renderAxiomDefinitions()` function in `script.js` to render axiom list
   with ID and description
-- [ ] Task 3.5: Create `renderRealityDefinitions()` function in `script.js` to render reality item
+- [x] Task 3.5: Create `renderRealityDefinitions()` function in `script.js` to render reality item
   list with ID and description
-- [ ] Task 3.6: Call the new render functions from the main initialization in `script.js`
-- [ ] Task 3.7: Create JavaScript unit tests for `renderAxiomDefinitions()` function
+- [x] Task 3.6: Call the new render functions from the main initialization in `script.js`
+- [x] Task 3.7: Create JavaScript unit tests for `renderAxiomDefinitions()` function
   (empty list, valid list, missing data)
-- [ ] Task 3.8: Create JavaScript unit tests for `renderRealityDefinitions()` function
+- [x] Task 3.8: Create JavaScript unit tests for `renderRealityDefinitions()` function
   (empty list, valid list, missing data)
-- [ ] Task 3.9: Testing - Verify new sections appear correctly in generated report
+- [x] Task 3.9: Testing - Verify new sections appear correctly in generated report
 
 ## Phase 4: Report UI - Enhance Reference Display
 
-- [ ] Task 4.1: Update `renderReferences()` function to accept definitions lookup map as parameter
-- [ ] Task 4.2: Modify axiom reference tags to show tooltip or inline description text
-- [ ] Task 4.3: Modify reality reference tags to show tooltip or inline description text
-- [ ] Task 4.4: Add CSS for tooltips or expandable descriptions on reference tags
-- [ ] Task 4.5: Update existing `renderReferences()` JavaScript tests to cover new definitions
+- [x] Task 4.1: Update `renderReferences()` function to accept definitions lookup map as parameter
+- [x] Task 4.2: Modify axiom reference tags to show tooltip or inline description text
+- [x] Task 4.3: Modify reality reference tags to show tooltip or inline description text
+- [x] Task 4.4: Add CSS for tooltips or expandable descriptions on reference tags
+- [x] Task 4.5: Update existing `renderReferences()` JavaScript tests to cover new definitions
   parameter
-- [ ] Task 4.6: Create JavaScript unit tests for tooltip/description display
+- [x] Task 4.6: Create JavaScript unit tests for tooltip/description display
   (with definitions, without definitions, missing ID)
-- [ ] Task 4.7: Testing - Verify reference tags show descriptions correctly
+- [x] Task 4.7: Testing - Verify reference tags show descriptions correctly
 
 ## Phase 5: Edge Cases and Polish
 
