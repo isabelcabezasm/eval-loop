@@ -216,8 +216,16 @@ def test_load_json_data_successfully(
     report = Report(data_path=str(temp_json_file))
     loaded_data = report.load_json_data()
 
-    assert loaded_data == sample_evaluation_data
-    assert report.evaluation_data == sample_evaluation_data
+    # The model adds default None values for optional fields not in source data
+    # so we need to compare only the original keys from sample_evaluation_data
+    for key, value in sample_evaluation_data.items():
+        assert key in loaded_data
+        assert loaded_data[key] == value, f"Mismatch for key '{key}'"
+
+    # Verify optional definition fields have expected defaults when not provided
+    assert loaded_data.get("axiom_definitions") is None
+    assert loaded_data.get("reality_definitions") is None
+    assert report.evaluation_data == loaded_data
 
 
 def test_load_json_data_empty_file(tmp_path: Path) -> None:
@@ -285,8 +293,12 @@ def test_load_json_data_complete_structure_no_error(
     report = Report(data_path=str(complete_json_file))
     loaded_data = report.load_json_data()
 
-    # Verify data was loaded successfully
-    assert loaded_data == complete_data
+    # Verify original data was loaded successfully
+    for key, value in complete_data.items():
+        assert loaded_data[key] == value
+    # Verify optional definition fields have expected defaults when not provided
+    assert loaded_data.get("axiom_definitions") is None
+    assert loaded_data.get("reality_definitions") is None
 
 
 def test_load_json_data_invalid_evaluation_outputs_type(
@@ -354,7 +366,9 @@ def test_generate_report_with_default_output_dir(
     # Verify evaluation data was written correctly
     with open(output_path / "evaluation_data.json", encoding="utf-8") as f:
         written_data = json.load(f)
-    assert written_data == sample_evaluation_data
+    # Compare only original keys since model adds defaults for optional fields
+    for key, value in sample_evaluation_data.items():
+        assert written_data[key] == value
 
 
 def test_generate_report_with_custom_output_dir(
@@ -377,7 +391,9 @@ def test_generate_report_with_custom_output_dir(
     # Verify evaluation data was written correctly
     with open(temp_output_dir / "evaluation_data.json", encoding="utf-8") as f:
         written_data = json.load(f)
-    assert written_data == sample_evaluation_data
+    # Compare only original keys since model adds defaults for optional fields
+    for key, value in sample_evaluation_data.items():
+        assert written_data[key] == value
 
 
 def test_generate_report_creates_output_directory_if_not_exists(
@@ -489,7 +505,9 @@ def test_full_report_generation_workflow(
 
     # Load data
     loaded_data = report.load_json_data()
-    assert loaded_data == sample_evaluation_data
+    # Compare only original keys since model adds defaults for optional fields
+    for key, value in sample_evaluation_data.items():
+        assert loaded_data[key] == value
 
     # Generate report
     report.generate_report()
@@ -505,11 +523,15 @@ def test_full_report_generation_workflow(
 
     with open(output_path / "evaluation_data.json", encoding="utf-8") as f:
         final_data = json.load(f)
-    assert final_data == sample_evaluation_data
+    # Compare only original keys since model adds defaults for optional fields
+    for key, value in sample_evaluation_data.items():
+        assert final_data[key] == value
 
     # Verify report object state (data_path is now a resolved Path object)
     assert report.data_path == temp_json_file.resolve()
-    assert report.evaluation_data == sample_evaluation_data
+    # Compare only original keys for evaluation_data
+    for key, value in sample_evaluation_data.items():
+        assert report.evaluation_data[key] == value
 
     # Verify file permissions and types
     assert (

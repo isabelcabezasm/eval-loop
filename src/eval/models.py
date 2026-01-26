@@ -4,6 +4,46 @@ AxiomReferences = list[str]
 RealityReferences = list[str]
 
 
+class AxiomItem(BaseModel):
+    """
+    Represents a constitutional axiom with its ID and description.
+
+    Axioms are fundamental principles that guide decision-making and
+    reasoning in the evaluation system.
+
+    Attributes:
+        id: Unique identifier for the axiom (e.g., "A-001").
+        description: Full text description of the axiom.
+    """
+
+    id: str = Field(
+        min_length=1,
+        description="Unique identifier for the axiom (e.g., 'A-001').")
+    description: str = Field(
+        min_length=1,
+        description="Full text description of the axiom.")
+
+
+class RealityItem(BaseModel):
+    """
+    Represents a reality item with its ID and description.
+
+    Reality items are factual data points that provide context and grounding
+    for evaluations.
+
+    Attributes:
+        id: Unique identifier for the reality item (e.g., "R-001").
+        description: Full text description of the reality item.
+    """
+
+    id: str = Field(
+        min_length=1,
+        description="Unique identifier for the reality item (e.g., 'R-001').")
+    description: str = Field(
+        min_length=1,
+        description="Full text description of the reality item.")
+
+
 class Entity(BaseModel):
     """
     Represents a causal relationship between two variables.
@@ -333,6 +373,12 @@ class EvaluationResult(BaseModel):
         reality_recall_metric (RealityRecallMetric): Metric measuring the
             recall of reality references (ratio of found reality references
             to expected reality references).
+        axiom_definitions (list[AxiomItem] | None): Optional list of all
+            axiom items with their full text descriptions. Used for
+            displaying axiom content in reports.
+        reality_definitions (list[RealityItem] | None): Optional list of all
+            reality items with their full text descriptions. Used for
+            displaying reality content in reports.
     """
 
     evaluation_outputs: list[EvaluationSampleOutput]
@@ -342,3 +388,17 @@ class EvaluationResult(BaseModel):
     axiom_recall_metric: AxiomRecallMetric
     reality_precision_metric: RealityPrecisionMetric
     reality_recall_metric: RealityRecallMetric
+    axiom_definitions: list[AxiomItem] | None = Field(
+        default=None,
+        description=(
+            "Optional list of all axiom items with their full text descriptions. "
+            "Used for displaying axiom content in reports."
+        ),
+    )
+    reality_definitions: list[RealityItem] | None = Field(
+        default=None,
+        description=(
+            "Optional list of all reality items with their full text descriptions. "
+            "Used for displaying reality content in reports."
+        ),
+    )
