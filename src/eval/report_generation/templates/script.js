@@ -288,7 +288,7 @@ function renderReferenceTag(refId, tagClass, definitionsMap) {
     if (description) {
         // Escape description for safe attribute value (already done by escapeHtml)
         const escapedDescription = escapeHtml(description);
-        return `<span class="reference-tag ${tagClass}" data-tooltip="${escapedDescription}">${escapedRefId}</span>`;
+        return `<span class="reference-tag ${tagClass}" data-tooltip="${escapedDescription}" tabindex="0">${escapedRefId}</span>`;
     }
     return `<span class="reference-tag ${tagClass}">${escapedRefId}</span>`;
 }
