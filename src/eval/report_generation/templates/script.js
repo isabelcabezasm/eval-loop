@@ -25,7 +25,7 @@
 
 /**
  * @typedef {Object} EntityAccuracyResult
- * @property {string} entity - The entity being evaluated
+ * @property {EntityPair} entity - The entity pair being evaluated
  * @property {number} score - Accuracy score (0-1)
  * @property {string} reason - Explanation for the score
  */
@@ -356,7 +356,9 @@ function renderAccuracyDetails(accuracy) {
                 <div class="accuracy-result">
                     <div>
                         <div class="accuracy-entity">
-                            ${result.entity}
+                            <span class="entity-tag entity-color-${getEntityColor(result.entity.trigger_variable)}">${result.entity.trigger_variable}</span>
+                            <span style="color: #666; margin: 0 5px;">→</span>
+                            <span class="entity-tag entity-color-${getEntityColor(result.entity.consequence_variable)}">${result.entity.consequence_variable}</span>
                         </div>
                         <div class="accuracy-reason">
                             ${convertLineBreaks(result.reason)}
