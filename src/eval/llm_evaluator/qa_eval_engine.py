@@ -65,7 +65,12 @@ class QAEvalEngine:
 
         # Use asyncio to run the async agent with structured output
         response = await self.agent.run(prompt, response_format=output_type)
-        assert isinstance(response.value, output_type)
+        if not isinstance(response.value, output_type):
+            error_msg = (
+                f"Expected response of type {output_type.__name__}, "
+                f"got {type(response.value).__name__}"
+            )
+            raise TypeError(error_msg)
         return response.value
 
     async def entity_extraction(
