@@ -48,11 +48,11 @@ class QAEvalEngine:
         super().__init__()
         self.agent = agent
 
-    def _get_prompt(self, promptType: PromptTypes) -> str:
+    def _get_prompt(self, prompt_type: PromptTypes) -> str:
         """Load prompts."""
 
         file_path = (
-            Path(__file__).parent / "prompts" / f"{promptType}_prompt.md"
+            Path(__file__).parent / "prompts" / f"{prompt_type}_prompt.md"
         )
         with open(file_path, encoding="utf-8") as f:
             return f.read()
