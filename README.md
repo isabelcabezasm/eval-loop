@@ -170,7 +170,7 @@ The HTML report includes the following features:
 
 ### Report Data
 
-The report reads evaluation data from `evaluation_results.json`, which includes:
+The report reads evaluation data from `evaluation_data.json`, which includes:
 
 - `axiom_definitions`: Array of axiom items with `id` and `description` fields
 - `reality_definitions`: Array of reality items with `id` and `description` fields
