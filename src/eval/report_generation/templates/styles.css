@@ -416,11 +416,9 @@ body {
 }
 
 /* Allow focus on reference tags with tooltips */
-.reference-tag[data-tooltip] {
-    outline: none;
-}
-
 .reference-tag[data-tooltip]:focus {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5);
 }
 
