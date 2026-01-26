@@ -12,8 +12,8 @@ class AxiomItem(BaseModel):
     in the evaluation system.
 
     Attributes:
-        id: Unique identifier for the axiom (e.g., "A-001"). description: Full
-        text description of the axiom.
+        id: Unique identifier for the axiom (e.g., "A-001").
+        description: Full text description of the axiom.
     """
 
     id: str = Field(
