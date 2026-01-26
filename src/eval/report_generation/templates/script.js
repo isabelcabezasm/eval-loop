@@ -840,16 +840,26 @@ function renderRealityDefinitions() {
         return;
     }
 
-    const definitionsHtml = definitions
-        .map(item => `
-            <div class="definition-item">
-                <span class="definition-id">${escapeHtml(item.id)}</span>
-                <span class="definition-text">${escapeHtml(item.description)}</span>
-            </div>
-        `)
-        .join('');
+    // Clear any existing content before rendering definitions
+    container.innerHTML = '';
 
-    container.innerHTML = definitionsHtml;
+    definitions.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'definition-item';
+
+        const idSpan = document.createElement('span');
+        idSpan.className = 'definition-id';
+        idSpan.textContent = item.id;
+
+        const textSpan = document.createElement('span');
+        textSpan.className = 'definition-text';
+        textSpan.textContent = item.description;
+
+        itemDiv.appendChild(idSpan);
+        itemDiv.appendChild(textSpan);
+
+        container.appendChild(itemDiv);
+    });
 }
 
 // ============================================================================
