@@ -110,7 +110,7 @@ Implemented the UI sections to display axiom and reality definitions in the
 evaluation report:
 
 1. **HTML Template Updates** - Modified
-   [src/eval/report_generation/templates/index.html](../../src/eval/report_generation/templates/index.html):
+   [index.html](../../src/eval/report_generation/templates/index.html):
    - Added `definitions-container` div with two-column grid layout
    - Created `axiom-definitions-section` with heading and
      `axiom-definitions-list` placeholder
@@ -119,7 +119,7 @@ evaluation report:
    - Positioned after summary stats and before evaluations container
 
 2. **CSS Styling** - Added to
-   [src/eval/report_generation/templates/styles.css](../../src/eval/report_generation/templates/styles.css):
+   [styles.css](../../src/eval/report_generation/templates/styles.css):
    - `.definitions-container`: Two-column responsive grid layout
    - `.definitions-section`: Card-style container with shadow and padding
    - `.definitions-section h3`: Section heading with bottom border
@@ -131,7 +131,7 @@ evaluation report:
    - Responsive breakpoint for single-column on narrow screens
 
 3. **JavaScript Render Functions** - Added to
-   [src/eval/report_generation/templates/script.js](../../src/eval/report_generation/templates/script.js):
+   [script.js](../../src/eval/report_generation/templates/script.js):
    - Added JSDoc type definitions: `AxiomItem`, `RealityItem`
    - Updated `EvaluationData` typedef with optional `axiom_definitions` and
      `reality_definitions`
@@ -161,9 +161,9 @@ evaluation report:
 
 | File | Changes |
 | ---- | ------- |
-| [src/eval/report_generation/templates/index.html](../../src/eval/report_generation/templates/index.html) | Added definitions container with axiom and reality sections |
-| [src/eval/report_generation/templates/styles.css](../../src/eval/report_generation/templates/styles.css) | Added ~80 lines of CSS for definitions styling |
-| [src/eval/report_generation/templates/script.js](../../src/eval/report_generation/templates/script.js) | Added JSDoc types, `renderAxiomDefinitions()`, `renderRealityDefinitions()`, initialization calls |
+| [index.html](../../src/eval/report_generation/templates/index.html) | Added definitions container with axiom and reality sections |
+| [styles.css](../../src/eval/report_generation/templates/styles.css) | Added ~80 lines of CSS for definitions styling |
+| [script.js](../../src/eval/report_generation/templates/script.js) | Added JSDoc types, `renderAxiomDefinitions()`, `renderRealityDefinitions()`, initialization calls |
 | [tests/ui/report-script.spec.ts](../../tests/ui/report-script.spec.ts) | New test file with 8 tests for render functions |
 | [package.json](../../package.json) | Added `jsdom` as dev dependency |
 | [docs/plans/20260121-display-axioms-reality-in-report.md](../plans/20260121-display-axioms-reality-in-report.md) | Marked Phase 3 as complete |
@@ -177,7 +177,7 @@ Enhanced the reference tags in evaluation items to show tooltips with
 descriptions when hovering:
 
 1. **New Helper Functions** - Added to
-   [src/eval/report_generation/templates/script.js](../../src/eval/report_generation/templates/script.js):
+   [script.js](../../src/eval/report_generation/templates/script.js):
    - `buildDefinitionsMap(definitions)`: Builds a lookup map from definitions
      array for quick ID-to-description lookup. Works with both axiom (axiom_id)
      and reality (reality_id) items.
@@ -201,7 +201,7 @@ descriptions when hovering:
    - Passes maps to `renderEvaluation()` for each evaluation item
 
 5. **CSS Tooltip Styling** - Added to
-   [src/eval/report_generation/templates/styles.css](../../src/eval/report_generation/templates/styles.css):
+   [styles.css](../../src/eval/report_generation/templates/styles.css):
    - Pure CSS tooltips using `::after` pseudo-element with `data-tooltip`
      attribute
    - Dark tooltip bubble with arrow pointing down
