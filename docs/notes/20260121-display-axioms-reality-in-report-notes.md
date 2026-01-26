@@ -197,3 +197,141 @@ Enhanced the reference tags in evaluation items to show tooltips with descriptio
 | [src/eval/report_generation/templates/styles.css](../../src/eval/report_generation/templates/styles.css) | Added ~70 lines of CSS for tooltip styling |
 | [tests/ui/report-script.spec.ts](../../tests/ui/report-script.spec.ts) | Added 17 new tests for reference tag and tooltip functionality |
 | [docs/plans/20260121-display-axioms-reality-in-report.md](../plans/20260121-display-axioms-reality-in-report.md) | Marked Phase 4 as complete |
+
+
+## Phase 5: Edge Cases and Polish (Completed 2026-01-26)
+
+### Summary
+
+Implemented edge case handling and UI polish including collapsible sections and responsive layouts:
+
+1. **Task 5.2: Handle Missing ID in Definitions**
+   - Already implemented in Phase 4: `renderReferenceTag()` renders tags without tooltips when ID
+     is not found in definitions map
+   - Verified by existing tests: "should render tag without tooltip when no definition exists"
+
+2. **Task 5.3: Collapsible Definitions Sections**
+   - Updated [index.html](../../src/eval/report_generation/templates/index.html) to use new
+     collapsible structure with headers and content divs
+   - Added `toggleDefinitionsSection()` function to
+     [script.js](../../src/eval/report_generation/templates/script.js) for toggle behavior
+   - Added `setupDefinitionsKeyboardHandlers()` for keyboard accessibility (Enter/Space)
+   - Added CSS styling for collapsible headers with toggle icons in
+     [styles.css](../../src/eval/report_generation/templates/styles.css)
+
+3. **Task 5.4: Responsive Layout**
+   - Added responsive breakpoint at 600px for definitions sections
+   - Adjusted padding, gaps, and definition item layout for smaller screens
+   - Definition items stack vertically on narrow screens
+
+4. **Task 5.5: Python Integration Tests**
+   - Added 5 new tests to
+     [test_report_generation.py](../../tests/eval/test_report_generation.py):
+     - `test_report_generation_with_empty_definitions`
+     - `test_report_generation_with_definitions`
+     - `test_report_generation_missing_definitions_defaults_to_none`
+     - `test_report_generation_with_axiom_only_definitions`
+     - `test_report_generation_with_reality_only_definitions`
+   - Added 2 new fixtures for test data with definitions
+
+5. **Task 5.6: JavaScript Unit Tests for Edge Cases**
+   - Added 19 new tests to
+     [report-script.spec.ts](../../tests/ui/report-script.spec.ts):
+     - Edge Cases - buildDefinitionsMap: null, non-array, null id, null description, undefined fields
+     - Edge Cases - renderReferenceTag: empty refId, empty map, special chars, newlines
+     - Edge Cases - renderReferences: empty arrays, zero precision/recall, decimal values
+     - toggleDefinitionsSection: collapse, expand, aria-expanded toggling
+     - Edge Cases - renderAxiomDefinitions: null, special characters
+     - Edge Cases - renderRealityDefinitions: null, long descriptions
+
+6. **Task 5.7: Full Test Suite Run**
+   - All 214 Python tests pass
+   - All 66 JavaScript tests pass (increased from 47)
+   - Linting and formatting checks pass (Ruff, ESLint, Prettier)
+
+### Test Results
+
+- Python tests: 214 passed (5 new integration tests)
+- JavaScript tests: 66 passed (19 new edge case tests)
+- All lint checks pass
+
+### Files Modified
+
+| File | Changes |
+| ---- | ------- |
+| [src/eval/report_generation/templates/index.html](../../src/eval/report_generation/templates/index.html) | Added collapsible structure with headers and toggle icons |
+| [src/eval/report_generation/templates/script.js](../../src/eval/report_generation/templates/script.js) | Added `toggleDefinitionsSection()`, `setupDefinitionsKeyboardHandlers()` |
+| [src/eval/report_generation/templates/styles.css](../../src/eval/report_generation/templates/styles.css) | Added collapsible styling, responsive breakpoints for 600px |
+| [tests/eval/test_report_generation.py](../../tests/eval/test_report_generation.py) | Added 5 integration tests + 2 fixtures for definitions edge cases |
+| [tests/ui/report-script.spec.ts](../../tests/ui/report-script.spec.ts) | Added 19 edge case tests for definitions and collapsible sections |
+| [docs/plans/20260121-display-axioms-reality-in-report.md](../plans/20260121-display-axioms-reality-in-report.md) | Marked Phase 5 as complete |
+
+
+### Bug Fixes During Phase 5
+
+#### Bug 1: Axiom/Reality IDs Showing "undefined"
+
+**Issue**: Reference tags displayed `undefined` instead of actual IDs (e.g., "A-001").
+
+**Root Cause**: Field name mismatch between Python models and JavaScript code:
+- Python `AxiomItem` and `RealityItem` models use `id` field
+- JavaScript code incorrectly expected `axiom_id` and `reality_id` fields
+
+**Fix**: Updated JavaScript code to use `item.id` instead of `item.axiom_id`/`item.reality_id`:
+- [script.js](../../src/eval/report_generation/templates/script.js): Fixed `buildDefinitionsMap()`,
+  `renderAxiomDefinitions()`, and `renderRealityDefinitions()` functions
+- [report-script.spec.ts](../../tests/ui/report-script.spec.ts): Updated all TypeScript interfaces
+  and test data to use `id` field
+
+#### Bug 2: Tooltips Cut Off by Container
+
+**Issue**: Tooltips on axiom/reality reference tags were being cut off (clipped) at the container
+boundary.
+
+**Root Cause**: The `.container` element had `overflow: hidden` CSS rule which clipped any content
+extending beyond its bounds, including tooltips positioned above reference tags.
+
+**Fix**: Removed `overflow: hidden` from `.container` in
+[styles.css](../../src/eval/report_generation/templates/styles.css). Added `border-radius` to
+`.header` to maintain rounded corner appearance at the top.
+
+
+## Phase 6: Documentation and Cleanup (Completed 2026-01-26)
+
+### Summary
+
+Completed final documentation and cleanup tasks:
+
+1. **Task 6.1: Update README with Report Features**
+   - Added "Report Features" section to README documenting:
+     - Axiom and Reality definitions sections with descriptions
+     - Collapsible definitions sections
+     - Reference tag tooltips showing full descriptions
+     - Responsive layout for mobile devices
+
+2. **Task 6.2: JSDoc Comments** - ALREADY COMPLETE
+   - Verified comprehensive JSDoc comments exist for all JavaScript functions
+   - All functions have `@param`, `@returns`, and type documentation
+
+3. **Task 6.3: Python Docstrings** - ALREADY COMPLETE
+   - Verified complete docstrings exist for:
+     - `AxiomItem` and `RealityItem` models in `models.py`
+     - `load_axiom_definitions()` and `load_reality_definitions()` in `eval.py`
+   - All docstrings include Args, Returns, Raises, and Examples sections
+
+4. **Task 6.4: Test Coverage Review**
+   - Confirmed comprehensive test coverage across all features:
+     - 214 Python tests (including 5 report generation integration tests)
+     - 66 JavaScript tests (including edge cases for definitions and tooltips)
+
+5. **Task 6.5: Final Test Run**
+   - All Python tests pass
+   - All JavaScript tests pass
+   - All lint checks pass (Ruff, ESLint, Prettier)
+
+### Files Modified
+
+| File | Changes |
+| ---- | ------- |
+| [README.md](../../README.md) | Added Report Features section |
+| [docs/plans/20260121-display-axioms-reality-in-report.md](../plans/20260121-display-axioms-reality-in-report.md) | Marked Phase 6 as complete |

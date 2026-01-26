@@ -78,21 +78,21 @@ descriptions in the final HTML report.
 
 ## Phase 5: Edge Cases and Polish
 
-- [ ] Task 5.2: Handle case where a referenced ID is not found in definitions (show ID only)
-- [ ] Task 5.3: Add collapsible/expandable behavior for definitions sections if they become too long
-- [ ] Task 5.4: Ensure responsive layout works on different screen sizes
-- [ ] Task 5.5: Create Python integration tests for report generation with missing/empty definitions
-- [ ] Task 5.6: Create JavaScript unit tests for edge cases
+- [x] Task 5.2: Handle case where a referenced ID is not found in definitions (show ID only)
+- [x] Task 5.3: Add collapsible/expandable behavior for definitions sections if they become too long
+- [x] Task 5.4: Ensure responsive layout works on different screen sizes
+- [x] Task 5.5: Create Python integration tests for report generation with missing/empty definitions
+- [x] Task 5.6: Create JavaScript unit tests for edge cases
   (null definitions, undefined fields, empty arrays)
-- [ ] Task 5.7: Testing - Run full test suite and manually verify report with various edge cases
+- [x] Task 5.7: Testing - Run full test suite and manually verify report with various edge cases
 
-## Phase 6: Documentation and Cleanup
+## Phase 6: Documentation and Cleanup ✅
 
-- [ ] Task 6.1: Update README or docs with information about new report features
-- [ ] Task 6.2: Add JSDoc comments for new JavaScript functions
-- [ ] Task 6.3: Add docstrings for new Python models/functions
-- [ ] Task 6.4: Review test coverage and add any missing test cases
-- [ ] Task 6.5: Testing - Final test run to ensure all tests pass (Python and JavaScript)
+- [x] Task 6.1: Update README or docs with information about new report features
+- [x] Task 6.2: Add JSDoc comments for new JavaScript functions
+- [x] Task 6.3: Add docstrings for new Python models/functions
+- [x] Task 6.4: Review test coverage and add any missing test cases
+- [x] Task 6.5: Testing - Final test run to ensure all tests pass (Python and JavaScript)
 
 ## Files to Modify
 

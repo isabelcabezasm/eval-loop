@@ -7,12 +7,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Type definitions matching script.js JSDoc types
 interface AxiomItem {
-  axiom_id: string;
+  id: string;
   description: string;
 }
 
 interface RealityItem {
-  reality_id: string;
+  id: string;
   description: string;
 }
 
@@ -50,7 +50,7 @@ function renderAxiomDefinitions(): void {
     .map(
       (item: AxiomItem) => `
             <div class="definition-item">
-                <span class="definition-id">${item.axiom_id}</span>
+                <span class="definition-id">${item.id}</span>
                 <span class="definition-text">${item.description}</span>
             </div>
         `
@@ -81,7 +81,7 @@ function renderRealityDefinitions(): void {
     .map(
       (item: RealityItem) => `
             <div class="definition-item">
-                <span class="definition-id">${item.reality_id}</span>
+                <span class="definition-id">${item.id}</span>
                 <span class="definition-text">${item.description}</span>
             </div>
         `
@@ -127,8 +127,8 @@ describe("renderAxiomDefinitions", () => {
     window.evaluationData = {
       evaluation_outputs: [],
       axiom_definitions: [
-        { axiom_id: "A-001", description: "First axiom description" },
-        { axiom_id: "A-002", description: "Second axiom description" }
+        { id: "A-001", description: "First axiom description" },
+        { id: "A-002", description: "Second axiom description" }
       ]
     };
 
@@ -197,8 +197,8 @@ describe("renderRealityDefinitions", () => {
     window.evaluationData = {
       evaluation_outputs: [],
       reality_definitions: [
-        { reality_id: "R-001", description: "First reality item" },
-        { reality_id: "R-002", description: "Second reality item" }
+        { id: "R-001", description: "First reality item" },
+        { id: "R-002", description: "Second reality item" }
       ]
     };
 
@@ -250,7 +250,7 @@ function buildDefinitionsMap(
     return map;
   }
   definitions.forEach((item) => {
-    const id = (item as AxiomItem).axiom_id || (item as RealityItem).reality_id;
+    const id = item.id;
     if (id && item.description) {
       map.set(id, item.description);
     }
@@ -361,8 +361,8 @@ describe("buildDefinitionsMap", () => {
 
   it("should build map from axiom definitions", () => {
     const axioms: AxiomItem[] = [
-      { axiom_id: "A-001", description: "First axiom" },
-      { axiom_id: "A-002", description: "Second axiom" }
+      { id: "A-001", description: "First axiom" },
+      { id: "A-002", description: "Second axiom" }
     ];
     const map = buildDefinitionsMap(axioms);
 
@@ -373,8 +373,8 @@ describe("buildDefinitionsMap", () => {
 
   it("should build map from reality definitions", () => {
     const realities: RealityItem[] = [
-      { reality_id: "R-001", description: "First reality" },
-      { reality_id: "R-002", description: "Second reality" }
+      { id: "R-001", description: "First reality" },
+      { id: "R-002", description: "Second reality" }
     ];
     const map = buildDefinitionsMap(realities);
 
@@ -385,9 +385,9 @@ describe("buildDefinitionsMap", () => {
 
   it("should skip items without id or description", () => {
     const items = [
-      { axiom_id: "A-001", description: "Valid" },
-      { axiom_id: "", description: "No ID" },
-      { axiom_id: "A-003", description: "" }
+      { id: "A-001", description: "Valid" },
+      { id: "", description: "No ID" },
+      { id: "A-003", description: "" }
     ] as AxiomItem[];
     const map = buildDefinitionsMap(items);
 
@@ -535,5 +535,290 @@ describe("renderReferences", () => {
     // Count occurrences of data-tooltip - should be exactly 1
     const tooltipCount = (html.match(/data-tooltip/g) || []).length;
     expect(tooltipCount).toBe(1);
+  });
+});
+
+// ============================================================================
+// Edge Case Tests - Null, Undefined, and Empty Arrays
+// ============================================================================
+
+describe("Edge Cases - buildDefinitionsMap", () => {
+  it("should handle null definitions gracefully", () => {
+    const map = buildDefinitionsMap(null as unknown as AxiomItem[]);
+    expect(map.size).toBe(0);
+  });
+
+  it("should handle non-array input gracefully", () => {
+    const map = buildDefinitionsMap("not an array" as unknown as AxiomItem[]);
+    expect(map.size).toBe(0);
+  });
+
+  it("should handle items with null id", () => {
+    const items = [
+      { id: null, description: "Has null ID" },
+      { id: "A-001", description: "Valid" }
+    ] as unknown as AxiomItem[];
+    const map = buildDefinitionsMap(items);
+
+    expect(map.size).toBe(1);
+    expect(map.get("A-001")).toBe("Valid");
+  });
+
+  it("should handle items with null description", () => {
+    const items = [
+      { id: "A-001", description: null },
+      { id: "A-002", description: "Valid" }
+    ] as unknown as AxiomItem[];
+    const map = buildDefinitionsMap(items);
+
+    expect(map.size).toBe(1);
+    expect(map.get("A-002")).toBe("Valid");
+  });
+
+  it("should handle items with undefined fields", () => {
+    const items = [
+      { id: undefined, description: "No ID" },
+      { description: "Missing ID field entirely" },
+      { id: "A-001" } // Missing description
+    ] as unknown as AxiomItem[];
+    const map = buildDefinitionsMap(items);
+
+    expect(map.size).toBe(0);
+  });
+});
+
+describe("Edge Cases - renderReferenceTag", () => {
+  it("should handle empty string refId", () => {
+    const defMap = new Map<string, string>();
+    const html = renderReferenceTag("", "expected-tag", defMap);
+
+    expect(html).toBe('<span class="reference-tag expected-tag"></span>');
+  });
+
+  it("should handle empty definitions map", () => {
+    const defMap = new Map<string, string>();
+    const html = renderReferenceTag("A-001", "expected-tag", defMap);
+
+    expect(html).not.toContain("data-tooltip");
+  });
+
+  it("should handle special characters in refId", () => {
+    const defMap = new Map<string, string>();
+    const html = renderReferenceTag("A-001<test>", "expected-tag", defMap);
+
+    // The refId is rendered as-is (no XSS protection in ID, only in tooltip)
+    expect(html).toContain("A-001<test>");
+  });
+
+  it("should handle newlines in description", () => {
+    const defMap = new Map<string, string>([["A-001", "Line 1\nLine 2"]]);
+    const html = renderReferenceTag("A-001", "expected-tag", defMap);
+
+    expect(html).toContain("data-tooltip");
+    expect(html).toContain("Line 1");
+  });
+});
+
+describe("Edge Cases - renderReferences", () => {
+  it("should handle references with empty arrays for both expected and found", () => {
+    const references: ReferenceResults = {
+      references_expected: [],
+      references_found: [],
+      precision: 0,
+      recall: 0
+    };
+
+    const html = renderReferences("Title", references);
+
+    expect(html).toContain("None expected");
+    expect(html).toContain("None found");
+  });
+
+  it("should handle precision and recall of exactly 0", () => {
+    const references: ReferenceResults = {
+      references_expected: ["A-001"],
+      references_found: ["A-002"],
+      precision: 0,
+      recall: 0
+    };
+
+    const html = renderReferences("Title", references);
+
+    expect(html).toContain("Precision: 0%");
+    expect(html).toContain("Recall: 0%");
+  });
+
+  it("should handle decimal precision values correctly", () => {
+    const references: ReferenceResults = {
+      references_expected: ["A-001", "A-002", "A-003"],
+      references_found: ["A-001"],
+      precision: 1.0,
+      recall: 0.333
+    };
+
+    const html = renderReferences("Title", references);
+
+    expect(html).toContain("Precision: 100%");
+    expect(html).toContain("Recall: 33%");
+  });
+});
+
+// ============================================================================
+// Collapsible Definitions Section Tests
+// ============================================================================
+
+/**
+ * Toggles the collapsed/expanded state of a definitions section.
+ * This is a copy of the function from script.js for testing.
+ */
+function toggleDefinitionsSection(headerElement: HTMLElement): void {
+  const content = headerElement.nextElementSibling;
+  const isCollapsed = headerElement.classList.contains("collapsed");
+
+  if (isCollapsed) {
+    headerElement.classList.remove("collapsed");
+    content?.classList.remove("collapsed");
+    headerElement.setAttribute("aria-expanded", "true");
+  } else {
+    headerElement.classList.add("collapsed");
+    content?.classList.add("collapsed");
+    headerElement.setAttribute("aria-expanded", "false");
+  }
+}
+
+describe("toggleDefinitionsSection", () => {
+  beforeEach(() => {
+    document.body.innerHTML = `
+      <div class="definitions-section">
+        <div class="definitions-header" role="button" tabindex="0" aria-expanded="true">
+          <h2>Test Section</h2>
+          <span class="toggle-icon">▼</span>
+        </div>
+        <div class="definitions-content">
+          <p>Content here</p>
+        </div>
+      </div>
+    `;
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("should collapse an expanded section", () => {
+    const header = document.querySelector(".definitions-header") as HTMLElement;
+    const content = document.querySelector(".definitions-content") as HTMLElement;
+
+    expect(header.classList.contains("collapsed")).toBe(false);
+    expect(content.classList.contains("collapsed")).toBe(false);
+
+    toggleDefinitionsSection(header);
+
+    expect(header.classList.contains("collapsed")).toBe(true);
+    expect(content.classList.contains("collapsed")).toBe(true);
+    expect(header.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("should expand a collapsed section", () => {
+    const header = document.querySelector(".definitions-header") as HTMLElement;
+    const content = document.querySelector(".definitions-content") as HTMLElement;
+
+    // First collapse
+    header.classList.add("collapsed");
+    content.classList.add("collapsed");
+    header.setAttribute("aria-expanded", "false");
+
+    toggleDefinitionsSection(header);
+
+    expect(header.classList.contains("collapsed")).toBe(false);
+    expect(content.classList.contains("collapsed")).toBe(false);
+    expect(header.getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it("should toggle aria-expanded attribute correctly", () => {
+    const header = document.querySelector(".definitions-header") as HTMLElement;
+
+    expect(header.getAttribute("aria-expanded")).toBe("true");
+
+    toggleDefinitionsSection(header);
+    expect(header.getAttribute("aria-expanded")).toBe("false");
+
+    toggleDefinitionsSection(header);
+    expect(header.getAttribute("aria-expanded")).toBe("true");
+  });
+});
+
+describe("Edge Cases - renderAxiomDefinitions", () => {
+  beforeEach(() => {
+    document.body.innerHTML = '<div id="axiom-definitions-list"></div>';
+    window.evaluationData = { evaluation_outputs: [] };
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("should handle null axiom_definitions", () => {
+    window.evaluationData = {
+      evaluation_outputs: [],
+      axiom_definitions: null as unknown as AxiomItem[]
+    };
+
+    renderAxiomDefinitions();
+
+    const container = document.getElementById("axiom-definitions-list");
+    expect(container?.innerHTML).toContain("No axiom definitions available");
+  });
+
+  it("should handle axiom definitions with special characters", () => {
+    window.evaluationData = {
+      evaluation_outputs: [],
+      axiom_definitions: [
+        { id: "A-001", description: "Description with <script>alert('xss')</script>" }
+      ]
+    };
+
+    renderAxiomDefinitions();
+
+    const container = document.getElementById("axiom-definitions-list");
+    // The description is rendered as-is (DOM escaping happens at render)
+    expect(container?.querySelector(".definition-item")).not.toBeNull();
+  });
+});
+
+describe("Edge Cases - renderRealityDefinitions", () => {
+  beforeEach(() => {
+    document.body.innerHTML = '<div id="reality-definitions-list"></div>';
+    window.evaluationData = { evaluation_outputs: [] };
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("should handle null reality_definitions", () => {
+    window.evaluationData = {
+      evaluation_outputs: [],
+      reality_definitions: null as unknown as RealityItem[]
+    };
+
+    renderRealityDefinitions();
+
+    const container = document.getElementById("reality-definitions-list");
+    expect(container?.innerHTML).toContain("No reality definitions available");
+  });
+
+  it("should handle reality definitions with long descriptions", () => {
+    const longDescription = "A".repeat(1000);
+    window.evaluationData = {
+      evaluation_outputs: [],
+      reality_definitions: [{ id: "R-001", description: longDescription }]
+    };
+
+    renderRealityDefinitions();
+
+    const container = document.getElementById("reality-definitions-list");
+    const textElement = container?.querySelector(".definition-text");
+    expect(textElement?.textContent).toBe(longDescription);
   });
 });

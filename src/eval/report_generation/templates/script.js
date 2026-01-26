@@ -84,13 +84,13 @@
 
 /**
  * @typedef {Object} AxiomItem
- * @property {string} axiom_id - Unique identifier for the axiom
+ * @property {string} id - Unique identifier for the axiom
  * @property {string} description - Description of the axiom
  */
 
 /**
  * @typedef {Object} RealityItem
- * @property {string} reality_id - Unique identifier for the reality item
+ * @property {string} id - Unique identifier for the reality item
  * @property {string} description - Description of the reality item
  */
 
@@ -245,8 +245,8 @@ function buildDefinitionsMap(definitions) {
         return map;
     }
     definitions.forEach(item => {
-        // Handle both axiom_id and reality_id field names
-        const id = item.axiom_id || item.reality_id;
+        // Both axiom and reality items use 'id' field
+        const id = item.id;
         if (id && item.description) {
             map.set(id, item.description);
         }
@@ -728,6 +728,44 @@ function toggleEvaluation(headerElement) {
     }
 }
 
+/**
+ * Toggles the collapsed/expanded state of a definitions section.
+ * Called when the definitions header is clicked or activated via keyboard.
+ * Manages CSS classes and ARIA attributes to control visibility and state.
+ * @param {HTMLElement} headerElement - The header element that was activated
+ */
+function toggleDefinitionsSection(headerElement) {
+    const content = headerElement.nextElementSibling;
+    const isCollapsed = headerElement.classList.contains('collapsed');
+
+    if (isCollapsed) {
+        headerElement.classList.remove('collapsed');
+        content.classList.remove('collapsed');
+        headerElement.setAttribute('aria-expanded', 'true');
+    } else {
+        headerElement.classList.add('collapsed');
+        content.classList.add('collapsed');
+        headerElement.setAttribute('aria-expanded', 'false');
+    }
+}
+
+/**
+ * Attaches keyboard event handlers to definitions headers for accessibility.
+ * Enables Enter and Space key to toggle collapsed state.
+ * @returns {void}
+ */
+function setupDefinitionsKeyboardHandlers() {
+    const headers = document.querySelectorAll('.definitions-header');
+    headers.forEach(header => {
+        header.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                toggleDefinitionsSection(header);
+            }
+        });
+    });
+}
+
 // ============================================================================
 // Definition Rendering
 // ============================================================================
@@ -755,7 +793,7 @@ function renderAxiomDefinitions() {
     const definitionsHtml = definitions
         .map(item => `
             <div class="definition-item">
-                <span class="definition-id">${item.axiom_id}</span>
+                <span class="definition-id">${item.id}</span>
                 <span class="definition-text">${item.description}</span>
             </div>
         `)
@@ -787,7 +825,7 @@ function renderRealityDefinitions() {
     const definitionsHtml = definitions
         .map(item => `
             <div class="definition-item">
-                <span class="definition-id">${item.reality_id}</span>
+                <span class="definition-id">${item.id}</span>
                 <span class="definition-text">${item.description}</span>
             </div>
         `)
@@ -838,6 +876,7 @@ fetch('evaluation_data.json')
         renderEvaluations();
         renderAxiomDefinitions();
         renderRealityDefinitions();
+        setupDefinitionsKeyboardHandlers();
     })
     .catch(error => {
         console.error('Error loading evaluation data:', error);
