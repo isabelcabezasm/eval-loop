@@ -30,6 +30,19 @@ declare global {
 }
 
 /**
+ * Escapes HTML special characters to prevent XSS attacks.
+ * This is a copy of the function from script.js for testing.
+ */
+function escapeHtml(text: string | null | undefined): string {
+  if (text == null) {
+    return '';
+  }
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+/**
  * Renders the axiom definitions section.
  * This is a copy of the function from script.js for testing.
  */
@@ -50,8 +63,8 @@ function renderAxiomDefinitions(): void {
     .map(
       (item: AxiomItem) => `
             <div class="definition-item">
-                <span class="definition-id">${item.id}</span>
-                <span class="definition-text">${item.description}</span>
+                <span class="definition-id">${escapeHtml(item.id)}</span>
+                <span class="definition-text">${escapeHtml(item.description)}</span>
             </div>
         `
     )
@@ -81,8 +94,8 @@ function renderRealityDefinitions(): void {
     .map(
       (item: RealityItem) => `
             <div class="definition-item">
-                <span class="definition-id">${item.id}</span>
-                <span class="definition-text">${item.description}</span>
+                <span class="definition-id">${escapeHtml(item.id)}</span>
+                <span class="definition-text">${escapeHtml(item.description)}</span>
             </div>
         `
     )
@@ -153,7 +166,7 @@ describe("renderAxiomDefinitions", () => {
 
   it("should log error when container element is missing", () => {
     document.body.innerHTML = ""; // Remove the container
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => { });
 
     renderAxiomDefinitions();
 
@@ -219,7 +232,7 @@ describe("renderRealityDefinitions", () => {
 
   it("should log error when container element is missing", () => {
     document.body.innerHTML = ""; // Remove the container
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => { });
 
     renderRealityDefinitions();
 
@@ -312,31 +325,29 @@ function renderReferences(
                 <div class="references-card">
                     <h5>Expected</h5>
                     <div class="reference-list">
-                        ${
-                          references.references_expected.length > 0
-                            ? references.references_expected
-                                .map((ref) => renderReferenceTag(ref, "expected-tag", defMap))
-                                .join("")
-                            : '<p style="color: #666; font-style: italic;">None expected</p>'
-                        }
+                        ${references.references_expected.length > 0
+      ? references.references_expected
+        .map((ref) => renderReferenceTag(ref, "expected-tag", defMap))
+        .join("")
+      : '<p style="color: #666; font-style: italic;">None expected</p>'
+    }
                     </div>
                 </div>
                 <div class="references-card">
                     <h5>Found in Response</h5>
                     <div class="reference-list">
-                        ${
-                          references.references_found.length > 0
-                            ? references.references_found
-                                .map((ref) => {
-                                  const isMatch = references.references_expected.includes(ref);
-                                  const tagClass = isMatch
-                                    ? "found-match-tag"
-                                    : "found-nomatch-tag";
-                                  return renderReferenceTag(ref, tagClass, defMap);
-                                })
-                                .join("")
-                            : '<p style="color: #666; font-style: italic;">None found</p>'
-                        }
+                        ${references.references_found.length > 0
+      ? references.references_found
+        .map((ref) => {
+          const isMatch = references.references_expected.includes(ref);
+          const tagClass = isMatch
+            ? "found-match-tag"
+            : "found-nomatch-tag";
+          return renderReferenceTag(ref, tagClass, defMap);
+        })
+        .join("")
+      : '<p style="color: #666; font-style: italic;">None found</p>'
+    }
                     </div>
                 </div>
             </div>
@@ -781,8 +792,11 @@ describe("Edge Cases - renderAxiomDefinitions", () => {
     renderAxiomDefinitions();
 
     const container = document.getElementById("axiom-definitions-list");
-    // The description is rendered as-is (DOM escaping happens at render)
-    expect(container?.querySelector(".definition-item")).not.toBeNull();
+    const descriptionElement = container?.querySelector(".definition-text");
+    // Verify that the description is escaped and not executed
+    expect(descriptionElement?.innerHTML).toContain("&lt;script&gt;");
+    expect(descriptionElement?.innerHTML).not.toContain("<script>");
+    expect(descriptionElement?.innerHTML).toContain("&lt;/script&gt;");
   });
 });
 
