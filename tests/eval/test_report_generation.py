@@ -222,7 +222,8 @@ def test_load_json_data_successfully(
         assert key in loaded_data
         assert loaded_data[key] == value, f"Mismatch for key '{key}'"
 
-    # Verify optional definition fields have expected defaults when not provided
+    # Verify optional definition fields have expected defaults when not
+    # provided
     assert loaded_data.get("axiom_definitions") is None
     assert loaded_data.get("reality_definitions") is None
     assert report.evaluation_data == loaded_data
@@ -296,7 +297,8 @@ def test_load_json_data_complete_structure_no_error(
     # Verify original data was loaded successfully
     for key, value in complete_data.items():
         assert loaded_data[key] == value
-    # Verify optional definition fields have expected defaults when not provided
+    # Verify optional definition fields have expected defaults when not
+    # provided
     assert loaded_data.get("axiom_definitions") is None
     assert loaded_data.get("reality_definitions") is None
 
