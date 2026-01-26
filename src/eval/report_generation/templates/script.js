@@ -95,6 +95,27 @@
  */
 
 // ============================================================================
+// Utility Functions
+// ============================================================================
+
+/**
+ * Escapes HTML special characters to prevent XSS attacks.
+ * @param {string} unsafe - String that may contain HTML special characters
+ * @returns {string} Escaped string safe for HTML insertion
+ */
+function escapeHtml(unsafe) {
+    if (typeof unsafe !== 'string') {
+        return '';
+    }
+    return unsafe
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// ============================================================================
 // Global State
 // ============================================================================
 
@@ -262,17 +283,14 @@ function buildDefinitionsMap(definitions) {
  * @returns {string} HTML string for the reference tag
  */
 function renderReferenceTag(refId, tagClass, definitionsMap) {
+    const escapedRefId = escapeHtml(refId);
     const description = definitionsMap.get(refId);
     if (description) {
-        // Escape HTML entities in description for safe attribute value
-        const escapedDescription = description
-            .replace(/&/g, '&amp;')
-            .replace(/"/g, '&quot;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
-        return `<span class="reference-tag ${tagClass}" data-tooltip="${escapedDescription}">${refId}</span>`;
+        // Escape description for safe attribute value (already done by escapeHtml)
+        const escapedDescription = escapeHtml(description);
+        return `<span class="reference-tag ${tagClass}" data-tooltip="${escapedDescription}">${escapedRefId}</span>`;
     }
-    return `<span class="reference-tag ${tagClass}">${refId}</span>`;
+    return `<span class="reference-tag ${tagClass}">${escapedRefId}</span>`;
 }
 
 /**
@@ -793,8 +811,8 @@ function renderAxiomDefinitions() {
     const definitionsHtml = definitions
         .map(item => `
             <div class="definition-item">
-                <span class="definition-id">${item.id}</span>
-                <span class="definition-text">${item.description}</span>
+                <span class="definition-id">${escapeHtml(item.id)}</span>
+                <span class="definition-text">${escapeHtml(item.description)}</span>
             </div>
         `)
         .join('');
@@ -825,8 +843,8 @@ function renderRealityDefinitions() {
     const definitionsHtml = definitions
         .map(item => `
             <div class="definition-item">
-                <span class="definition-id">${item.id}</span>
-                <span class="definition-text">${item.description}</span>
+                <span class="definition-id">${escapeHtml(item.id)}</span>
+                <span class="definition-text">${escapeHtml(item.description)}</span>
             </div>
         `)
         .join('');
