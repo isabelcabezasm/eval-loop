@@ -573,11 +573,12 @@ function highlightReferencesInText(
   realityDefinitionsMap: Map<string, string>
 ): string {
   if (!text) {
-    return text ?? "";
+    return "";
   }
 
   // Match patterns like [A-001], [A-002], [R-001], [R-002], etc.
-  const referencePattern = /\[(A-\d+|R-\d+)\]/g;
+  // Limit the numeric part to 1–4 digits to avoid matching excessively long IDs
+  const referencePattern = /\[(A-\d{1,4}|R-\d{1,4})\]/g;
 
   return text.replace(referencePattern, (match, refId: string) => {
     const isAxiom = refId.startsWith("A-");
@@ -705,6 +706,39 @@ describe("highlightReferencesInText", () => {
     const result = highlightReferencesInText(text, axiomMap, realityMap);
 
     expect((result.match(/data-tooltip/g) || []).length).toBe(4);
+  });
+
+  it("should NOT match references with 5 or more digits", () => {
+    // The regex pattern limits to 1-4 digits to avoid matching excessively long IDs
+    const axiomMap = new Map<string, string>([
+      ["A-00001", "Five digits - should not match"],
+      ["A-000001", "Six digits - should not match"],
+      ["A-001", "Three digits - should match"]
+    ]);
+    const realityMap = new Map<string, string>([
+      ["R-12345", "Five digits - should not match"],
+      ["R-01", "Two digits - should match"]
+    ]);
+    const text =
+      "[A-00001] has 5 digits, [A-000001] has 6 digits. " +
+      "[R-12345] has 5 digits. Only [A-001] and [R-01] should be highlighted.";
+
+    const result = highlightReferencesInText(text, axiomMap, realityMap);
+
+    // Only the 1-4 digit references should be highlighted
+    const tooltipCount = (result.match(/data-tooltip/g) || []).length;
+    expect(tooltipCount).toBe(2);
+
+    // Verify the correct ones are highlighted
+    expect(result).toContain('data-tooltip="Three digits - should match"');
+    expect(result).toContain('data-tooltip="Two digits - should match"');
+
+    // Verify 5+ digit references remain as plain text (not wrapped in spans)
+    expect(result).toContain("[A-00001]");
+    expect(result).toContain("[A-000001]");
+    expect(result).toContain("[R-12345]");
+    expect(result).not.toContain('data-tooltip="Five digits');
+    expect(result).not.toContain('data-tooltip="Six digits');
   });
 
   it("should only match bracketed references", () => {
