@@ -569,7 +569,6 @@ describe("renderReferences", () => {
  */
 function highlightReferencesInText(
   text: string | null | undefined,
-  text: string,
   axiomDefinitionsMap: Map<string, string>,
   realityDefinitionsMap: Map<string, string>
 ): string {
