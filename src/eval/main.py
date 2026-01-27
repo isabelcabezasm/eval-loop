@@ -42,7 +42,7 @@ def main():
     Default main function with a dummy question-answer function.
     """
 
-    # TODO: For now, we'll need to provide a dummy question_answer_fn
+    # For now, we'll need to provide a dummy question_answer_fn
     # This should be properly implemented based on your requirements
     async def dummy_qa_fn(*, query: str) -> str:
         return f"Generated answer for: {query}"
