@@ -573,7 +573,7 @@ function highlightReferencesInText(
   realityDefinitionsMap: Map<string, string>
 ): string {
   if (!text) {
-    return text ?? "";
+    return "";
   }
 
   // Match patterns like [A-001], [A-002], [R-001], [R-002], etc.
