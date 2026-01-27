@@ -221,20 +221,69 @@ function findEntitiesInText(text, entities) {
 }
 
 /**
+ * Highlights axiom and reality references in text by wrapping them with tooltip spans.
+ * Matches patterns like [A-001], [A-002], [R-001], [R-002], etc.
+ * @param {string} text - The text to search for references
+ * @param {Map<string, string>} axiomDefinitionsMap - Map from axiom ID to description
+ * @param {Map<string, string>} realityDefinitionsMap - Map from reality ID to description
+ * @returns {string} HTML text with reference tooltips
+ */
+function highlightReferencesInText(text, axiomDefinitionsMap, realityDefinitionsMap) {
+    if (!text) {
+        return '';
+    }
+
+    // Match patterns like [A-001], [A-002], [R-001], [R-002], etc.
+    // The pattern captures the full reference including brackets
+    // Limit the numeric part to 1–4 digits to avoid matching excessively long IDs
+    const referencePattern = /\[(A-\d{1,4}|R-\d{1,4})\]/g;
+
+    return text.replace(referencePattern, (match, refId) => {
+        const isAxiom = refId.startsWith('A-');
+        const definitionsMap = isAxiom ? axiomDefinitionsMap : realityDefinitionsMap;
+        const description = definitionsMap.get(refId);
+
+        if (description) {
+            const escapedDescription = escapeHtml(description);
+            const tagClass = isAxiom ? 'inline-axiom-ref' : 'inline-reality-ref';
+            return `<span class="inline-reference ${tagClass}" data-tooltip="${escapedDescription}" tabindex="0">[${refId}]</span>`;
+        }
+        // If no description found, return the match unchanged
+        return match;
+    });
+}
+
+/**
  * Highlights entities in text by wrapping them with colored spans.
+ * Also highlights axiom/reality references with tooltips if definition maps are provided.
  * Entities are sorted by length (longest first) to avoid partial matches.
  * Each entity gets a consistent color based on its assigned color index.
+ * 
+ * IMPORTANT: Entity highlighting is applied FIRST on the raw text (including
+ * any reference markers like [A-001]), and reference highlighting is applied
+ * SECOND. Because of this order, entity patterns can match inside reference
+ * markers before they are wrapped in tooltip spans, so entity patterns should
+ * be chosen carefully to avoid interfering with reference matching.
+ * 
  * @param {string} text - The text to highlight entities in
  * @param {Array<string>} entities - Array of entity strings to highlight
+ * @param {Map<string, string>} [axiomDefinitionsMap] - Optional map from axiom ID to description
+ * @param {Map<string, string>} [realityDefinitionsMap] - Optional map from reality ID to description
  * @returns {string} HTML text with highlighted entities and converted line breaks
  */
-function highlightEntitiesInText(text, entities) {
+function highlightEntitiesInText(text, entities, axiomDefinitionsMap, realityDefinitionsMap) {
     if (!text || !entities || entities.length === 0) {
-        return convertLineBreaks(text);
+        // Still apply reference highlighting even if no entities
+        let result = text;
+        if (axiomDefinitionsMap && realityDefinitionsMap) {
+            result = highlightReferencesInText(result, axiomDefinitionsMap, realityDefinitionsMap);
+        }
+        return convertLineBreaks(result);
     }
 
     let highlightedText = text;
 
+    // FIRST: Highlight entities in plain text (before any HTML is added)
     // Sort entities by length (longest first) to avoid partial matches
     const sortedEntities = [...entities].sort((a, b) => b.length - a.length);
 
@@ -250,6 +299,12 @@ function highlightEntitiesInText(text, entities) {
             `<span class="entity-highlight ${colorClass}">${entity}</span>`
         );
     });
+
+    // SECOND: Highlight axiom/reality references AFTER entity highlighting
+    // This ensures we don't match entities inside tooltip data-attributes
+    if (axiomDefinitionsMap && realityDefinitionsMap) {
+        highlightedText = highlightReferencesInText(highlightedText, axiomDefinitionsMap, realityDefinitionsMap);
+    }
 
     return convertLineBreaks(highlightedText);
 }
@@ -505,14 +560,18 @@ function renderEvaluation(evaluation, axiomDefinitionsMap, realityDefinitionsMap
         entitiesInLlm.includes(entity)
     );
 
-    // Highlight only common entities in response texts
+    // Highlight only common entities in response texts, plus axiom/reality references with tooltips
     const highlightedExpectedAnswer = highlightEntitiesInText(
         evaluation.input.expected_answer,
-        commonEntities
+        commonEntities,
+        axiomDefinitionsMap,
+        realityDefinitionsMap
     );
     const highlightedLlmResponse = highlightEntitiesInText(
         evaluation.llm_response,
-        commonEntities
+        commonEntities,
+        axiomDefinitionsMap,
+        realityDefinitionsMap
     );
 
     return `

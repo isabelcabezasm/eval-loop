@@ -24,7 +24,7 @@ while :; do
 done
 
 if [[ $fix ]]; then
-    npx markdownlint --fix '**/*.md' --ignore node_modules --ignore .venv --ignore runs --ignore .github/**/*.md
+    npx markdownlint --fix '**/*.md' --ignore node_modules --ignore .venv --ignore runs --ignore '.github/**'
 else
-    npx markdownlint '**/*.md' --ignore node_modules --ignore .venv --ignore runs --ignore .github/**/*.md
+    npx markdownlint '**/*.md' --ignore node_modules --ignore .venv --ignore runs --ignore '.github/**'
 fi

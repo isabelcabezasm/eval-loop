@@ -422,6 +422,97 @@ body {
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5);
 }
 
+/* ============================================================================
+   Inline Reference Tooltips (for references found in text like [A-001], [R-001])
+   ============================================================================ */
+
+.inline-reference {
+    position: relative;
+    display: inline;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.9em;
+    cursor: help;
+}
+
+.inline-axiom-ref {
+    background: #fff3e0;
+    color: #e65100;
+    border: 1px solid #ffcc80;
+}
+
+.inline-reality-ref {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+}
+
+/* Tooltip for inline references */
+.inline-reference[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 400;
+    white-space: normal;
+    max-width: 300px;
+    min-width: 150px;
+    width: max-content;
+    text-align: left;
+    line-height: 1.4;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Tooltip arrow for inline references */
+.inline-reference[data-tooltip]::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #333;
+    z-index: 1001;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    pointer-events: none;
+}
+
+/* Show tooltip on hover for inline references */
+.inline-reference[data-tooltip]:hover::after,
+.inline-reference[data-tooltip]:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Show tooltip on focus for accessibility */
+.inline-reference[data-tooltip]:focus::after,
+.inline-reference[data-tooltip]:focus::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Allow focus on inline references with tooltips */
+.inline-reference[data-tooltip]:focus {
+    outline: 2px solid #0056b3;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5);
+}
+
 .expected-tag {
     background: #e3f2fd;
     color: #1565c0;
