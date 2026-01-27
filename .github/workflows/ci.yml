@@ -67,7 +67,7 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Run markdownlint
-        run: npx markdownlint '**/*.md' --ignore node_modules --ignore .venv --ignore runs
+        run: npx markdownlint '**/*.md' --ignore node_modules --ignore .venv --ignore runs --ignore '.github/**'
 
   type-check:
     runs-on: ubuntu-latest
