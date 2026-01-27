@@ -258,9 +258,11 @@ function highlightReferencesInText(text, axiomDefinitionsMap, realityDefinitions
  * Entities are sorted by length (longest first) to avoid partial matches.
  * Each entity gets a consistent color based on its assigned color index.
  * 
- * IMPORTANT: Entity highlighting is applied FIRST on plain text, then reference
- * highlighting is applied. This order prevents entity matching inside tooltip
- * attribute values, which would break HTML structure.
+ * IMPORTANT: Entity highlighting is applied FIRST on the raw text (including
+ * any reference markers like [A-001]), and reference highlighting is applied
+ * SECOND. Because of this order, entity patterns can match inside reference
+ * markers before they are wrapped in tooltip spans, so entity patterns should
+ * be chosen carefully to avoid interfering with reference matching.
  * 
  * @param {string} text - The text to highlight entities in
  * @param {Array<string>} entities - Array of entity strings to highlight
