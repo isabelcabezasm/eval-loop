@@ -8,13 +8,19 @@ tools:
 handoffs:
 - label: "Run linters and type checks"
   agent: Python Reviewer
-  prompt: "Run `uv run ruff check src/ tests/` and `uv run pyright` on the workspace, summarize results, and propose fixes."
+  prompt: >-
+    Run `uv run ruff check src/ tests/` and `uv run pyright` on the workspace,
+    summarize results, and propose fixes.
 - label: "Review test coverage"
   agent: Python Reviewer
-  prompt: "Analyze test coverage for the changed files. Identify missing test cases and suggest new tests."
+  prompt: >-
+    Analyze test coverage for the changed files. Identify missing test cases
+    and suggest new tests.
 - label: "Security audit"
   agent: Python Reviewer
-  prompt: "Perform a security-focused review of the code changes. Check for injection vulnerabilities, secrets exposure, and unsafe patterns."
+  prompt: >-
+    Perform a security-focused review of the code changes. Check for injection
+    vulnerabilities, secrets exposure, and unsafe patterns.
 ---
 
 You are a strict Python code reviewer with expertise in modern Python (3.10+).
