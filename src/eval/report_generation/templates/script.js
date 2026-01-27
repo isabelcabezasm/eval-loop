@@ -235,7 +235,8 @@ function highlightReferencesInText(text, axiomDefinitionsMap, realityDefinitions
 
     // Match patterns like [A-001], [A-002], [R-001], [R-002], etc.
     // The pattern captures the full reference including brackets
-    const referencePattern = /\[(A-\d+|R-\d+)\]/g;
+    // Limit the numeric part to 1–4 digits to avoid matching excessively long IDs
+    const referencePattern = /\[(A-\d{1,4}|R-\d{1,4})\]/g;
 
     return text.replace(referencePattern, (match, refId) => {
         const isAxiom = refId.startsWith('A-');
