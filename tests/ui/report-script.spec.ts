@@ -174,7 +174,7 @@ describe("renderAxiomDefinitions", () => {
 
   it("should log error when container element is missing", () => {
     document.body.innerHTML = ""; // Remove the container
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => { });
 
     renderAxiomDefinitions();
 
@@ -240,7 +240,7 @@ describe("renderRealityDefinitions", () => {
 
   it("should log error when container element is missing", () => {
     document.body.innerHTML = ""; // Remove the container
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => { });
 
     renderRealityDefinitions();
 
@@ -333,31 +333,29 @@ function renderReferences(
                 <div class="references-card">
                     <h5>Expected</h5>
                     <div class="reference-list">
-                        ${
-                          references.references_expected.length > 0
-                            ? references.references_expected
-                                .map((ref) => renderReferenceTag(ref, "expected-tag", defMap))
-                                .join("")
-                            : '<p style="color: #666; font-style: italic;">None expected</p>'
-                        }
+                        ${references.references_expected.length > 0
+      ? references.references_expected
+        .map((ref) => renderReferenceTag(ref, "expected-tag", defMap))
+        .join("")
+      : '<p style="color: #666; font-style: italic;">None expected</p>'
+    }
                     </div>
                 </div>
                 <div class="references-card">
                     <h5>Found in Response</h5>
                     <div class="reference-list">
-                        ${
-                          references.references_found.length > 0
-                            ? references.references_found
-                                .map((ref) => {
-                                  const isMatch = references.references_expected.includes(ref);
-                                  const tagClass = isMatch
-                                    ? "found-match-tag"
-                                    : "found-nomatch-tag";
-                                  return renderReferenceTag(ref, tagClass, defMap);
-                                })
-                                .join("")
-                            : '<p style="color: #666; font-style: italic;">None found</p>'
-                        }
+                        ${references.references_found.length > 0
+      ? references.references_found
+        .map((ref) => {
+          const isMatch = references.references_expected.includes(ref);
+          const tagClass = isMatch
+            ? "found-match-tag"
+            : "found-nomatch-tag";
+          return renderReferenceTag(ref, tagClass, defMap);
+        })
+        .join("")
+      : '<p style="color: #666; font-style: italic;">None found</p>'
+    }
                     </div>
                 </div>
             </div>
@@ -555,6 +553,167 @@ describe("renderReferences", () => {
     expect(html).toContain('data-tooltip="Has description"');
     // Count occurrences of data-tooltip - should be exactly 1
     const tooltipCount = (html.match(/data-tooltip/g) || []).length;
+    expect(tooltipCount).toBe(1);
+  });
+});
+
+// ============================================================================
+// Inline Reference Highlighting Tests
+// ============================================================================
+
+/**
+ * Highlights axiom and reality references in text by wrapping them with tooltip spans.
+ * This is a copy of the function from script.js for testing.
+ */
+function highlightReferencesInText(
+  text: string | null | undefined,
+  axiomDefinitionsMap: Map<string, string>,
+  realityDefinitionsMap: Map<string, string>
+): string {
+  if (!text) {
+    return text ?? "";
+  }
+
+  // Match patterns like [A-001], [A-002], [R-001], [R-002], etc.
+  const referencePattern = /\[(A-\d+|R-\d+)\]/g;
+
+  return text.replace(referencePattern, (match, refId: string) => {
+    const isAxiom = refId.startsWith("A-");
+    const definitionsMap = isAxiom ? axiomDefinitionsMap : realityDefinitionsMap;
+    const description = definitionsMap.get(refId);
+
+    if (description) {
+      const escapedDescription = escapeHtml(description);
+      const tagClass = isAxiom ? "inline-axiom-ref" : "inline-reality-ref";
+      return `<span class="inline-reference ${tagClass}" data-tooltip="${escapedDescription}" tabindex="0">[${refId}]</span>`;
+    }
+    // If no description found, return the match unchanged
+    return match;
+  });
+}
+
+describe("highlightReferencesInText", () => {
+  it("should return empty string for null text", () => {
+    const axiomMap = new Map<string, string>();
+    const realityMap = new Map<string, string>();
+    expect(highlightReferencesInText(null, axiomMap, realityMap)).toBe("");
+  });
+
+  it("should return empty string for undefined text", () => {
+    const axiomMap = new Map<string, string>();
+    const realityMap = new Map<string, string>();
+    expect(highlightReferencesInText(undefined, axiomMap, realityMap)).toBe("");
+  });
+
+  it("should return text unchanged when no references found", () => {
+    const axiomMap = new Map<string, string>();
+    const realityMap = new Map<string, string>();
+    const text = "This is a text without any references.";
+    expect(highlightReferencesInText(text, axiomMap, realityMap)).toBe(text);
+  });
+
+  it("should highlight axiom references with tooltips", () => {
+    const axiomMap = new Map<string, string>([["A-001", "First axiom description"]]);
+    const realityMap = new Map<string, string>();
+    const text = "According to [A-001], this is true.";
+
+    const result = highlightReferencesInText(text, axiomMap, realityMap);
+
+    expect(result).toContain('class="inline-reference inline-axiom-ref"');
+    expect(result).toContain('data-tooltip="First axiom description"');
+    expect(result).toContain("[A-001]");
+    expect(result).toContain("tabindex=\"0\"");
+  });
+
+  it("should highlight reality references with tooltips", () => {
+    const axiomMap = new Map<string, string>();
+    const realityMap = new Map<string, string>([["R-001", "First reality description"]]);
+    const text = "Based on [R-001], the balance is correct.";
+
+    const result = highlightReferencesInText(text, axiomMap, realityMap);
+
+    expect(result).toContain('class="inline-reference inline-reality-ref"');
+    expect(result).toContain('data-tooltip="First reality description"');
+    expect(result).toContain("[R-001]");
+  });
+
+  it("should highlight both axiom and reality references in the same text", () => {
+    const axiomMap = new Map<string, string>([["A-001", "Axiom description"]]);
+    const realityMap = new Map<string, string>([["R-001", "Reality description"]]);
+    const text = "According to [A-001] and [R-001], the answer is correct.";
+
+    const result = highlightReferencesInText(text, axiomMap, realityMap);
+
+    expect(result).toContain("inline-axiom-ref");
+    expect(result).toContain("inline-reality-ref");
+    expect(result).toContain('data-tooltip="Axiom description"');
+    expect(result).toContain('data-tooltip="Reality description"');
+  });
+
+  it("should leave references unchanged when no definition exists", () => {
+    const axiomMap = new Map<string, string>();
+    const realityMap = new Map<string, string>();
+    const text = "Reference [A-999] has no definition.";
+
+    const result = highlightReferencesInText(text, axiomMap, realityMap);
+
+    expect(result).toBe(text);
+    expect(result).not.toContain("inline-reference");
+    expect(result).not.toContain("data-tooltip");
+  });
+
+  it("should handle multiple references of the same type", () => {
+    const axiomMap = new Map<string, string>([
+      ["A-001", "First axiom"],
+      ["A-002", "Second axiom"]
+    ]);
+    const realityMap = new Map<string, string>();
+    const text = "See [A-001] and [A-002] for details.";
+
+    const result = highlightReferencesInText(text, axiomMap, realityMap);
+
+    const tooltipCount = (result.match(/data-tooltip/g) || []).length;
+    expect(tooltipCount).toBe(2);
+    expect(result).toContain('data-tooltip="First axiom"');
+    expect(result).toContain('data-tooltip="Second axiom"');
+  });
+
+  it("should escape HTML in descriptions", () => {
+    const axiomMap = new Map<string, string>([["A-001", '<script>alert("XSS")</script>']]);
+    const realityMap = new Map<string, string>();
+    const text = "Check [A-001] for security.";
+
+    const result = highlightReferencesInText(text, axiomMap, realityMap);
+
+    expect(result).toContain("&lt;script&gt;");
+    expect(result).not.toContain("<script>");
+    expect(result).toContain("&quot;XSS&quot;");
+  });
+
+  it("should handle references with various number formats", () => {
+    const axiomMap = new Map<string, string>([
+      ["A-1", "Single digit"],
+      ["A-01", "Two digits"],
+      ["A-001", "Three digits"],
+      ["A-0001", "Four digits"]
+    ]);
+    const realityMap = new Map<string, string>();
+    const text = "[A-1] [A-01] [A-001] [A-0001]";
+
+    const result = highlightReferencesInText(text, axiomMap, realityMap);
+
+    expect((result.match(/data-tooltip/g) || []).length).toBe(4);
+  });
+
+  it("should only match bracketed references", () => {
+    const axiomMap = new Map<string, string>([["A-001", "Description"]]);
+    const realityMap = new Map<string, string>();
+    const text = "A-001 without brackets should not match, but [A-001] should.";
+
+    const result = highlightReferencesInText(text, axiomMap, realityMap);
+
+    // Only one tooltip should be added (for the bracketed reference)
+    const tooltipCount = (result.match(/data-tooltip/g) || []).length;
     expect(tooltipCount).toBe(1);
   });
 });
