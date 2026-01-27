@@ -777,8 +777,8 @@ function getEntityColor(entity: string): number {
  * Converts line break characters to HTML <br> tags.
  * This is a simplified copy of the function from script.js for testing.
  */
-function convertLineBreaks(text: string | null | undefined): string {
-  if (!text) return text ?? "";
+function convertLineBreaks(text: string | null | undefined): string | null | undefined {
+  if (!text) return text;
   return text
     .replace(/\r\n/g, "<br>")
     .replace(/\n/g, "<br>")
@@ -796,10 +796,10 @@ function highlightEntitiesInText(
   entities: string[] | null | undefined,
   axiomDefinitionsMap?: Map<string, string>,
   realityDefinitionsMap?: Map<string, string>
-): string {
+): string | null | undefined {
   if (!text || !entities || entities.length === 0) {
     // Still apply reference highlighting even if no entities
-    let result = text ?? "";
+    let result = text;
     if (axiomDefinitionsMap && realityDefinitionsMap) {
       result = highlightReferencesInText(result, axiomDefinitionsMap, realityDefinitionsMap);
     }
@@ -848,14 +848,14 @@ describe("highlightEntitiesInText", () => {
     expect(result).toBe("Hello<br>World");
   });
 
-  it("should return empty string for null text", () => {
+  it("should return null for null text", () => {
     const result = highlightEntitiesInText(null, ["entity"]);
-    expect(result).toBe("");
+    expect(result).toBeNull();
   });
 
-  it("should return empty string for undefined text", () => {
+  it("should return undefined for undefined text", () => {
     const result = highlightEntitiesInText(undefined, ["entity"]);
-    expect(result).toBe("");
+    expect(result).toBeUndefined();
   });
 
   it("should highlight a single entity", () => {
@@ -885,7 +885,7 @@ describe("highlightEntitiesInText", () => {
     const result = highlightEntitiesInText(text, entities);
 
     // Both occurrences should be highlighted
-    const highlightCount = (result.match(/entity-highlight/g) || []).length;
+    const highlightCount = (result!.match(/entity-highlight/g) || []).length;
     expect(highlightCount).toBe(2);
   });
 
@@ -896,7 +896,7 @@ describe("highlightEntitiesInText", () => {
     const result = highlightEntitiesInText(text, entities);
 
     // Should only match "market" not "markets"
-    const highlightCount = (result.match(/entity-highlight/g) || []).length;
+    const highlightCount = (result!.match(/entity-highlight/g) || []).length;
     expect(highlightCount).toBe(1);
   });
 
@@ -911,7 +911,7 @@ describe("highlightEntitiesInText", () => {
     expect(result).toContain("entity-highlight");
     expect(result).toContain("interest rate</span>");
     // The sorting ensures longer matches are attempted first to minimize nesting issues
-    const highlightCount = (result.match(/entity-highlight/g) || []).length;
+    const highlightCount = (result!.match(/entity-highlight/g) || []).length;
     expect(highlightCount).toBeGreaterThanOrEqual(2);
   });
 });
@@ -988,7 +988,7 @@ describe("highlightEntitiesInText with References - Integration Tests", () => {
     const result = highlightEntitiesInText(text, entities, axiomMap, realityMap);
 
     // Both occurrences of A-001 (inside and outside brackets) are highlighted as entities
-    const entityHighlightCount = (result.match(/entity-highlight/g) || []).length;
+    const entityHighlightCount = (result!.match(/entity-highlight/g) || []).length;
     expect(entityHighlightCount).toBe(2);
 
     // Note: The reference tooltip will NOT be applied because entity highlighting
