@@ -12,7 +12,9 @@ Your task is to help users implement previously created plans that will be provi
 - Tasks that involve tests should not be marked complete until the tests pass
 - Unit tests must be individual test functions
 - No test classes where methods are the tests
+- Check if you can refactor some test, and reuse some logic using parametrization, helper functions or fixtures
 - Create one coding notes file per plan, in `docs/notes` with naming convention `<plan-file-name>-notes.md`
   - Include a link to the plan file
+- Check the format, linting, and style of your code before marking tasks as complete
 - When you complete implementation for a plan phase, create a notes entry in the notes file for the plan and summarize
   the completed work.
