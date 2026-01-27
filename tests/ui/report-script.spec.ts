@@ -572,6 +572,10 @@ function highlightReferencesInText(
   axiomDefinitionsMap: Map<string, string>,
   realityDefinitionsMap: Map<string, string>
 ): string {
+  if (!text) {
+    return text ?? "";
+  }
+
   // Match patterns like [A-001], [A-002], [R-001], [R-002], etc.
   const referencePattern = /\[(A-\d+|R-\d+)\]/g;
 
