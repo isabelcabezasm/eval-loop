@@ -577,7 +577,7 @@ function highlightReferencesInText(
   }
 
   // Match patterns like [A-001], [A-002], [R-001], [R-002], etc.
-  const referencePattern = /\[(A-\d+|R-\d+)\]/g;
+  const referencePattern = /\[(A-\d{1,4}|R-\d{1,4})\]/g;
 
   return text.replace(referencePattern, (match, refId: string) => {
     const isAxiom = refId.startsWith("A-");
