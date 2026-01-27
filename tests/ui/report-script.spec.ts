@@ -569,14 +569,10 @@ describe("renderReferences", () => {
  */
 function highlightReferencesInText(
   text: string | null | undefined,
+  text: string,
   axiomDefinitionsMap: Map<string, string>,
   realityDefinitionsMap: Map<string, string>
 ): string {
-  if (text == null) {
-    // Normalize null/undefined to empty string to avoid "null"/"undefined" in HTML
-    return "";
-  }
-
   // Match patterns like [A-001], [A-002], [R-001], [R-002], etc.
   const referencePattern = /\[(A-\d+|R-\d+)\]/g;
 
