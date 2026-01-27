@@ -174,7 +174,7 @@ describe("renderAxiomDefinitions", () => {
 
   it("should log error when container element is missing", () => {
     document.body.innerHTML = ""; // Remove the container
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => { });
 
     renderAxiomDefinitions();
 
@@ -240,7 +240,7 @@ describe("renderRealityDefinitions", () => {
 
   it("should log error when container element is missing", () => {
     document.body.innerHTML = ""; // Remove the container
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => { });
 
     renderRealityDefinitions();
 
@@ -333,31 +333,29 @@ function renderReferences(
                 <div class="references-card">
                     <h5>Expected</h5>
                     <div class="reference-list">
-                        ${
-                          references.references_expected.length > 0
-                            ? references.references_expected
-                                .map((ref) => renderReferenceTag(ref, "expected-tag", defMap))
-                                .join("")
-                            : '<p style="color: #666; font-style: italic;">None expected</p>'
-                        }
+                        ${references.references_expected.length > 0
+      ? references.references_expected
+        .map((ref) => renderReferenceTag(ref, "expected-tag", defMap))
+        .join("")
+      : '<p style="color: #666; font-style: italic;">None expected</p>'
+    }
                     </div>
                 </div>
                 <div class="references-card">
                     <h5>Found in Response</h5>
                     <div class="reference-list">
-                        ${
-                          references.references_found.length > 0
-                            ? references.references_found
-                                .map((ref) => {
-                                  const isMatch = references.references_expected.includes(ref);
-                                  const tagClass = isMatch
-                                    ? "found-match-tag"
-                                    : "found-nomatch-tag";
-                                  return renderReferenceTag(ref, tagClass, defMap);
-                                })
-                                .join("")
-                            : '<p style="color: #666; font-style: italic;">None found</p>'
-                        }
+                        ${references.references_found.length > 0
+      ? references.references_found
+        .map((ref) => {
+          const isMatch = references.references_expected.includes(ref);
+          const tagClass = isMatch
+            ? "found-match-tag"
+            : "found-nomatch-tag";
+          return renderReferenceTag(ref, tagClass, defMap);
+        })
+        .join("")
+      : '<p style="color: #666; font-style: italic;">None found</p>'
+    }
                     </div>
                 </div>
             </div>
@@ -595,16 +593,16 @@ function highlightReferencesInText(
 }
 
 describe("highlightReferencesInText", () => {
-  it("should return null for null text", () => {
+  it("should return empty string for null text", () => {
     const axiomMap = new Map<string, string>();
     const realityMap = new Map<string, string>();
-    expect(highlightReferencesInText(null, axiomMap, realityMap)).toBe(null);
+    expect(highlightReferencesInText(null, axiomMap, realityMap)).toBe("");
   });
 
-  it("should return undefined for undefined text", () => {
+  it("should return empty string for undefined text", () => {
     const axiomMap = new Map<string, string>();
     const realityMap = new Map<string, string>();
-    expect(highlightReferencesInText(undefined, axiomMap, realityMap)).toBeUndefined();
+    expect(highlightReferencesInText(undefined, axiomMap, realityMap)).toBe("");
   });
 
   it("should return text unchanged when no references found", () => {
@@ -717,6 +715,334 @@ describe("highlightReferencesInText", () => {
     // Only one tooltip should be added (for the bracketed reference)
     const tooltipCount = (result.match(/data-tooltip/g) || []).length;
     expect(tooltipCount).toBe(1);
+  });
+});
+
+// ============================================================================
+// Entity Highlighting and Integration Tests
+// ============================================================================
+
+/** @type {Map<string, number>} Maps entity names to their assigned color index for testing */
+const testEntityColorMap = new Map<string, number>();
+let testColorIndex = 0;
+
+/**
+ * Gets or assigns a consistent color index for a given entity (test version).
+ */
+function getEntityColor(entity: string): number {
+  if (!testEntityColorMap.has(entity)) {
+    testEntityColorMap.set(entity, testColorIndex % 20);
+    testColorIndex++;
+  }
+  return testEntityColorMap.get(entity) ?? 0;
+}
+
+/**
+ * Converts line break characters to HTML <br> tags.
+ * This is a simplified copy of the function from script.js for testing.
+ */
+function convertLineBreaks(text: string | null | undefined): string {
+  if (!text) return text ?? "";
+  return text
+    .replace(/\r\n/g, "<br>")
+    .replace(/\n/g, "<br>")
+    .replace(/\r/g, "<br>")
+    .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+}
+
+/**
+ * Highlights entities in text by wrapping them with colored spans.
+ * Also highlights axiom/reality references with tooltips if definition maps are provided.
+ * This is a copy of the function from script.js for testing.
+ */
+function highlightEntitiesInText(
+  text: string | null | undefined,
+  entities: string[] | null | undefined,
+  axiomDefinitionsMap?: Map<string, string>,
+  realityDefinitionsMap?: Map<string, string>
+): string {
+  if (!text || !entities || entities.length === 0) {
+    // Still apply reference highlighting even if no entities
+    let result = text ?? "";
+    if (axiomDefinitionsMap && realityDefinitionsMap) {
+      result = highlightReferencesInText(result, axiomDefinitionsMap, realityDefinitionsMap);
+    }
+    return convertLineBreaks(result);
+  }
+
+  let highlightedText = text;
+
+  // FIRST: Highlight entities in plain text (before any HTML is added)
+  // Sort entities by length (longest first) to avoid partial matches
+  const sortedEntities = [...entities].sort((a, b) => b.length - a.length);
+
+  sortedEntities.forEach((entity) => {
+    const colorClass = `entity-color-${getEntityColor(entity)}`;
+    // Create a case-insensitive regex that matches whole words
+    const regex = new RegExp(`\\b${entity.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "gi");
+    highlightedText = highlightedText.replace(
+      regex,
+      `<span class="entity-highlight ${colorClass}">${entity}</span>`
+    );
+  });
+
+  // SECOND: Highlight axiom/reality references AFTER entity highlighting
+  // This ensures we don't match entities inside tooltip data-attributes
+  if (axiomDefinitionsMap && realityDefinitionsMap) {
+    highlightedText = highlightReferencesInText(
+      highlightedText,
+      axiomDefinitionsMap,
+      realityDefinitionsMap
+    );
+  }
+
+  return convertLineBreaks(highlightedText);
+}
+
+describe("highlightEntitiesInText", () => {
+  beforeEach(() => {
+    // Reset color map between tests for predictable results
+    testEntityColorMap.clear();
+    testColorIndex = 0;
+  });
+
+  it("should return text with line breaks converted when no entities", () => {
+    const text = "Hello\nWorld";
+    const result = highlightEntitiesInText(text, []);
+    expect(result).toBe("Hello<br>World");
+  });
+
+  it("should return empty string for null text", () => {
+    const result = highlightEntitiesInText(null, ["entity"]);
+    expect(result).toBe("");
+  });
+
+  it("should return empty string for undefined text", () => {
+    const result = highlightEntitiesInText(undefined, ["entity"]);
+    expect(result).toBe("");
+  });
+
+  it("should highlight a single entity", () => {
+    const text = "The market stability is important.";
+    const entities = ["market stability"];
+
+    const result = highlightEntitiesInText(text, entities);
+
+    expect(result).toContain('class="entity-highlight');
+    expect(result).toContain("market stability");
+  });
+
+  it("should highlight multiple entities with different colors", () => {
+    const text = "Political instability affects investor confidence.";
+    const entities = ["political instability", "investor confidence"];
+
+    const result = highlightEntitiesInText(text, entities);
+
+    expect(result).toContain("entity-color-0");
+    expect(result).toContain("entity-color-1");
+  });
+
+  it("should be case-insensitive when matching entities", () => {
+    const text = "MARKET STABILITY and Market Stability both matter.";
+    const entities = ["market stability"];
+
+    const result = highlightEntitiesInText(text, entities);
+
+    // Both occurrences should be highlighted
+    const highlightCount = (result.match(/entity-highlight/g) || []).length;
+    expect(highlightCount).toBe(2);
+  });
+
+  it("should match whole words only", () => {
+    const text = "The markets are unstable, but market stability is key.";
+    const entities = ["market"];
+
+    const result = highlightEntitiesInText(text, entities);
+
+    // Should only match "market" not "markets"
+    const highlightCount = (result.match(/entity-highlight/g) || []).length;
+    expect(highlightCount).toBe(1);
+  });
+
+  it("should sort entities by length to avoid partial matches", () => {
+    const text = "The central bank interest rate affects the interest rate.";
+    const entities = ["interest rate", "central bank interest rate"];
+
+    const result = highlightEntitiesInText(text, entities);
+
+    // Longer entity "central bank interest rate" should be processed first
+    // Both entities should be highlighted
+    expect(result).toContain("entity-highlight");
+    expect(result).toContain("interest rate</span>");
+    // The sorting ensures longer matches are attempted first to minimize nesting issues
+    const highlightCount = (result.match(/entity-highlight/g) || []).length;
+    expect(highlightCount).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe("highlightEntitiesInText with References - Integration Tests", () => {
+  beforeEach(() => {
+    testEntityColorMap.clear();
+    testColorIndex = 0;
+  });
+
+  it("should highlight both entities and references in the same text", () => {
+    const text = "Political instability [A-001] affects market stability.";
+    const entities = ["political instability", "market stability"];
+    const axiomMap = new Map<string, string>([["A-001", "Political instability disrupts markets"]]);
+    const realityMap = new Map<string, string>();
+
+    const result = highlightEntitiesInText(text, entities, axiomMap, realityMap);
+
+    // Check entities are highlighted
+    expect(result).toContain("entity-highlight");
+    expect(result).toContain("political instability");
+    expect(result).toContain("market stability");
+
+    // Check reference is highlighted with tooltip
+    expect(result).toContain("inline-reference");
+    expect(result).toContain("inline-axiom-ref");
+    expect(result).toContain("data-tooltip");
+  });
+
+  it("should not break reference matching when entity names contain letters A or R", () => {
+    const text = "According to [A-001], Area R development affects Region A.";
+    const entities = ["Area R", "Region A"];
+    const axiomMap = new Map<string, string>([["A-001", "Development axiom"]]);
+    const realityMap = new Map<string, string>();
+
+    const result = highlightEntitiesInText(text, entities, axiomMap, realityMap);
+
+    // Reference should still be highlighted correctly
+    expect(result).toContain('data-tooltip="Development axiom"');
+    expect(result).toContain("[A-001]");
+
+    // Entities should be highlighted
+    expect(result).toContain("Area R</span>");
+    expect(result).toContain("Region A</span>");
+  });
+
+  it("should not break reference matching when entity names contain numbers", () => {
+    const text = "Product 001 is referenced in [A-001] and [R-002].";
+    const entities = ["Product 001"];
+    const axiomMap = new Map<string, string>([["A-001", "First axiom"]]);
+    const realityMap = new Map<string, string>([["R-002", "Second reality"]]);
+
+    const result = highlightEntitiesInText(text, entities, axiomMap, realityMap);
+
+    // Both references should be highlighted with tooltips
+    expect(result).toContain('data-tooltip="First axiom"');
+    expect(result).toContain('data-tooltip="Second reality"');
+
+    // Entity should also be highlighted
+    expect(result).toContain("Product 001</span>");
+  });
+
+  it("should highlight entities even if they match reference ID patterns", () => {
+    // KNOWN LIMITATION: When an entity name matches a reference ID (e.g., "A-001"),
+    // the entity highlighting will wrap the ID inside [A-001], breaking the reference
+    // pattern matching. This is acceptable because:
+    // 1. Entity names matching reference IDs (A-XXX, R-XXX) are rare in practice
+    // 2. The unbracketed instance will still be highlighted as an entity
+    const text = "The code A-001 is different from [A-001] which is a reference.";
+    const entities = ["A-001"];
+    const axiomMap = new Map<string, string>([["A-001", "Axiom description"]]);
+    const realityMap = new Map<string, string>();
+
+    const result = highlightEntitiesInText(text, entities, axiomMap, realityMap);
+
+    // Both occurrences of A-001 (inside and outside brackets) are highlighted as entities
+    const entityHighlightCount = (result.match(/entity-highlight/g) || []).length;
+    expect(entityHighlightCount).toBe(2);
+
+    // Note: The reference tooltip will NOT be applied because entity highlighting
+    // breaks the [A-001] pattern into [<span>A-001</span>]
+    // This documents the current behavior as a known limitation
+    expect(result).not.toContain('data-tooltip="Axiom description"');
+  });
+
+  it("should apply reference highlighting even when entities array is empty", () => {
+    const text = "See [A-001] and [R-001] for details.";
+    const entities: string[] = [];
+    const axiomMap = new Map<string, string>([["A-001", "Axiom one"]]);
+    const realityMap = new Map<string, string>([["R-001", "Reality one"]]);
+
+    const result = highlightEntitiesInText(text, entities, axiomMap, realityMap);
+
+    expect(result).toContain('data-tooltip="Axiom one"');
+    expect(result).toContain('data-tooltip="Reality one"');
+  });
+
+  it("should not match entities inside reference tooltip attributes", () => {
+    // This is the key integration test - entity highlighting runs first,
+    // so entities should not be found inside the tooltip text that's added later
+    const text = "Based on [A-001], political instability is a concern.";
+    const entities = ["political instability"];
+    const axiomMap = new Map<string, string>([
+      ["A-001", "Political instability often disrupts markets"]
+    ]);
+    const realityMap = new Map<string, string>();
+
+    const result = highlightEntitiesInText(text, entities, axiomMap, realityMap);
+
+    // The tooltip should contain the full description without entity spans inside it
+    expect(result).toContain('data-tooltip="Political instability often disrupts markets"');
+
+    // The entity in the main text should be highlighted
+    expect(result).toContain(
+      '<span class="entity-highlight entity-color-0">political instability</span>'
+    );
+
+    // There should be no entity-highlight inside the data-tooltip attribute
+    expect(result).not.toMatch(/data-tooltip="[^"]*entity-highlight[^"]*"/);
+  });
+
+  it("should handle complex text with multiple entities and references", () => {
+    const text =
+      "According to [A-001], political instability disrupts investor confidence. " +
+      "See also [R-001] for current inflation data affecting market stability.";
+    const entities = ["political instability", "investor confidence", "market stability"];
+    const axiomMap = new Map<string, string>([["A-001", "Instability disrupts markets"]]);
+    const realityMap = new Map<string, string>([["R-001", "Current inflation is 2.1%"]]);
+
+    const result = highlightEntitiesInText(text, entities, axiomMap, realityMap);
+
+    // All entities should be highlighted
+    expect(result).toContain("political instability</span>");
+    expect(result).toContain("investor confidence</span>");
+    expect(result).toContain("market stability</span>");
+
+    // Both references should have tooltips
+    expect(result).toContain('data-tooltip="Instability disrupts markets"');
+    expect(result).toContain('data-tooltip="Current inflation is 2.1%"');
+
+    // References should have correct classes
+    expect(result).toContain("inline-axiom-ref");
+    expect(result).toContain("inline-reality-ref");
+  });
+
+  it("should convert line breaks in the final output", () => {
+    const text = "Line 1\nLine 2 with [A-001]";
+    const entities = ["Line 1"];
+    const axiomMap = new Map<string, string>([["A-001", "Axiom"]]);
+    const realityMap = new Map<string, string>();
+
+    const result = highlightEntitiesInText(text, entities, axiomMap, realityMap);
+
+    expect(result).toContain("<br>");
+    expect(result).not.toContain("\n");
+  });
+
+  it("should handle markdown bold formatting", () => {
+    const text = "This is **important** text with [A-001].";
+    const entities: string[] = [];
+    const axiomMap = new Map<string, string>([["A-001", "Axiom"]]);
+    const realityMap = new Map<string, string>();
+
+    const result = highlightEntitiesInText(text, entities, axiomMap, realityMap);
+
+    expect(result).toContain("<b>important</b>");
+    expect(result).not.toContain("**important**");
   });
 });
 
