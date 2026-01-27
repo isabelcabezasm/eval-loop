@@ -1,5 +1,6 @@
 # Exposes the '/generate' endpoint
 
+import json
 from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter
@@ -116,26 +117,38 @@ async def generate(request: GenerateRequest):
     """
 
     async def stream():
-        async for chunk in qa_engine().invoke_streaming(
-            question=request.question,
-            session_id=UserSessionId(request.session_id),
-            reality=request.reality or [],
-        ):
-            match chunk:
-                case TextContent():
-                    response = TextResponse(text=chunk.content)
-                case AxiomCitationContent():
-                    response = AxiomCitationResponse(
-                        id=chunk.item.id,
-                        description=chunk.item.description,
-                    )
-                case RealityCitationContent():
-                    response = RealityCitationResponse(
-                        id=chunk.item.id,
-                        description=chunk.item.description,
-                    )
+        """
+        Generate streaming NDJSON response from QA engine chunks.
 
-            yield f"{response.model_dump_json()}\n"
+        Yields newline-delimited JSON chunks containing text content
+        and citation responses.
+        """
+        try:
+            async for chunk in qa_engine().invoke_streaming(
+                question=request.question,
+                session_id=UserSessionId(request.session_id),
+                reality=request.reality or [],
+            ):
+                match chunk:
+                    case TextContent():
+                        response = TextResponse(text=chunk.content)
+                    case AxiomCitationContent():
+                        response = AxiomCitationResponse(
+                            id=chunk.item.id,
+                            description=chunk.item.description,
+                        )
+                    case RealityCitationContent():
+                        response = RealityCitationResponse(
+                            id=chunk.item.id,
+                            description=chunk.item.description,
+                        )
+
+                yield f"{response.model_dump_json()}\n"
+        except Exception as e:
+            # Send error as final chunk
+            error_response = {"type": "error", "message": str(e)}
+            yield f"{json.dumps(error_response)}\n"
+            raise
 
     return StreamingResponse(stream(), media_type="application/x-ndjson")
 
