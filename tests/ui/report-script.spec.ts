@@ -595,16 +595,16 @@ function highlightReferencesInText(
 }
 
 describe("highlightReferencesInText", () => {
-  it("should return empty string for null text", () => {
+  it("should return null for null text", () => {
     const axiomMap = new Map<string, string>();
     const realityMap = new Map<string, string>();
-    expect(highlightReferencesInText(null, axiomMap, realityMap)).toBe("");
+    expect(highlightReferencesInText(null, axiomMap, realityMap)).toBe(null);
   });
 
-  it("should return empty string for undefined text", () => {
+  it("should return undefined for undefined text", () => {
     const axiomMap = new Map<string, string>();
     const realityMap = new Map<string, string>();
-    expect(highlightReferencesInText(undefined, axiomMap, realityMap)).toBe("");
+    expect(highlightReferencesInText(undefined, axiomMap, realityMap)).toBeUndefined();
   });
 
   it("should return text unchanged when no references found", () => {
